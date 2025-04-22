@@ -1,0 +1,55 @@
+/* Paleta principal: #1B3B4D */
+
+.login-body {
+    background-color: #1B3B4D;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 400px;
+    background-color: #f8f9fa;
+}
+
+.login-title {
+    color: #1B3B4D;
+    font-weight: bold;
+}
+
+.login-subtitle {
+    color: #6c757d;
+    font-size: 0.95rem;
+}
+
+.login-label {
+    font-weight: 500;
+    color: #1B3B4D;
+}
+
+.login-input {
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    border: 1px solid #ced4da;
+}
+
+.login-button {
+    background-color: #1B3B4D;
+    border: none;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    font-weight: bold;
+}
+
+.login-button:hover {
+    background-color: #16313f;
+}
+
+.login-link {
+    font-size: 0.9rem;
+    color: #1B3B4D;
+    text-decoration: none;
+}
+
+.login-link:hover {
+    text-decoration: underline;
+}

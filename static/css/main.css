@@ -1,5 +1,22 @@
-body {
-    color: blue;
-    margin: 0;
-    font-family: sans-serif;
+.custom-navbar {
+    background-color: #1B3B4D;
+}
+
+.custom-navbar .nav-link {
+    color: #ffffff;
+}
+
+.custom-navbar .nav-link:hover,
+.dropdown-menu .dropdown-item:hover {
+    color: #d1ecf1;
+}
+
+.custom-logout {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.custom-logout:hover {
+    background-color: #f8d7da;
+    color: #842029;
 }

@@ -5,7 +5,8 @@ RUN apt-get update -y && \
 
 WORKDIR /app
 
-RUN pip install Flask
+COPY requirements.txt .
+RUN pip install -r requirements.txt
 
 COPY . .
 

@@ -1,0 +1,62 @@
+/* Paleta: #1B3B4D - fundo escuro, branco para textos principais */
+
+.custom-navbar {
+    background-color: #1B3B4D;
+}
+
+.navbar-brand {
+    font-size: 1.4rem;
+    color: #ffffff;
+}
+
+.nav-link {
+    color: #ffffff;
+    margin-right: 1rem;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: #d1ecf1;
+}
+
+/* Botão "Sair" estiloso */
+.custom-logout-button {
+    background-color: #ffffff;
+    color: #1B3B4D;
+    border: 2px solid #ffffff;
+    font-weight: bold;
+    padding: 0.4rem 1rem;
+    border-radius: 1rem;
+    transition: all 0.3s ease;
+}
+
+.custom-logout-button:hover {
+    background-color: transparent;
+    color: #ffffff;
+    border: 2px solid #ffffff;
+}
+
+/* Home centralizada */
+.home-container {
+    padding-top: 5rem;
+    text-align: center;
+    color: #1B3B4D;
+    background-color: #f4f6f9;
+    min-height: 100vh;
+}
+
+.home-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.home-subtitle {
+    font-size: 1.2rem;
+    color: #6c757d;
+}
+
+.lottie-container {
+    max-width: 400px;
+    margin: 2rem auto 0;
+}
