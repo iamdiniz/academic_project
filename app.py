@@ -70,25 +70,26 @@ def login():
         email = request.form['email']
         senha = request.form['senha']
 
-        chefe = Chefe.query.filter_by(email=email).first()
-        if chefe and check_password_hash(chefe.senha, senha):
-            session['chefe_id'] = chefe.id
+        faculdade = Faculdade.query.filter_by(email=email).first()
+        if faculdade and check_password_hash(faculdade.senha, senha):
+            session['faculdade_id'] = faculdade.id
             return redirect(url_for('home'))  # Redireciona o navegador para acessar a rota /home
         else:
             return 'Credenciais inválidas!', 401
-    return render_template('home.html')
+    return render_template('login.html')
 
 @app.route('/home')
 def home():
-    chefe = db.session.get(Chefe, session.get('chefe_id'))
-    if not chefe:
+    faculdade = db.session.get(Faculdade, session.get('faculdade_id'))
+    if not faculdade:
         return redirect(url_for('login'))
-    return render_template('home.html', chefe=chefe)  # Renderiza o HTML com o chefe
+    return render_template('home.html', faculdade=faculdade)  # Renderiza o HTML com o chefe
 
 @app.route('/logout')
 def logout():
-    session.pop('chefe_id', None)
+    session.pop('faculdade_id', None)
     return redirect(url_for('login'))
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0')  # host para expor o servidor para fora do container
+    

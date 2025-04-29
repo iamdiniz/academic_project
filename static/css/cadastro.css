@@ -1,6 +1,6 @@
 .container-principal {
     display: flex;
-    height: 100vh;
+    min-height: 100vh;
     flex-wrap: wrap;
     overflow: hidden;
 }
