@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, request, redirect, session
+from flask import Flask, render_template, url_for, request, redirect, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
@@ -8,32 +8,61 @@ app.secret_key = 'minha-chave-teste'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 db = SQLAlchemy(app)
 
-class Chefe(db.Model):
+class Faculdade(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     senha = db.Column(db.String(120), nullable=False)
-    empresa = db.Column(db.String(80), unique=True, nullable=False)
+    instituicao = db.Column(db.String(100), nullable=True)
     
     def __repr__(self):
-        return f'<Chefe {self.nome}>'
+        return f'<Faculdade {self.nome}>'
 
 with app.app_context():
     db.create_all()
     try:
-        if not Chefe.query.filter_by(email='teste@email.com').first():
-            chefe = Chefe(
-                nome='Chefe Teste',
+        if not Faculdade.query.filter_by(email='teste@email.com').first():
+            faculdade = Faculdade(
+                nome='Fernando',
                 email='teste@email.com',
                 senha=generate_password_hash('123456'),
-                empresa='Empresa Teste'
+                instituicao='Uninassau'
             )
-            db.session.add(chefe)
+            db.session.add(faculdade)
             db.session.commit()
-            print('Chefe mockado criado!')
+            print('Faculdade mockado criado!')
     except IntegrityError:
         db.session.rollback()
-        print('Chefe já existe.')
+        print('Faculdade já existe.')
+
+@app.route('/cadastro', methods=['GET', 'POST'])
+def cadastro():
+    if request.method == 'POST':
+        nome = request.form['nome']
+        email = request.form['email']
+        senha = request.form['senha']
+        instituicao = request.form['instituicao']
+
+        try:
+            nova_faculdade = Faculdade(
+                nome=nome,
+                email=email,
+                senha=generate_password_hash(senha),
+                instituicao=instituicao
+            )
+            db.session.add(nova_faculdade)
+            db.session.commit()
+            flash('Cadastro realizado com sucesso! Faça login agora.')
+            return redirect(url_for('login'))
+        except IntegrityError:
+            db.session.rollback()
+            flash('Erro: E-mail, nome ou instituicao já cadastrados.')
+    
+    return render_template('cadastro.html')
+
+@app.route('/')
+def index():
+    return redirect(url_for('cadastro'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -49,16 +78,17 @@ def login():
             return 'Credenciais inválidas!', 401
     return render_template('home.html')
 
-@app.route('/')
-def index():
-    return render_template('login.html')
-
 @app.route('/home')
 def home():
     chefe = db.session.get(Chefe, session.get('chefe_id'))
     if not chefe:
         return redirect(url_for('login'))
     return render_template('home.html', chefe=chefe)  # Renderiza o HTML com o chefe
+
+@app.route('/logout')
+def logout():
+    session.pop('chefe_id', None)
+    return redirect(url_for('login'))
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0')  # host para expor o servidor para fora do container
