@@ -85,6 +85,33 @@ def home():
         return redirect(url_for('login'))
     return render_template('home.html', faculdade=faculdade)  # Renderiza o HTML com o chefe
 
+@app.route("/instituicaoEnsino")
+def instituicaoEnsino():
+    instituicaos = [
+        {
+            "instituicao": "UNINASSAU",
+            "logo": "/static/uninassau.png",  # Salve a logo aqui
+            "matriculados": 20.000,
+            "modalidade": "EAD, Presencial e Semi-Presencial",
+            "cursos": "Ciencia da computação, ADM, etc..."
+        },
+        {
+            "instituicao": "UNICAP",
+            "logo": "/static/unicap.png",  # Salve a logo aqui
+            "matriculados": 10.000,
+            "modalidade": "EAD e Presencial",
+            "cursos": "Direito, ADM, etc..."
+        },
+        {
+            "instituicao": "UNIBRA",
+            "logo": "/static/unibra.png",  # Salve a logo aqui
+            "matriculados": 15.000,
+            "modalidade": "EAD e Presencial",
+            "cursos": "Educação Fisíca, Design, etc..."
+        }
+    ]
+    return render_template("instituicaoEnsino.html", instituicaos=instituicaos)
+
 @app.route('/logout')
 def logout():
     session.pop('faculdade_id', None)
