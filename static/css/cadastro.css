@@ -2,12 +2,12 @@
     display: flex;
     min-height: 100vh;
     flex-wrap: wrap;
-    overflow: hidden;
+    overflow: auto;
 }
 
 .lado-esquerdo {
     flex: 1;
-    background-color: #183b4a;
+    background-color: #1b3b4d !important;
     color: white;
     display: flex;
     justify-content: flex-start;
@@ -32,21 +32,29 @@
     justify-content: center;
     align-items: center;
     padding: 40px;
+    overflow-y: auto;
 }
 
 .form-box {
     width: 100%;
-    max-width: 420px;
+    max-width: 500px; /* altura */
+    padding: 40px;   /* gordura hahaha */
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.form-control {
+.form-control,
+.form-select {
     border-radius: 15px;
     background-color: #ddd;
     border: none;
     padding: 10px 15px;
+    width: 100%;
 }
 
-.form-control:focus {
+.form-control:focus,
+.form-select:focus {
     background-color: #eee;
     outline: none;
     box-shadow: none;
@@ -57,22 +65,27 @@ button.btn-success {
     padding: 10px;
 }
 
-/* Responsivo para telas menores */
+
 @media (max-width: 768px) {
     .container-principal {
         flex-direction: column;
+        min-height: auto;
     }
 
     .lado-esquerdo,
     .lado-direito {
-        flex: none;
         width: 100%;
+        padding: 20px;
         height: auto;
-        padding: 30px;
     }
 
     .conteudo-esquerdo {
         text-align: center;
         margin: auto;
+    }
+
+    .form-box {
+        max-width: 100%;
+        padding: 20px;
     }
 }

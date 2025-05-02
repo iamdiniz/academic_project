@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+{% set hide_navbar = True %}
+
 {% block title %}Cadastro{% endblock %}
 
 {% block extra_css %}
@@ -17,17 +19,28 @@
     <div class="lado-direito">
         <form method="POST" class="form-box">
             <h2 class="mb-4">Cadastre-se</h2>
-
+        
+            <!-- Tipo de usuário -->
+            <div class="mb-3">
+                <label class="form-label">Tipo de cadastro (*)</label>
+                <select name="tipo_usuario" id="tipoUsuario" class="form-select" required onchange="exibirCampos()">
+                    <option value="" selected disabled>Selecione</option>
+                    <option value="chefe">Chefe</option>
+                    <option value="instituicao">Instituição de Ensino</option>
+                </select>
+            </div>
+        
+            <!-- Campos comuns -->
             <div class="mb-3">
                 <label class="form-label">Nome de usuário (*)</label>
                 <input type="text" name="nome" class="form-control" placeholder="Nome de usuário" required>
             </div>
-
+        
             <div class="mb-3">
                 <label class="form-label">E-mail (*)</label>
                 <input type="email" name="email" class="form-control" placeholder="E-mail" required>
             </div>
-
+        
             <div class="row">
                 <div class="col-12 col-md-6 mb-3">
                     <label class="form-label">Senha (*)</label>
@@ -38,17 +51,53 @@
                     <input type="password" name="confirmar_senha" class="form-control" placeholder="Repita a senha" required>
                 </div>
             </div>
-
-            <div class="mb-3">
-                <label class="form-label">Instituição de ensino (*)</label>
-                <input type="text" name="instituicao" placeholder="Instituição" class="form-control" required>
+        
+            <!-- Campos específicos para instituição -->
+            <div id="camposInstituicao" style="display: none;">
+                <div class="mb-3">
+                    <label class="form-label">Nome da Instituição (*)</label>
+                    <input type="text" name="instituicao_nome" class="form-control" placeholder="Instituição">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">CNPJ</label>
+                    <input type="text" name="instituicao_cnpj" class="form-control" placeholder="CNPJ">
+                </div>
             </div>
-
+        
+            <!-- Campos específicos para chefe -->
+            <div id="camposChefe" style="display: none;">
+                <div class="mb-3">
+                    <label class="form-label">Nome da Empresa</label>
+                    <input type="text" name="empresa_nome" class="form-control" placeholder="Nome da empresa">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Cargo</label>
+                    <input type="text" name="cargo" class="form-control" placeholder="Cargo na empresa">
+                </div>
+            </div>
+        
             <button type="submit" class="btn btn-success w-100">Cadastrar</button>
-
             <p class="mt-3">Já tem conta? <a href="{{ url_for('login') }}">Faça login</a></p>
-        </form>
+        </form>        
     </div>
 </div>
+<script>
+    function exibirCampos() {
+        const tipo = document.getElementById('tipoUsuario').value;
+        const blocoInstituicao = document.getElementById('camposInstituicao');
+        const blocoChefe = document.getElementById('camposChefe');
+
+        if (tipo === 'instituicao') {
+            blocoInstituicao.style.display = 'block';
+            blocoChefe.style.display = 'none';
+        } else if (tipo === 'chefe') {
+            blocoInstituicao.style.display = 'none';
+            blocoChefe.style.display = 'block';
+        } else {
+            blocoInstituicao.style.display = 'none';
+            blocoChefe.style.display = 'none';
+        }
+    }
+</script>
 
 {% endblock %}

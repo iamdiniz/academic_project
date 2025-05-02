@@ -2,17 +2,22 @@
     display: flex;
     min-height: 100vh;
     flex-wrap: wrap;
-    overflow: hidden;
+    overflow: auto;
 }
 
 .lado-esquerdo {
     flex: 1;
-    background: linear-gradient(to bottom right, #1d3557, #457b9d);
+    background-color: #1b3b4d; 
     color: white;
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     padding: 40px;
+}
+
+.conteudo-esquerdo {
+    text-align: left;
+    max-width: 500px;
 }
 
 .lado-direito {
@@ -26,10 +31,32 @@
 
 .form-box {
     width: 100%;
-    max-width: 400px;
+    max-width: 500px; /* altura */
+    padding: 40px;   /* gordura hahaha */
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Responsivo */
+.form-control {
+    border-radius: 15px;
+    background-color: #ddd;
+    border: none;
+    padding: 10px 15px;
+    width: 100%;
+}
+
+.form-control:focus {
+    background-color: #eee;
+    outline: none;
+    box-shadow: none;
+}
+
+button.btn-primary {
+    border-radius: 15px;
+    padding: 10px;
+}
+
 @media (max-width: 768px) {
     .container-principal {
         flex-direction: column;
@@ -40,6 +67,11 @@
         flex: none;
         width: 100%;
         height: auto;
-        padding: 30px;
+        padding: 20px;
+    }
+
+    .form-box {
+        max-width: 100%;
+        padding: 20px;
     }
 }
