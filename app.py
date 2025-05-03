@@ -5,87 +5,66 @@ from sqlalchemy.exc import IntegrityError
 
 app = Flask(__name__)
 app.secret_key = 'minha-chave-teste'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:educ123@db:3306/educ_invest'
 db = SQLAlchemy(app)
 
 class InstituicaodeEnsino(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    senha = db.Column(db.String(120), nullable=False)
-    instituicao = db.Column(db.String(100), nullable=True)
-    
-    def __repr__(self):
-        return f'<InstituicaodeEnsino {self.nome}>'
+    __tablename__ = 'instituicao_de_ensino'
+
+    id_instituicao = db.Column(db.Integer, primary_key=True)
+    nome_instituicao = db.Column(db.String(100), nullable=False)
+    endereço_instituicao = db.Column(db.String(255), nullable=False)
+    email = db.Column(db.String(255), nullable=False)
+    senha = db.Column(db.String(255), nullable=False)
+    infraestrutura = db.Column(db.Text, nullable=False)
+    nota_mec = db.Column(db.Numeric, nullable=False)
+    areas_de_formacao = db.Column(db.Text, nullable=False)
+    modalidades = db.Column(db.String(255), nullable=False)
+    quantidade_de_alunos = db.Column(db.Integer, nullable=False)
+    reitor = db.Column(db.String(255), nullable=False)
 
 class Aluno(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String(100), nullable=False)
-    idade = db.Column(db.Integer, nullable=False)
-    score_geral = db.Column(db.Integer, nullable=False)
-    evolucao = db.Column(db.Integer, nullable=False)
-    soft_skills = db.Column(db.Integer, nullable=False)
-    hard_skills = db.Column(db.Integer, nullable=False)
-    media_testes = db.Column(db.Integer, nullable=False)
-    curso = db.Column(db.String(100), nullable=False)
-    area_destaque = db.Column(db.String(100), nullable=False)
-    foto_url = db.Column(db.String(200), nullable=True)
+    __tablename__ = 'alunos'
 
-    def __repr__(self):
-        return f'<Aluno {self.nome}>'
+    id_jovem = db.Column(db.Integer, primary_key=True)
+    nome_jovem = db.Column(db.String(255), nullable=False)
+    data_nascimento = db.Column(db.Date)
+    contato_jovem = db.Column(db.String(255))
+    email = db.Column(db.String(255), unique=True)
+    endereço_jovem = db.Column(db.String(255))
+    id_instituicao = db.Column(db.Integer, db.ForeignKey('instituicao_de_ensino.id_instituicao'))
+    Curso = db.Column(db.String(255))
+    formação = db.Column(db.String(255))
+    periodo = db.Column(db.Integer)
 
 with app.app_context():
-    db.create_all()
-    try:
-        if not InstituicaodeEnsino.query.filter_by(email='teste@email.com').first():
-            instituicaodeEnsino = InstituicaodeEnsino(
-                nome='Fernando',
-                email='teste@email.com',
-                senha=generate_password_hash('123456'),
-                instituicao='Uninassau'
-            )
-            db.session.add(instituicaodeEnsino)
-            db.session.commit()
-            print('Instituição de Ensino mockado criado!')
-    except IntegrityError:
-        db.session.rollback()
-        print('Instituição de Ensino já existe.')
-
-    try:
-        if not Aluno.query.filter_by(nome='BRUNO BELARMINO').first():
-            aluno = Aluno(
-                nome='BRUNO BELARMINO',
-                idade=25,
-                score_geral=78,
-                evolucao=47,
-                soft_skills=67,
-                hard_skills=58,
-                media_testes=87,
-                curso='Sistemas de Informação',
-                area_destaque='Front-End',
-                foto_url='/static/foto_bruno.png'
-            )
-            db.session.add(aluno)
-            db.session.commit()
-            print('Aluno mockado criado!')
-    except IntegrityError:
-        db.session.rollback()
-        print('Aluno já existe.')
+    db.create_all()  # mantido caso quiser criar outras tabelas
 
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
     if request.method == 'POST':
-        nome = request.form['nome']
-        email = request.form['email']
-        senha = request.form['senha']
-        instituicao = request.form['instituicao']
+        nome = request.form.get('nome')
+        email = request.form.get('email')
+        senha = request.form.get('senha')
+        instituicao_nome = request.form.get('instituicao_nome')  # Corrigido para o nome correto do campo
+        endereco = request.form.get('endereco_instituicao')
+
+        if not nome or not email or not senha or not instituicao_nome:
+            flash('Todos os campos obrigatórios devem ser preenchidos!')
+            return redirect(url_for('cadastro'))
 
         try:
             nova_instituicaodeEnsino = InstituicaodeEnsino(
-                nome=nome,
+                nome_instituicao=instituicao_nome,  # Atualizado para o campo correto
                 email=email,
                 senha=generate_password_hash(senha),
-                instituicao=instituicao
+                infraestrutura="Infraestrutura padrão",  # Adicione valores padrão para campos obrigatórios
+                nota_mec=0,
+                areas_de_formacao="Áreas padrão",
+                modalidades="Modalidades padrão",
+                quantidade_de_alunos=0,
+                reitor=nome,
+                endereço_instituicao=endereco
             )
             db.session.add(nova_instituicaodeEnsino)
             db.session.commit()
@@ -93,7 +72,7 @@ def cadastro():
             return redirect(url_for('login'))
         except IntegrityError:
             db.session.rollback()
-            flash('Erro: E-mail, nome ou instituicao já cadastrados.')
+            flash('Erro: E-mail ou instituição já cadastrados.')
     
     return render_template('cadastro.html')
 
@@ -109,7 +88,7 @@ def login():
 
         instituicaodeEnsino = InstituicaodeEnsino.query.filter_by(email=email).first()
         if instituicaodeEnsino and check_password_hash(instituicaodeEnsino.senha, senha):
-            session['instituicaodeEnsino_id'] = instituicaodeEnsino.id
+            session['instituicaodeEnsino_id'] = instituicaodeEnsino.id_instituicao
             return redirect(url_for('home'))  # Redireciona o navegador para acessar a rota /home
         else:
             return 'Credenciais inválidas!', 401
@@ -139,4 +118,3 @@ def logout():
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0')  # host para expor o servidor para fora do container
-    

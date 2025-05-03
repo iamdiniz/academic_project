@@ -1,6 +1,8 @@
+version: "3.8"
+
 services:
   backend:
-    image: educ # image personalizada criada no meu docker local...
+    build: .
     ports:
       - "5000:5000"
     volumes:
@@ -10,6 +12,18 @@ services:
     restart: always
     networks:
       - dockercompose
+    depends_on:
+      - db  # Garante que o serviço db seja iniciado antes
 
-networks: # o docker cria como padrão uma rede bridge
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: educ123
+      MYSQL_DATABASE: educ_invest
+    ports:
+      - "3307:3306"  # Mapeia a porta 3306 do contêiner para a porta 3307 no host
+    networks:
+      - dockercompose
+
+networks:
   dockercompose:

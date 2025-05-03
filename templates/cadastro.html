@@ -59,6 +59,10 @@
                     <input type="text" name="instituicao_nome" class="form-control" placeholder="Instituição">
                 </div>
                 <div class="mb-3">
+                    <label class="form-label">Endereço da Instituição (*)</label>
+                    <input type="text" name="endereco_instituicao" class="form-control" placeholder="Endereço" required>
+                </div>
+                <div class="mb-3">
                     <label class="form-label">CNPJ</label>
                     <input type="text" name="instituicao_cnpj" class="form-control" placeholder="CNPJ">
                 </div>
@@ -83,21 +87,29 @@
 </div>
 <script>
     function exibirCampos() {
-        const tipo = document.getElementById('tipoUsuario').value;
-        const blocoInstituicao = document.getElementById('camposInstituicao');
-        const blocoChefe = document.getElementById('camposChefe');
+    const tipo = document.getElementById('tipoUsuario').value;
+    const blocoInstituicao = document.getElementById('camposInstituicao');
+    const blocoChefe = document.getElementById('camposChefe');
+    const instituicaoNome = document.querySelector('input[name="instituicao_nome"]');
+    const empresaNome = document.querySelector('input[name="empresa_nome"]');
 
-        if (tipo === 'instituicao') {
-            blocoInstituicao.style.display = 'block';
-            blocoChefe.style.display = 'none';
-        } else if (tipo === 'chefe') {
-            blocoInstituicao.style.display = 'none';
-            blocoChefe.style.display = 'block';
-        } else {
-            blocoInstituicao.style.display = 'none';
-            blocoChefe.style.display = 'none';
-        }
+    if (tipo === 'instituicao') {
+        blocoInstituicao.style.display = 'block';
+        blocoChefe.style.display = 'none';
+        instituicaoNome.setAttribute('required', 'required');
+        empresaNome.removeAttribute('required');
+    } else if (tipo === 'chefe') {
+        blocoInstituicao.style.display = 'none';
+        blocoChefe.style.display = 'block';
+        empresaNome.setAttribute('required', 'required');
+        instituicaoNome.removeAttribute('required');
+    } else {
+        blocoInstituicao.style.display = 'none';
+        blocoChefe.style.display = 'none';
+        instituicaoNome.removeAttribute('required');
+        empresaNome.removeAttribute('required');
     }
+}
 </script>
 
 {% endblock %}
