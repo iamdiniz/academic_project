@@ -13,7 +13,7 @@ class InstituicaodeEnsino(db.Model):
 
     id_instituicao = db.Column(db.Integer, primary_key=True)
     nome_instituicao = db.Column(db.String(100), nullable=False)
-    endereço_instituicao = db.Column(db.String(255), nullable=False)
+    endereco_instituicao = db.Column(db.String(255), nullable=False)
     email = db.Column(db.String(255), nullable=False)
     senha = db.Column(db.String(255), nullable=False)
     infraestrutura = db.Column(db.Text, nullable=False)
@@ -31,10 +31,10 @@ class Aluno(db.Model):
     data_nascimento = db.Column(db.Date)
     contato_jovem = db.Column(db.String(255))
     email = db.Column(db.String(255), unique=True)
-    endereço_jovem = db.Column(db.String(255))
+    endereco_jovem = db.Column(db.String(255))
     id_instituicao = db.Column(db.Integer, db.ForeignKey('instituicao_de_ensino.id_instituicao'))
-    Curso = db.Column(db.String(255))
-    formação = db.Column(db.String(255))
+    curso = db.Column(db.String(255))
+    formacao = db.Column(db.String(255))
     periodo = db.Column(db.Integer)
 
 class Chefe(db.Model):
@@ -48,7 +48,9 @@ class Chefe(db.Model):
     nome_empresa = db.Column(db.String(100))
 
 with app.app_context():
-    db.create_all()  # mantido caso quiser criar outras tabelas
+    db.drop_all()  # Remove todas as tabelas
+    db.create_all()  # Recria as tabelas com base nos modelos
+    print("Tabelas recriadas com sucesso!")
 
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
@@ -83,7 +85,7 @@ def cadastro():
                     modalidades="Modalidades padrão",
                     quantidade_de_alunos=0,
                     reitor=nome,
-                    endereço_instituicao=endereco
+                    endereco_instituicao=endereco
                 )
                 db.session.add(nova_instituicaodeEnsino)
                 db.session.commit()
@@ -168,10 +170,11 @@ def home():
     # Se nenhum usuário estiver logado, redireciona para o login
     return redirect(url_for('login'))
 
-@app.route("/instituicaoEnsino")
-def instituicaoEnsino():
-    instituicaos = InstituicaodeEnsino.query.all()
-    return render_template("instituicaoEnsino.html", instituicaos=instituicaos)
+@app.route('/instituicaoEnsino')
+def instituicao_ensino():
+    # Busca todas as instituições no banco de dados
+    instituicoes = InstituicaodeEnsino.query.all()
+    return render_template('instituicaoEnsino.html', instituicaos=instituicoes)
 
 @app.route('/cardAlunos')
 def cardAlunos():

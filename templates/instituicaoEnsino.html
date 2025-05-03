@@ -15,19 +15,19 @@
         {% for instituicao in instituicaos %}
         <div class="col-md-4 m-3">
             <div class="card shadow">
-                <div class="card-header bg-dark text-white fw-bold"><!--{{ instituicao.instituicao }}--></div>
-                    <div class="card-body">
-                        <!-- src="{{ instituicao.logo }}" -->
-                        <img alt="Logo" class="img-fluid mb-3" style="max-height: 80px;">
-                         <p>Alunos matriculados: <!--{{ instituicao.matriculados }} --> </p>
-                        <p>Modalidade: <!-- {{ instituicao.modalidade }} --></p>
-                        <p>Cursos: {{ instituicao.cursos }}</p>
-                        <a href="#" class="btn btn-primary">Ver Alunos</a>
-                    </div>
+                <div class="card-header bg-dark text-white fw-bold">
+                    {{ instituicao.nome_instituicao }}
+                </div>
+                <div class="card-body">
+                    <img alt="Logo" class="img-fluid mb-3" style="max-height: 80px;">
+                    <p>Alunos matriculados: {{ instituicao.quantidade_de_alunos }}</p>
+                    <p>Modalidade: {{ instituicao.modalidades }}</p>
+                    <p>Cursos: {{ instituicao.areas_de_formacao }}</p>
+                    <a href="#" class="btn btn-primary">Ver Alunos</a>
                 </div>
             </div>
+        </div>
         {% endfor %}
-        
     </div>
 </div>
 {% endblock %}
