@@ -56,7 +56,7 @@
             <div id="camposInstituicao" style="display: none;">
                 <div class="mb-3">
                     <label class="form-label">Nome da Instituição (*)</label>
-                    <input type="text" name="instituicao_nome" class="form-control" placeholder="Instituição">
+                    <input type="text" name="instituicao_nome" class="form-control" placeholder="Instituição" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Endereço da Instituição (*)</label>
@@ -64,7 +64,7 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label">CNPJ</label>
-                    <input type="text" name="instituicao_cnpj" class="form-control" placeholder="CNPJ">
+                    <input type="text" name="instituicao_cnpj" class="form-control" placeholder="CNPJ" required>
                 </div>
             </div>
         
@@ -86,28 +86,40 @@
     </div>
 </div>
 <script>
-    function exibirCampos() {
+function exibirCampos() {
     const tipo = document.getElementById('tipoUsuario').value;
     const blocoInstituicao = document.getElementById('camposInstituicao');
     const blocoChefe = document.getElementById('camposChefe');
     const instituicaoNome = document.querySelector('input[name="instituicao_nome"]');
+    const enderecoInstituicao = document.querySelector('input[name="endereco_instituicao"]');
+    const instituicaoCnpj = document.querySelector('input[name="instituicao_cnpj"]');
     const empresaNome = document.querySelector('input[name="empresa_nome"]');
+    const cargo = document.querySelector('input[name="cargo"]');
 
     if (tipo === 'instituicao') {
         blocoInstituicao.style.display = 'block';
         blocoChefe.style.display = 'none';
         instituicaoNome.setAttribute('required', 'required');
+        enderecoInstituicao.setAttribute('required', 'required');
+        instituicaoCnpj.setAttribute('required', 'required');
         empresaNome.removeAttribute('required');
+        cargo.removeAttribute('required');
     } else if (tipo === 'chefe') {
         blocoInstituicao.style.display = 'none';
         blocoChefe.style.display = 'block';
         empresaNome.setAttribute('required', 'required');
+        cargo.setAttribute('required', 'required');
         instituicaoNome.removeAttribute('required');
+        enderecoInstituicao.removeAttribute('required');
+        instituicaoCnpj.removeAttribute('required');
     } else {
         blocoInstituicao.style.display = 'none';
         blocoChefe.style.display = 'none';
         instituicaoNome.removeAttribute('required');
+        enderecoInstituicao.removeAttribute('required');
+        instituicaoCnpj.removeAttribute('required');
         empresaNome.removeAttribute('required');
+        cargo.removeAttribute('required');
     }
 }
 </script>

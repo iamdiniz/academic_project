@@ -53,37 +53,76 @@ with app.app_context():
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
     if request.method == 'POST':
+        tipo_usuario = request.form.get('tipo_usuario')  # Verifica o tipo de usuário
         nome = request.form.get('nome')
         email = request.form.get('email')
         senha = request.form.get('senha')
-        instituicao_nome = request.form.get('instituicao_nome')  # Corrigido para o nome correto do campo
-        endereco = request.form.get('endereco_instituicao')
 
-        if not nome or not email or not senha or not instituicao_nome:
-            flash('Todos os campos obrigatórios devem ser preenchidos!')
+        # Validação de senha
+        confirmar_senha = request.form.get('confirmar_senha')
+        if senha != confirmar_senha:
+            flash('As senhas não coincidem!')
             return redirect(url_for('cadastro'))
 
-        try:
-            nova_instituicaodeEnsino = InstituicaodeEnsino(
-                nome_instituicao=instituicao_nome,  # Atualizado para o campo correto
-                email=email,
-                senha=generate_password_hash(senha),
-                infraestrutura="Infraestrutura padrão",  # Adicione valores padrão para campos obrigatórios
-                nota_mec=0,
-                areas_de_formacao="Áreas padrão",
-                modalidades="Modalidades padrão",
-                quantidade_de_alunos=0,
-                reitor=nome,
-                endereço_instituicao=endereco
-            )
-            db.session.add(nova_instituicaodeEnsino)
-            db.session.commit()
-            flash('Cadastro realizado com sucesso! Faça login agora.')
-            return redirect(url_for('login'))
-        except IntegrityError:
-            db.session.rollback()
-            flash('Erro: E-mail ou instituição já cadastrados.')
-    
+        if tipo_usuario == 'instituicao':
+            instituicao_nome = request.form.get('instituicao_nome')
+            endereco = request.form.get('endereco_instituicao')
+
+            if not nome or not email or not senha or not instituicao_nome or not endereco:
+                flash('Todos os campos obrigatórios para Instituição de Ensino devem ser preenchidos!')
+                return redirect(url_for('cadastro'))
+
+            try:
+                nova_instituicaodeEnsino = InstituicaodeEnsino(
+                    nome_instituicao=instituicao_nome,
+                    email=email,
+                    senha=generate_password_hash(senha),
+                    infraestrutura="Infraestrutura padrão",
+                    nota_mec=0,
+                    areas_de_formacao="Áreas padrão",
+                    modalidades="Modalidades padrão",
+                    quantidade_de_alunos=0,
+                    reitor=nome,
+                    endereço_instituicao=endereco
+                )
+                db.session.add(nova_instituicaodeEnsino)
+                db.session.commit()
+                flash('Cadastro de Instituição realizado com sucesso! Faça login agora.')
+                return redirect(url_for('login'))
+            except IntegrityError:
+                db.session.rollback()
+                flash('Erro: E-mail ou instituição já cadastrados.')
+                return redirect(url_for('cadastro'))
+
+        elif tipo_usuario == 'chefe':
+            empresa_nome = request.form.get('empresa_nome')
+            cargo = request.form.get('cargo')
+
+            if not nome or not email or not senha or not empresa_nome or not cargo:
+                flash('Todos os campos obrigatórios para Chefe devem ser preenchidos!')
+                return redirect(url_for('cadastro'))
+
+            try:
+                novo_chefe = Chefe(
+                    nome=nome,
+                    email=email,
+                    senha=generate_password_hash(senha),
+                    nome_empresa=empresa_nome,
+                    cargo=cargo
+                )
+                db.session.add(novo_chefe)
+                db.session.commit()
+                flash('Cadastro de Chefe realizado com sucesso! Faça login agora.')
+                return redirect(url_for('login'))
+            except IntegrityError:
+                db.session.rollback()
+                flash('Erro: E-mail ou chefe já cadastrados.')
+                return redirect(url_for('cadastro'))
+
+        else:
+            flash('Tipo de usuário inválido!')
+            return redirect(url_for('cadastro'))
+
     return render_template('cadastro.html')
 
 @app.route('/')
@@ -96,20 +135,38 @@ def login():
         email = request.form['email']
         senha = request.form['senha']
 
+        # Verifica se o login é de uma Instituição de Ensino
         instituicaodeEnsino = InstituicaodeEnsino.query.filter_by(email=email).first()
         if instituicaodeEnsino and check_password_hash(instituicaodeEnsino.senha, senha):
             session['instituicaodeEnsino_id'] = instituicaodeEnsino.id_instituicao
-            return redirect(url_for('home'))  # Redireciona o navegador para acessar a rota /home
-        else:
-            return 'Credenciais inválidas!', 401
+            return redirect(url_for('home'))  # Redireciona para a página inicial
+
+        # Verifica se o login é de um Chefe
+        chefe = Chefe.query.filter_by(email=email).first()
+        if chefe and check_password_hash(chefe.senha, senha):
+            session['chefe_id'] = chefe.id_chefe
+            return redirect(url_for('home'))  # Redireciona para a página inicial
+
+        # Se nenhum dos dois for válido
+        flash('Credenciais inválidas!')
+        return redirect(url_for('login'))
+
     return render_template('login.html')
 
 @app.route('/home')
 def home():
+    # Verifica se é uma Instituição de Ensino logada
     instituicaodeEnsino = db.session.get(InstituicaodeEnsino, session.get('instituicaodeEnsino_id'))
-    if not instituicaodeEnsino:
-        return redirect(url_for('login'))
-    return render_template('home.html', instituicaodeEnsino=instituicaodeEnsino)  # Renderiza o HTML com o chefe
+    if instituicaodeEnsino:
+        return render_template('home.html', usuario=instituicaodeEnsino, tipo_usuario='instituicao')
+
+    # Verifica se é um Chefe logado
+    chefe = db.session.get(Chefe, session.get('chefe_id'))
+    if chefe:
+        return render_template('home.html', usuario=chefe, tipo_usuario='chefe')
+
+    # Se nenhum usuário estiver logado, redireciona para o login
+    return redirect(url_for('login'))
 
 @app.route("/instituicaoEnsino")
 def instituicaoEnsino():
