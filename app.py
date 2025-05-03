@@ -18,6 +18,22 @@ class InstituicaodeEnsino(db.Model):
     def __repr__(self):
         return f'<InstituicaodeEnsino {self.nome}>'
 
+class Aluno(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100), nullable=False)
+    idade = db.Column(db.Integer, nullable=False)
+    score_geral = db.Column(db.Integer, nullable=False)
+    evolucao = db.Column(db.Integer, nullable=False)
+    soft_skills = db.Column(db.Integer, nullable=False)
+    hard_skills = db.Column(db.Integer, nullable=False)
+    media_testes = db.Column(db.Integer, nullable=False)
+    curso = db.Column(db.String(100), nullable=False)
+    area_destaque = db.Column(db.String(100), nullable=False)
+    foto_url = db.Column(db.String(200), nullable=True)
+
+    def __repr__(self):
+        return f'<Aluno {self.nome}>'
+
 with app.app_context():
     db.create_all()
     try:
@@ -34,6 +50,27 @@ with app.app_context():
     except IntegrityError:
         db.session.rollback()
         print('Instituição de Ensino já existe.')
+
+    try:
+        if not Aluno.query.filter_by(nome='BRUNO BELARMINO').first():
+            aluno = Aluno(
+                nome='BRUNO BELARMINO',
+                idade=25,
+                score_geral=78,
+                evolucao=47,
+                soft_skills=67,
+                hard_skills=58,
+                media_testes=87,
+                curso='Sistemas de Informação',
+                area_destaque='Front-End',
+                foto_url='/static/foto_bruno.png'
+            )
+            db.session.add(aluno)
+            db.session.commit()
+            print('Aluno mockado criado!')
+    except IntegrityError:
+        db.session.rollback()
+        print('Aluno já existe.')
 
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
@@ -90,6 +127,11 @@ def instituicaoEnsino():
     instituicaos = InstituicaodeEnsino.query.all()
     return render_template("instituicaoEnsino.html", instituicaos=instituicaos)
 
+@app.route('/cardAlunos')
+def cardAlunos():
+    alunos = Aluno.query.all()
+    return render_template('cardAlunos.html', alunos=alunos)
+    
 @app.route('/logout')
 def logout():
     session.pop('instituicaodeEnsino_id', None)

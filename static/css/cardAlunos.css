@@ -1,0 +1,23 @@
+body {
+    background-color: #f8f9fa;
+    font-family: Arial, sans-serif;
+}
+
+.card {
+    border-radius: 10px;
+}
+
+.card-header {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+img {
+    display: block;
+    margin: 0 auto;
+}
+
+.progress {
+    height: 20px;
+    font-size: 0.75rem;
+}

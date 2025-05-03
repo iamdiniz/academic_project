@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% set hide_navbar = False %}
+
+{% block title %}EducInvest - Minhas Seleções{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cardAlunos.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="container mt-2 pt-5">
+    <h6 class="fw-bold text-center">Universidade Católica</h6>
+
+    <div class="row justify-content-center">
+        {% for aluno in alunos %}
+        <div class="col-md-5 col-lg-4 m-3">
+            <div class="card shadow bg-light">
+                <div class="card-header bg-dark text-white text-center fw-bold rounded-top">
+                    {{ aluno.nome }}
+                </div>
+                <div class="card-body text-center">
+                    <img src="{{ aluno.foto_url }}" alt="Foto do aluno" class="rounded-circle mb-3" width="100" height="100">
+                    <p class="mb-3">Idade: {{ aluno.idade }}</p>
+
+                    <div class="text-start">
+                        <label>Score Geral:</label>
+                        <div class="progress mb-2">
+                            <div class="progress-bar bg-primary">
+                                {{ aluno.score_geral }}%
+                            </div>
+                        </div>
+
+                        <label>Evolução:</label>
+                        <div class="progress mb-2">
+                            <div class="progress-bar bg-success">
+                                {{ aluno.evolucao }}%
+                            </div>
+                        </div>
+
+                        <label>Soft Skills:</label>
+                        <div class="progress mb-2">
+                            <div class="progress-bar bg-warning">
+                                {{ aluno.soft_skills }}%
+                            </div>
+                        </div>
+
+                        <label>Hard Skills:</label>
+                        <div class="progress mb-2">
+                            <div class="progress-bar bg-info">
+                                {{ aluno.hard_skills }}%
+                            </div>
+                        </div>
+
+                        <label>Média nos Testes:</label>
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-primary">
+                                {{ aluno.media_testes }}%
+                            </div>
+                        </div>
+
+                        <p><strong>Curso Atual:</strong> {{ aluno.curso }}</p>
+                        <p><strong>Área Destaque:</strong> {{ aluno.area_destaque }}</p>
+                    </div>
+
+                    <a href="#" class="btn btn-primary mt-3">Detalhes</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
