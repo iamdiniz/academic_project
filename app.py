@@ -26,7 +26,7 @@ class InstituicaodeEnsino(db.Model):
 class Aluno(db.Model):
     __tablename__ = 'alunos'
 
-    id_jovem = db.Column(db.Integer, primary_key=True)
+    id_aluno = db.Column(db.Integer, primary_key=True)
     nome_jovem = db.Column(db.String(255), nullable=False)
     data_nascimento = db.Column(db.Date)
     contato_jovem = db.Column(db.String(255))
@@ -46,6 +46,24 @@ class Chefe(db.Model):
     email = db.Column(db.String(100), unique=True)  # Pode ser nulo, mas deve ser único se fornecido
     senha = db.Column(db.String(255), nullable=False)
     nome_empresa = db.Column(db.String(100))
+
+class SkillsDoAluno(db.Model):
+    __tablename__ = 'skills_do_aluno'
+
+    id_aluno = db.Column(db.Integer, db.ForeignKey('alunos.id_aluno'), primary_key=True)  # Relaciona com a tabela Aluno
+    hard_skills = db.Column(db.Integer)
+    soft_skills = db.Column(db.Integer)
+    avaliacao_geral = db.Column(db.Integer)
+    participacao = db.Column(db.Integer)
+    comunicacao = db.Column(db.Integer)
+    proatividade = db.Column(db.Integer)
+    raciocinio = db.Column(db.Integer)
+    dominio_tecnico = db.Column(db.Integer)
+    criatividade = db.Column(db.Integer)
+    trabalho_em_equipe = db.Column(db.Integer)
+
+    # Relacionamento com o modelo Aluno
+    aluno = db.relationship('Aluno', backref=db.backref('skills', uselist=False))
 
 with app.app_context():
     db.drop_all()  # Remove todas as tabelas
