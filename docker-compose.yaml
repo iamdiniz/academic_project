@@ -14,6 +14,7 @@ services:
       - dockercompose
     depends_on:
       - db  # Garante que o serviço db seja iniciado antes
+    command: ["/wait-for-db.sh", "db", "python", "app.py"]
 
   db:
     image: mysql:5.7
