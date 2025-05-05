@@ -4,3 +4,4 @@ Flask-SQLAlchemy==3.1.1
 SQLAlchemy==2.0.35
 pymysql
 python-dotenv
+matplotlib

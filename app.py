@@ -66,7 +66,6 @@ class SkillsDoAluno(db.Model):
     aluno = db.relationship('Aluno', backref=db.backref('skills', uselist=False))
 
 with app.app_context():
-    db.drop_all()  # Remove todas as tabelas
     db.create_all()  # Recria as tabelas com base nos modelos
     print("Tabelas recriadas com sucesso!")
 
@@ -197,7 +196,23 @@ def instituicao_ensino():
 @app.route('/cardAlunos')
 def cardAlunos():
     alunos = Aluno.query.all()
-    return render_template('cardAlunos.html', alunos=alunos)
+    dados_alunos = []
+
+    for aluno in alunos:
+        skills = aluno.skills
+        dados_alunos.append({
+            'id': aluno.id_aluno,
+            'nome': aluno.nome_jovem,
+            'data_nascimento': aluno.data_nascimento.strftime('%d/%m/%Y') if aluno.data_nascimento else 'N/A',
+            'curso': aluno.curso,
+            'skills': {
+                'Hard Skills': skills.hard_skills,
+                'Soft Skills': skills.soft_skills,
+                'Avaliação Geral': skills.avaliacao_geral,
+            } if skills else {}
+        })
+
+    return render_template('cardAlunos.html', alunos=dados_alunos)
     
 @app.route('/logout')
 def logout():

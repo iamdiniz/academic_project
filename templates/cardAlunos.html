@@ -1,34 +1,47 @@
-{% extends "base.html" %}
-{% set hide_navbar = False %}
+{% extends 'base.html' %}
 
-{% block title %}EducInvest - Alunos{% endblock %}
+{% block title %}Alunos - Educ+Invest{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/cardAlunos.css') }}">
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
 
 {% block body %}
-<div class="container mt-2 pt-5">
-    <h6 class="fw-bold text-center">Lista de Alunos</h6>
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Lista de Alunos</h1>
 
-    <div class="row justify-content-center">
+    <div class="row g-4">
         {% for aluno in alunos %}
-        <div class="col-md-5 col-lg-4 m-3">
-            <div class="card shadow bg-light">
-                <div class="card-header bg-dark text-white text-center fw-bold rounded-top">
-                    {{ aluno.nome_jovem }}
-                </div>
-                <div class="card-body text-center">
+            <div class="col-md-4">
+                <div class="card p-3 shadow-sm h-100">
+                    <h5>{{ aluno.nome }}</h5>
                     <p><strong>Data de Nascimento:</strong> {{ aluno.data_nascimento }}</p>
-                    <p><strong>Contato:</strong> {{ aluno.contato_jovem }}</p>
-                    <p><strong>E-mail:</strong> {{ aluno.email }}</p>
-                    <p><strong>Endereço:</strong> {{ aluno.endereco_jovem }}</p>
                     <p><strong>Curso:</strong> {{ aluno.curso }}</p>
-                    <p><strong>Formação:</strong> {{ aluno.formacao }}</p>
-                    <p><strong>Período:</strong> {{ aluno.periodo }}</p>
+
+                    {% if aluno.skills %}
+                        <canvas id="grafico{{ loop.index }}" style="max-width: 100%; max-height: 250px;"></canvas>
+                        <script>
+                            const ctx{{ loop.index }} = document.getElementById('grafico{{ loop.index }}').getContext('2d');
+                            new Chart(ctx{{ loop.index }}, {
+                                type: 'pie',
+                                data: {
+                                    labels: {{ aluno.skills.keys() | list | safe }},
+                                    datasets: [{
+                                        label: 'Skills',
+                                        data: {{ aluno.skills.values() | list | safe }},
+                                        backgroundColor: [
+                                            '#FF6384', '#36A2EB', '#FFCE56', '#8BC34A', '#FF9800',
+                                            '#9C27B0', '#03A9F4', '#CDDC39', '#E91E63', '#795548'
+                                        ],
+                                    }]
+                                }
+                            });
+                        </script>
+                    {% else %}
+                        <p><em>Sem dados de skills disponíveis.</em></p>
+                    {% endif %}
                 </div>
             </div>
-        </div>
         {% endfor %}
     </div>
 </div>
