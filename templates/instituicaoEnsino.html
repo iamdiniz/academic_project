@@ -1,32 +1,91 @@
-{% extends "base.html" %}
-{% set hide_navbar = False %}
+{% extends 'base.html' %}
 
-{% block title %}EducInvest - Transforme seu Futuro{% endblock %}
+{% block title %}Instituições de Ensino - Educ+Invest{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/instituicaoEnsino.css') }}">
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .card {
+        font-size: 0.9rem;
+        padding: 1rem;
+    }
+    h5 {
+        font-size: 1.1rem;
+    }
+</style>
 {% endblock %}
 
 {% block body %}
-<div class="container mt-5 pt-5">
-    <h6 class="fw-bold text-center">INSTITUIÇÕES DE ENSINO</h6>
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Instituições de Ensino</h1>
 
-    <div class="row justify-content-center">
-        {% for instituicao in instituicaos %}
-        <div class="col-md-4 m-3">
-            <div class="card shadow">
-                <div class="card-header bg-dark text-white fw-bold">
-                    {{ instituicao.nome_instituicao }}
-                </div>
-                <div class="card-body">
-                    <img alt="Logo" class="img-fluid mb-3" style="max-height: 80px;">
-                    <p>Alunos matriculados: {{ instituicao.quantidade_de_alunos }}</p>
-                    <p>Modalidade: {{ instituicao.modalidades }}</p>
-                    <p>Cursos: {{ instituicao.areas_de_formacao }}</p>
-                    <a href="#" class="btn btn-primary">Ver Alunos</a>
+    <div class="row g-4">
+        {% for inst in instituicoes %}
+            <div class="col-md-4">
+                <div class="card p-3 shadow-sm h-100">
+                    <h5>{{ inst.nome }}</h5>
+                    <p><strong>Modalidades:</strong> {{ inst.modalidades }}</p>
+                    <p><strong>Reitor:</strong> {{ inst.reitor }}</p>
+
+                    <canvas id="grafico-nota-{{ loop.index }}" height="150"></canvas>
+                    <canvas id="grafico-alunos-{{ loop.index }}" height="150"></canvas>
+
+                    <script>
+                        // Gráfico de Nota MEC (escala de 0 a 5)
+                        const ctxNota{{ loop.index }} = document.getElementById('grafico-nota-{{ loop.index }}').getContext('2d');
+                        new Chart(ctxNota{{ loop.index }}, {
+                            type: 'bar',
+                            data: {
+                                labels: ['Nota MEC'],
+                                datasets: [{
+                                    label: 'Nota MEC',
+                                    data: [{{ inst.nota_mec }}],
+                                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                                    borderColor: 'rgba(54, 162, 235, 1)',
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        max: 5,
+                                        ticks: {
+                                            stepSize: 1
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    
+                        // Gráfico de Quantidade de Alunos
+                        const ctxAlunos{{ loop.index }} = document.getElementById('grafico-alunos-{{ loop.index }}').getContext('2d');
+                        new Chart(ctxAlunos{{ loop.index }}, {
+                            type: 'bar',
+                            data: {
+                                labels: ['Qtd Alunos'],
+                                datasets: [{
+                                    label: 'Qtd Alunos',
+                                    data: [{{ inst.quantidade_de_alunos }}],
+                                    backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                                    borderColor: 'rgba(255, 99, 132, 1)',
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        suggestedMax: {{ inst.quantidade_de_alunos + 10 if inst.quantidade_de_alunos > 5 else 5 }}
+                                    }
+                                }
+                            }
+                        });
+                    </script>
                 </div>
             </div>
-        </div>
         {% endfor %}
     </div>
 </div>

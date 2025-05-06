@@ -189,9 +189,19 @@ def home():
 
 @app.route('/instituicaoEnsino')
 def instituicao_ensino():
-    # Busca todas as instituições no banco de dados
     instituicoes = InstituicaodeEnsino.query.all()
-    return render_template('instituicaoEnsino.html', instituicaos=instituicoes)
+    dados_instituicoes = []
+
+    for inst in instituicoes:
+        dados_instituicoes.append({
+            'nome': inst.nome_instituicao,
+            'modalidades': inst.modalidades,
+            'reitor': inst.reitor,
+            'nota_mec': float(inst.nota_mec),
+            'quantidade_de_alunos': inst.quantidade_de_alunos
+        })
+
+    return render_template('instituicaoEnsino.html', instituicoes=dados_instituicoes)
 
 @app.route('/cardAlunos')
 def cardAlunos():
