@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% set hide_navbar = False %}
+
+{% block title %}Transforme seu Futuro - Educ-invest{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/carousel.css') }}">
+{% endblock %}
+
+{% block body %}
+<!-- Carrossel -->
+<div class="container mt-3">
+    <div id="carouselExampleCaptions" class="carousel slide carousel-fade" data-bs-ride="carousel">
+       
+        <!-- Slides -->
+        <div class="carousel-inner rounded shadow">
+            <div class="carousel-item active text-center px-2">
+                <img src="{{ url_for('static', filename='img/inve.png') }}" class="d-block mx-auto w-50 w-md-50" alt="inve">
+                <h3 class="text-black mt-3 fade-in-text"><strong>Invista no Futuro!</strong></h3>
+                <p class="text-black fade-in-text"><strong>Ao contratar jovens talentos, você investe no futuro da sua empresa e da sociedade. Juntos, moldamos líderes!</strong></p>
+            </div>
+            <div class="carousel-item text-center px-2">
+                <img src="{{ url_for('static', filename='img/oisa.png') }}" class="d-block mx-auto w-50 w-md-50" alt="oisa">
+                <h3 class="text-black mt-3 fade-in-text"><strong>Educação é a Chave!</strong></h3>
+                <p class="text-black fade-in-text"><strong>Com o Educ+Invest, você abre portas para jovens talentos se prepararem para o mercado.</strong></p>
+            </div>
+            <div class="carousel-item text-center px-2">
+                <h3 class="text-black mt-3 fade-in-text"><strong>Conectando Talentos!</strong></h3>
+                <img src="{{ url_for('static', filename='img/educ.png') }}" class="d-block mx-auto w-50 w-md-50" alt="educ">
+                <p class="text-black fade-in-text"><strong>Ajude a moldar o futuro profissional de muitos estudantes conectando-os a oportunidades.</strong></p>
+            </div>
+
+        <!-- Controles -->
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Anterior</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Próximo</span>
+        </button>
+    </div>
+</div>
+
+<!-- Cards -->
+<section class="bg-light py-5">
+    <div class="container text-center">
+        <h2 class="display-6 fw-bold mb-5">
+            Não espere mais, comece a construir sua independência financeira agora.
+        </h2>
+        <div class="row justify-content-center g-4">
+            <!-- Card 1 -->
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="card h-100 shadow-sm card-hover">
+                    <div class="card-body">
+                        <h5 class="card-title"><strong>Uninassau</strong></h5>
+                        <p class="card-text">Clique no botão abaixo e veja detalhes dessa faculdade</p>
+                        <a href="/login" class="btn btn-primary w-100 btn-glow">Detalhes</a>
+                    </div>
+                </div>
+            </div>
+            <!-- Card 2 -->
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="card h-100 shadow-sm card-hover">
+                    <div class="card-body">
+                        <h5 class="card-title"><strong>Unicap</strong></h5>
+                        <p class="card-text">Clique no botão abaixo e veja detalhes dessa faculdade</p>
+                        <a href="/login" class="btn btn-primary w-100 btn-glow">Detalhes</a>
+                    </div>
+                </div>
+            </div>
+            <!-- Card 3 -->
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="card h-100 shadow-sm card-hover">
+                    <div class="card-body">
+                        <h5 class="card-title"><strong>Unibra</strong></h5>
+                        <p class="card-text">Clique no botão abaixo e veja detalhes dessa faculdade</p>
+                        <a href="/login" class="btn btn-primary w-100 btn-glow">Detalhes</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

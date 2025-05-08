@@ -224,6 +224,18 @@ def cardAlunos():
 
     return render_template('cardAlunos.html', alunos=dados_alunos)
     
+@app.route('/carousel')
+def carousel():
+    return render_template('carousel.html')
+
+@app.route('/cursos')
+def cursos():
+    return render_template('cursos.html')
+
+@app.route('/alunos')
+def alunos():
+    return render_template('alunos.html')
+    
 @app.route('/logout')
 def logout():
     session.pop('instituicaodeEnsino_id', None)
