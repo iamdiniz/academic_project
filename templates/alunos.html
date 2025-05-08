@@ -99,77 +99,80 @@
                         {% else %}
                             <p><em>Sem dados de skills disponíveis.</em></p>
                             <div class="container text-center mt-4">
-                                <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#avaliacaoModal{{ aluno.id_aluno }}">
+                                <!-- Isso caso o codigo que ti mandei esteja certo fica dentro data-bs-target depois de  #avaliacaoModal {{ aluno.id_aluno }} -->
+                                <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#avaliacaoModal">
                                     Atualizar Skills do Aluno
                                 </button>
                             </div>
                         {% endif %}
                     </div>
                 </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-</div>
-
-<!-- Modal de Avaliação -->
-<div class="modal fade" id="avaliacaoModal{{ aluno.id_aluno }}" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content bg-dark text-white p-4 rounded-4">
-            <div class="modal-header">
-                <h5 class="modal-title">Notas - {{ aluno.nome }}</h5>
-                <button type="button" class="btn-close bg-light" data-bs-dismiss="modal" aria-label="Fechar"></button>
-            </div>
-            <form action="{{ url_for('cadastro_skills', id_aluno=aluno.id_aluno) }}" method="POST">
-                <div class="modal-body">
-                    <div class="row g-4">
-                        <div class="col-md-6">
-                            <label>Hard Skills</label>
-                            <input name="hard_skills" type="number" class="form-control" min="0" max="10" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label>Raciocínio</label>
-                            <input name="raciocinio" type="number" class="form-control" min="0" max="10" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label>Soft Skills</label>
-                            <input name="soft_skills" type="number" class="form-control" min="0" max="10" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label>Domínio Técnico</label>
-                            <input name="dominio_tecnico" type="number" class="form-control" min="0" max="10" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label>Testes</label>
-                            <input name="avaliacao_geral" type="number" class="form-control" min="0" max="10" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label>Criatividade</label>
-                            <input name="criatividade" type="number" class="form-control" min="0" max="10" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label>Participação</label>
-                            <input name="participacao" type="number" class="form-control" min="0" max="10" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label>Trabalho em Equipe</label>
-                            <input name="trabalho_em_equipe" type="number" class="form-control" min="0" max="10" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label>Comunicação</label>
-                            <input name="comunicacao" type="number" class="form-control" min="0" max="10" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label>Proatividade</label>
-                            <input name="proatividade" type="number" class="form-control" min="0" max="10" required>
+                <!-- Modal de Avaliação -->
+                <!-- Isso caso o codigo que ti mandei esteja certo fica dentro data-bs-target depois de  #avaliacaoModal {{ aluno.id_aluno }} -->
+                <div class="modal fade" id="avaliacaoModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content bg-dark text-white p-4 rounded-4">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Notas - {{ aluno.nome }}</h5>
+                                <button type="button" class="btn-close bg-light" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                            </div>
+                            <!-- Isso caso o codigo que ti mandei esteja certo fica dentro url_for depois de cadastro_skills vc colcoca essa virgula ,id_aluno=aluno.id_aluno-->
+                            <!-- Lembrar de trocar o action por esse action="{{ url_for('cadastro_skills') }}" -->
+                            <form action="/alunos" method="POST">
+                                <div class="modal-body">
+                                    <div class="row g-4">
+                                        <div class="col-md-6">
+                                            <label>Hard Skills</label>
+                                            <input name="hard_skills" type="number" class="form-control" min="0" max="10" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label>Raciocínio</label>
+                                            <input name="raciocinio" type="number" class="form-control" min="0" max="10" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label>Soft Skills</label>
+                                            <input name="soft_skills" type="number" class="form-control" min="0" max="10" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label>Domínio Técnico</label>
+                                            <input name="dominio_tecnico" type="number" class="form-control" min="0" max="10" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label>Testes</label>
+                                            <input name="avaliacao_geral" type="number" class="form-control" min="0" max="10" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label>Criatividade</label>
+                                            <input name="criatividade" type="number" class="form-control" min="0" max="10" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label>Participação</label>
+                                            <input name="participacao" type="number" class="form-control" min="0" max="10" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label>Trabalho em Equipe</label>
+                                            <input name="trabalho_em_equipe" type="number" class="form-control" min="0" max="10" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label>Comunicação</label>
+                                            <input name="comunicacao" type="number" class="form-control" min="0" max="10" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label>Proatividade</label>
+                                            <input name="proatividade" type="number" class="form-control" min="0" max="10" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                    <button type="submit" class="btn btn-success">Salvar</button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success">Salvar</button>
-                </div>
-            </form>
+            {% endfor %}
         </div>
-    </div>
+    {% endif %}
 </div>
 {% endblock %}
