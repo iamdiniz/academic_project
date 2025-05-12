@@ -18,14 +18,14 @@
     <!-- Navbar Global -->
     <nav class="navbar navbar-expand-lg navbar-dark custom-navbar">
         <div class="container-fluid">
-            <a class="navbar-brand fw-bold" href="#">Educ+Invest</a>
+            <a class="navbar-brand fw-bold" href="{{ url_for('home') }}">Educ+Invest</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
             <div class="collapse navbar-collapse justify-content-between" id="navbarContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link" href="#">Instituições de Ensino</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('instituicao_ensino') }}">Instituições de Ensino</a></li>
                     <li class="nav-item"><a class="nav-link" href="#">Minhas Seleções</a></li>
                 </ul>
 
