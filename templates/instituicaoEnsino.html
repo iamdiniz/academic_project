@@ -30,6 +30,12 @@
                     <canvas id="grafico-nota-{{ loop.index }}" height="150"></canvas>
                     <canvas id="grafico-alunos-{{ loop.index }}" height="150"></canvas>
 
+                    <div class="d-flex justify-content-end gap-2 mt-auto pt-3">
+                        <a class="btn btn-primary btn-sm">Ver Alunos</a>
+                        <a class="btn btn-primary btn-sm">Detalhes</a>
+                    </div>
+
+
                     <script>
                         // Gráfico de Nota MEC (escala de 0 a 5)
                         const ctxNota{{ loop.index }} = document.getElementById('grafico-nota-{{ loop.index }}').getContext('2d');
