@@ -198,30 +198,6 @@ def instituicao_ensino():
 
     return render_template('instituicaoEnsino.html', instituicoes=instituicoes)
 
-@app.route('/cardAlunos')
-def cardAlunos():
-    alunos = Aluno.query.all()
-    dados_alunos = []
-
-    for aluno in alunos:
-        skills = aluno.skills
-        dados_alunos.append({
-            'id': aluno.id_aluno,
-            'nome': aluno.nome_jovem,
-            'data_nascimento': aluno.data_nascimento.strftime('%d/%m/%Y') if aluno.data_nascimento else 'N/A',
-            'curso': aluno.curso,
-            'skills': {
-                'Hard Skills': skills.hard_skills,
-                'Soft Skills': skills.soft_skills,
-                'Avaliação Geral': skills.avaliacao_geral,
-            } if skills else {}
-        })
-
-    return render_template('cardAlunos.html', alunos=dados_alunos)
-
-def buscar_alunos_por_instituicao_e_curso(inst_id, curso):
-    return Aluno.query.filter_by(id_instituicao=inst_id, curso=curso).all()
-
 @app.route('/ver_alunos_por_curso', methods=['GET'])
 def ver_alunos_por_curso():
     inst_id = request.args.get('inst_id')
@@ -251,6 +227,40 @@ def ver_alunos_por_curso():
         })
 
     return render_template('cardAlunos.html', alunos=alunos_com_skills, curso=curso)
+
+
+@app.route('/cardAlunos')
+def cardAlunos():
+    alunos = Aluno.query.all()
+    dados_alunos = []
+
+    for aluno in alunos:
+        skills = aluno.skills
+        dados_alunos.append({
+            'id': aluno.id_aluno,
+            'nome': aluno.nome_jovem,
+            'data_nascimento': aluno.data_nascimento.strftime('%d/%m/%Y') if aluno.data_nascimento else 'N/A',
+            'curso': aluno.curso,
+            'skills': {
+                'Hard Skills': skills.hard_skills,
+                'Soft Skills': skills.soft_skills,
+                'Avaliação Geral': skills.avaliacao_geral,
+            } if skills else {}
+        })
+
+    return render_template('cardAlunos.html', alunos=dados_alunos)
+
+@app.route('/carousel')
+def carousel():
+    return render_template('carousel.html')
+
+@app.route('/cursos')
+def cursos():
+    return render_template('cursos.html')
+
+@app.route('/alunos')
+def alunos():
+    return render_template('alunos.html')
 
 @app.route('/logout')
 def logout():

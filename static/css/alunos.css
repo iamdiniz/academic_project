@@ -1,0 +1,68 @@
+/* Tornando o site responsivo */
+@media (max-width: 768px) {
+    .modal-dialog {
+        max-width: 100%;
+    }
+
+    .card {
+        margin-bottom: 1rem;
+    }
+}
+
+.card {
+    border-radius: 10px;
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-10px);
+}
+
+.card .btn {
+    width: 100%;
+}
+
+h1, .modal-title {
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.modal-content {
+    border-radius: 10px;
+}
+
+.modal-header {
+    border-bottom: 1px solid #444;
+}
+
+.modal-footer {
+    border-top: 1px solid #444;
+}
+
+form .col-md-6,
+form .col-md-3,
+form .col-md-12 {
+    margin-bottom: 15px;
+}
+
+form input, form textarea {
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.container {
+    padding-right: 15px;
+    padding-left: 15px;
+}
+
+/* Estilos para gráficos */
+canvas {
+    margin-top: 20px;
+}
+
+@media (max-width: 576px) {
+    .col-md-4 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
