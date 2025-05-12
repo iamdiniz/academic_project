@@ -220,6 +220,7 @@ def ver_alunos_por_curso():
         } if skills else {}
 
         alunos_com_skills.append({
+            "id_aluno": aluno.id_aluno,  # Corrigido para usar id_aluno
             "nome": aluno.nome_jovem,
             "data_nascimento": aluno.data_nascimento.strftime('%d/%m/%Y') if aluno.data_nascimento else 'N/A',
             "curso": aluno.curso,
@@ -228,6 +229,29 @@ def ver_alunos_por_curso():
 
     return render_template('cardAlunos.html', alunos=alunos_com_skills, curso=curso)
 
+@app.route('/detalhes_aluno/<int:id_aluno>')
+def detalhes_aluno(id_aluno):
+    aluno = Aluno.query.filter_by(id_aluno=id_aluno).first()
+
+    if not aluno:
+        flash('Aluno não encontrado.', 'danger')
+        return redirect(url_for('alunos'))
+
+    # Converte os dados de skills para um dicionário
+    skills = {
+        "Hard Skills": aluno.skills.hard_skills,
+        "Soft Skills": aluno.skills.soft_skills,
+        "Avaliação Geral": aluno.skills.avaliacao_geral,
+        "Participação": aluno.skills.participacao,
+        "Comunicação": aluno.skills.comunicacao,
+        "Proatividade": aluno.skills.proatividade,
+        "Raciocínio": aluno.skills.raciocinio,
+        "Domínio Técnico": aluno.skills.dominio_tecnico,
+        "Criatividade": aluno.skills.criatividade,
+        "Trabalho em Equipe": aluno.skills.trabalho_em_equipe
+    } if aluno.skills else {}
+
+    return render_template('detalhes_aluno.html', aluno=aluno, skills=skills)
 
 @app.route('/cardAlunos')
 def cardAlunos():

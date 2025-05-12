@@ -41,7 +41,7 @@
                         <p><em>Sem dados de skills disponíveis.</em></p>
                     {% endif %}
                     <div class="mt-3 text-end">
-                        <a class="btn btn-primary btn-sm">Detalhes</a>
+                        <a href="{{ url_for('detalhes_aluno', id_aluno=aluno.id_aluno) }}" class="btn btn-primary mt-auto align-self-end">Detalhes</a>
                     </div>
                 </div>
             </div>

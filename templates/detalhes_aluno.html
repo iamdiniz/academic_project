@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalhes do Aluno - {{ aluno.nome }}{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h2>Detalhes do Aluno</h2>
+    <ul class="list-group">
+        <li class="list-group-item"><strong>Nome:</strong> {{ aluno.nome }}</li>
+        <li class="list-group-item"><strong>Data de Nascimento:</strong> {{ aluno.data_nascimento }}</li>
+        <li class="list-group-item"><strong>Curso:</strong> {{ aluno.curso }}</li>
+        <!-- Adicione outros campos se houver -->
+    </ul>
+
+    <h4 class="mt-4">Skills</h4>
+    {% if skills %}
+        <canvas id="graficoSkills" width="400" height="400"></canvas>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            const ctx = document.getElementById('graficoSkills').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: {{ skills.keys() | list | safe }},
+                    datasets: [{
+                        label: 'Skills',
+                        data: {{ skills.values() | list | safe }},
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        </script>
+    {% else %}
+        <p><em>Sem dados de skills disponíveis.</em></p>
+    {% endif %}
+
+    <a href="{{ url_for('alunos') }}" class="btn btn-secondary mt-4">Voltar</a>
+</div>
+{% endblock %}
