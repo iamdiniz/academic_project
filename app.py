@@ -232,12 +232,12 @@ def ver_alunos_por_curso():
 @app.route('/detalhes_aluno/<int:id_aluno>')
 def detalhes_aluno(id_aluno):
     aluno = Aluno.query.filter_by(id_aluno=id_aluno).first()
-
     if not aluno:
         flash('Aluno não encontrado.', 'danger')
         return redirect(url_for('alunos'))
 
-    # Converte os dados de skills para um dicionário
+    previous_url = request.args.get('previous', url_for('instituicao_ensino'))  # fallback se não houver parâmetro
+
     skills = {
         "Hard Skills": aluno.skills.hard_skills,
         "Soft Skills": aluno.skills.soft_skills,
@@ -251,7 +251,7 @@ def detalhes_aluno(id_aluno):
         "Trabalho em Equipe": aluno.skills.trabalho_em_equipe
     } if aluno.skills else {}
 
-    return render_template('detalhes_aluno.html', aluno=aluno, skills=skills)
+    return render_template('detalhes_aluno.html', aluno=aluno, skills=skills, previous_url=previous_url)
 
 @app.route('/cardAlunos')
 def cardAlunos():
