@@ -1,0 +1,96 @@
+/* CARROSSEL */
+.carousel-inner {
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.carousel-inner img {
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Tamanho da imagem */
+.carousel-item img {
+    max-width: 75%; /* Largura padrão reduzida */
+    object-fit: contain;
+}
+
+/* Texto dentro do carrossel */
+.carousel-item h3,
+.carousel-item p {
+    padding: 0 1rem;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    padding: 10px;
+}
+
+/* Responsividade para o carrossel */
+@media (max-width: 768px) {
+    .carousel-item img {
+        max-width: 90%; /* Em telas pequenas, ajusta para 90% */
+    }
+
+    .carousel-item h3 {
+        font-size: 1.2rem;
+    }
+
+    .carousel-item p {
+        font-size: 1rem;
+    }
+
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+/* CARDS */
+.card {
+    border-radius: 12px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-hover:hover {
+    transform: scale(1.03);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* BOTÕES */
+.btn-primary {
+    background-color: #007bff;
+    border: none;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+/* Glow animado nos botões */
+.btn-glow:hover {
+    box-shadow: 0 0 15px rgba(0, 123, 255, 0.6);
+}
+
+.fade-in-text {
+    opacity: 0;
+    animation: fadeInUp 1s ease forwards;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

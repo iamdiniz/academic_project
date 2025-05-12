@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}Alunos - Educ+Invest{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Alunos da Instituição</h1>
+
+    {% if alunos|length == 0 %}
+        <div class="text-center">
+            <p class="lead">Nenhum aluno cadastrado.</p>
+            <div class="container mt-5 text-center">
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#cadastroModal">Cadastrar Aluno</button>
+            </div>
+
+            <!-- Modal de Cadastro -->
+            <div class="modal fade" id="cadastroModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content bg-dark text-white p-4 rounded-4">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Cadastro de Matrícula da Bolsa</h5>
+                            <button type="button" class="btn-close bg-light" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                        </div>
+                        <form action="/alunos" method="POST">
+                            <div class="modal-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label>Nome Completo</label>
+                                        <input name="nome_jovem" class="form-control" placeholder="Nome do aluno" required>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label>Data de Nascimento</label>
+                                        <input name="data_nascimento" type="date" class="form-control" required>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label>Período</label>
+                                        <input name="periodo" type="number" class="form-control" placeholder="7">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label>Curso</label>
+                                        <input name="curso" class="form-control" placeholder="Curso" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label>Localização</label>
+                                        <input name="endereco_jovem" class="form-control" placeholder="Localização">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label>Contato</label>
+                                        <input name="contato_jovem" class="form-control" placeholder="81982763814">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label>E-mail</label>
+                                        <input name="email" type="email" class="form-control" placeholder="email@exemplo.com" required>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <label>Formação</label>
+                                        <textarea name="formacao" class="form-control" placeholder="Pós Graduado em Eng. Software."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#avaliacaoModal">Cadastrar Skills do Aluno</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="submit" class="btn btn-success">Cadastrar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %} 
+        <div class="row g-4">
+            {% for aluno in alunos %}
+                <div class="col-md-4 col-sm-6 col-12">
+                    <div class="card p-3 shadow-sm h-100">
+                        <h5>{{ aluno.nome }}</h5>
+                        <p><strong>Data de Nascimento:</strong> {{ aluno.data_nascimento }}</p>
+                        <p><strong>Curso:</strong> {{ aluno.curso }}</p>
+
+                        {% if aluno.skills %}
+                            <canvas id="grafico{{ loop.index }}" class="w-100" style="max-height: 250px;"></canvas>
+                            <script>
+                                const ctx{{ loop.index }} = document.getElementById('grafico{{ loop.index }}').getContext('2d');
+                                new Chart(ctx{{ loop.index }}, {
+                                    type: 'pie',
+                                    data: {
+                                        labels: {{ aluno.skills.keys() | list | safe }},
+                                        datasets: [{
+                                            label: 'Skills',
+                                            data: {{ aluno.skills.values() | list | safe }},
+                                            backgroundColor: [
+                                                '#FF6384', '#36A2EB', '#FFCE56', '#8BC34A', '#FF9800',
+                                                '#9C27B0', '#03A9F4', '#CDDC39', '#E91E63', '#795548'
+                                            ],
+                                        }]
+                                    }
+                                });
+                            </script>
+                        {% else %}
+                            <p><em>Sem dados de skills disponíveis.</em></p>
+                            <div class="container text-center mt-4">
+                                <!-- Isso caso o codigo que ti mandei esteja certo fica dentro data-bs-target depois de  #avaliacaoModal {{ aluno.id_aluno }} -->
+                                <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#avaliacaoModal">
+                                    Atualizar Skills do Aluno
+                                </button>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <!-- Modal de Avaliação -->
+                <!-- Isso caso o codigo que ti mandei esteja certo fica dentro data-bs-target depois de  #avaliacaoModal {{ aluno.id_aluno }} -->
+                <div class="modal fade" id="avaliacaoModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content bg-dark text-white p-4 rounded-4">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Notas - {{ aluno.nome }}</h5>
+                                <button type="button" class="btn-close bg-light" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                            </div>
+                            <!-- Isso caso o codigo que ti mandei esteja certo fica dentro url_for depois de cadastro_skills vc colcoca essa virgula ,id_aluno=aluno.id_aluno-->
+                            <!-- Lembrar de trocar o action por esse action="{{ url_for('cadastro_skills') }}" -->
+                            <form action="/alunos" method="POST">
+                                <div class="modal-body">
+                                    <div class="row g-4">
+                                        <div class="col-md-6">
+                                            <label>Hard Skills</label>
+                                            <input name="hard_skills" type="number" class="form-control" min="0" max="10" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label>Raciocínio</label>
+                                            <input name="raciocinio" type="number" class="form-control" min="0" max="10" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label>Soft Skills</label>
+                                            <input name="soft_skills" type="number" class="form-control" min="0" max="10" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label>Domínio Técnico</label>
+                                            <input name="dominio_tecnico" type="number" class="form-control" min="0" max="10" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label>Testes</label>
+                                            <input name="avaliacao_geral" type="number" class="form-control" min="0" max="10" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label>Criatividade</label>
+                                            <input name="criatividade" type="number" class="form-control" min="0" max="10" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label>Participação</label>
+                                            <input name="participacao" type="number" class="form-control" min="0" max="10" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label>Trabalho em Equipe</label>
+                                            <input name="trabalho_em_equipe" type="number" class="form-control" min="0" max="10" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label>Comunicação</label>
+                                            <input name="comunicacao" type="number" class="form-control" min="0" max="10" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label>Proatividade</label>
+                                            <input name="proatividade" type="number" class="form-control" min="0" max="10" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                    <button type="submit" class="btn btn-success">Salvar</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
