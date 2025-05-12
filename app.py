@@ -264,8 +264,9 @@ def alunos():
 
 @app.route('/logout')
 def logout():
-    session.pop('instituicaodeEnsino_id', None)
-    return redirect(url_for('login'))
+    session.clear()  # ou: logout_user() se estiver usando Flask-Login
+    flash('Você saiu com sucesso.', 'success')
+    return redirect(url_for('login'))  # redirecione para a tela de login
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0')  # host para expor o servidor para fora do container
