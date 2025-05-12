@@ -1,57 +1,25 @@
 {% extends "base.html" %}
+{% set hide_navbar = False %}
 
 {% block title %}Cursos - Educ+Invest{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cursos.css') }}">
+{% endblock %}
 
 {% block body %}
 <div class="container mt-4">
     <h1 class="text-center mb-4">Cursos da Instituição</h1>
 
+    <div class="container mb-4 text-center">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#cadastroCursosModal">
+            Cadastrar Novo Curso
+        </button>
+    </div>
+
     {% if cursos|length == 0 %}
         <div class="text-center">
             <p class="lead">Nenhum curso cadastrado.</p>
-            <div class="container mt-5 text-center">
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#cadastroModal">
-                    Cadastrar Novo Curso
-                </button>
-            </div>
-            
-            <!-- Modal -->
-            <div class="modal fade" id="cadastroModal" tabindex="-1" aria-hidden="true">
-              <div class="modal-dialog modal-lg modal-dialog-centered">
-                <div class="modal-content bg-dark text-white p-4 rounded-4">
-                  <div class="modal-header">
-                    <h5 class="modal-title">Cadastro de Curso</h5>
-                    <button type="button" class="btn-close bg-light" data-bs-dismiss="modal" aria-label="Fechar"></button>
-                  </div>
-                  <form action="/cadastrar-curso" method="POST">
-                    <div class="modal-body">
-                      <div class="row g-3">
-                        <div class="col-md-6">
-                          <label>Curso</label>
-                          <input name="curso" class="form-control" placeholder="Curso">
-                        </div>
-                        <div class="col-md-6">
-                          <label>Localização</label>
-                          <input name="localizacao" class="form-control" placeholder="Localização">
-                        </div>
-                        <div class="col-md-6">
-                          <label>Quantidade de Alunos</label>
-                          <input name="quantidade_de_alunos" class="form-control" placeholder="100">
-                        </div>
-                        <div class="col-md-12">
-                          <label>Detalhes</label>
-                          <textarea name="detalhes" class="form-control" placeholder="Detalhes sobre o curso"></textarea>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                      <button type="submit" class="btn btn-success">Cadastrar</button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </div>            
         </div>
     {% else %}
         <div class="row g-4">
@@ -66,5 +34,43 @@
             {% endfor %}
         </div>
     {% endif %}
+
+    <!-- Modal -->
+    <div class="modal fade" id="cadastroCursosModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content bg-dark text-white p-4 rounded-4">
+                <div class="modal-header">
+                    <h5 class="modal-title">Cadastro de Curso</h5>
+                    <button type="button" class="btn-close bg-light" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <form action="/cadastrar-curso" method="POST">
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="curso">Curso</label>
+                                <input id="curso" name="curso" class="form-control" placeholder="Curso" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="localizacao">Localização</label>
+                                <input id="localizacao" name="localizacao" class="form-control" placeholder="Localização" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="quantidade_de_alunos">Quantidade de Alunos</label>
+                                <input id="quantidade_de_alunos" name="quantidade_de_alunos" class="form-control" placeholder="100" required>
+                            </div>
+                            <div class="col-md-12">
+                                <label for="detalhes">Detalhes</label>
+                                <textarea id="detalhes" name="detalhes" class="form-control" placeholder="Detalhes sobre o curso" required></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success">Cadastrar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

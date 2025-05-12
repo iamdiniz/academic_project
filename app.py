@@ -146,7 +146,7 @@ def cadastro():
 
 @app.route('/')
 def index():
-    return redirect(url_for('cadastro'))
+    return redirect(url_for('carousel'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

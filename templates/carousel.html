@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% set hide_navbar = False %}
+{% set hide_navbar = True %}
 
 {% block title %}Transforme seu Futuro - Educ-invest{% endblock %}
 
@@ -8,6 +8,17 @@
 {% endblock %}
 
 {% block body %}
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark custom-navbar">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold" href="#">Educ+Invest</a>
+
+    <div class="d-flex ms-auto">
+      <a href="/login" class="btn btn-outline-light me-2">Login</a>
+      <a href="/cadastro" class="btn btn-primary">Cadastro</a>
+    </div>
+  </div>
+</nav>
 <!-- Carrossel -->
 <div class="container mt-3">
     <div id="carouselExampleCaptions" class="carousel slide carousel-fade" data-bs-ride="carousel">

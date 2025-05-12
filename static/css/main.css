@@ -20,3 +20,30 @@
     background-color: #f8d7da;
     color: #842029;
 }
+
+/* Alinhamento e espaçamento */
+.custom-navbar .navbar-collapse .row {
+    width: 100%;
+}
+
+.custom-navbar .navbar-nav.justify-content-center .nav-item {
+    margin: 0 10px;
+}
+
+/* Responsividade */
+@media (max-width: 991.98px) {
+    .custom-navbar .navbar-collapse .row {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+    }
+
+    .custom-navbar .navbar-collapse .col-4 {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .custom-navbar .text-end {
+        text-align: center !important;
+    }
+}

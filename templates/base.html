@@ -18,30 +18,39 @@
     <!-- Navbar Global -->
     <nav class="navbar navbar-expand-lg navbar-dark custom-navbar">
         <div class="container-fluid">
-            <a class="navbar-brand fw-bold" href="{{ url_for('home') }}">Educ+Invest</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <div class="collapse navbar-collapse justify-content-between" id="navbarContent">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('instituicao_ensino') }}">Instituições de Ensino</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Minhas Seleções</a></li>
-                </ul>
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <div class="row w-100 align-items-center text-center">
+                    <div class="col-4 text-start">
+                        <a class="navbar-brand fw-bold" href="{{ url_for('home') }}">Educ+Invest</a>
+                    </div>
 
-                <ul class="navbar-nav d-flex">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="userMenu" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-person-circle"></i> Perfil
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#">Ver Perfil</a></li>
-                            <li><a class="dropdown-item" href="#">Configurações</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item custom-logout" href="{{ url_for('logout') }}">Sair</a></li>
+                    <div class="col-4">
+                        <ul class="navbar-nav justify-content-center mb-2 mb-lg-0">
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('instituicao_ensino') }}">Instituições de Ensino</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#">Minhas Seleções</a></li>
                         </ul>
-                    </li>
-                </ul>
+                    </div>
+
+                    <div class="col-4 text-end">
+                        <ul class="navbar-nav justify-content-end">
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="userMenu" role="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-person-circle"></i> Perfil
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="#">Ver Perfil</a></li>
+                                    <li><a class="dropdown-item" href="#">Configurações</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item custom-logout" href="{{ url_for('login') }}">Sair</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
