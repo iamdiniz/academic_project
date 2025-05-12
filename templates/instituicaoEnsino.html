@@ -8,6 +8,8 @@
     .card {
         font-size: 0.9rem;
         padding: 1rem;
+        display: flex;
+        flex-direction: column;
     }
     h5 {
         font-size: 1.1rem;
@@ -21,8 +23,8 @@
 
     <div class="row g-4">
         {% for inst in instituicoes %}
-            <div class="col-md-4">
-                <div class="card p-3 shadow-sm h-100">
+            <div class="col-md-4 d-flex">
+                <div class="card shadow-sm w-100 h-100">
                     <h5>{{ inst.nome }}</h5>
                     <p><strong>Modalidades:</strong> {{ inst.modalidades }}</p>
                     <p><strong>Reitor:</strong> {{ inst.reitor }}</p>
@@ -30,14 +32,12 @@
                     <canvas id="grafico-nota-{{ loop.index }}" height="150"></canvas>
                     <canvas id="grafico-alunos-{{ loop.index }}" height="150"></canvas>
 
-                    <div class="d-flex justify-content-end gap-2 mt-auto pt-3">
-                        <a class="btn btn-primary btn-sm">Ver Alunos</a>
+                    <div class="mt-auto pt-3 d-flex justify-content-end gap-2">
+                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalCursos{{ inst.id_instituicao }}">Ver Alunos</button>
                         <a class="btn btn-primary btn-sm">Detalhes</a>
                     </div>
 
-
                     <script>
-                        // Gráfico de Nota MEC (escala de 0 a 5)
                         const ctxNota{{ loop.index }} = document.getElementById('grafico-nota-{{ loop.index }}').getContext('2d');
                         new Chart(ctxNota{{ loop.index }}, {
                             type: 'bar',
@@ -64,8 +64,7 @@
                                 }
                             }
                         });
-                    
-                        // Gráfico de Quantidade de Alunos
+
                         const ctxAlunos{{ loop.index }} = document.getElementById('grafico-alunos-{{ loop.index }}').getContext('2d');
                         new Chart(ctxAlunos{{ loop.index }}, {
                             type: 'bar',
@@ -90,6 +89,39 @@
                             }
                         });
                     </script>
+
+                    <!-- Modal Cursos -->
+                    <div class="modal fade" id="modalCursos{{ inst.id_instituicao }}" tabindex="-1" aria-labelledby="modalLabel{{ inst.id_instituicao }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="modalLabel{{ inst.id_instituicao }}">Cursos de {{ inst.nome }}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form method="get" action="{{ url_for('ver_alunos_por_curso') }}">
+                                        <input type="hidden" name="inst_id" value="{{ inst.id_instituicao }}">
+                                        <div class="mb-3">
+                                            <label for="cursoSelect{{ inst.id_instituicao }}" class="form-label">Escolha o curso:</label>
+                                            <select class="form-select" id="cursoSelect{{ inst.id_instituicao }}" name="curso" required>
+                                                {% set cursos = inst.areas_de_formacao.split(',') if inst.areas_de_formacao else [] %}
+                                                {% for curso in cursos %}
+                                                    {% set curso_limpo = curso.strip() %} <!-- Remove espaços extras -->
+                                                    {% if curso_limpo %}
+                                                        <option value="{{ curso_limpo }}">{{ curso_limpo }}</option>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="text-end">
+                                            <button type="submit" class="btn btn-success">Ver Alunos</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         {% endfor %}

@@ -189,19 +189,14 @@ def home():
 
 @app.route('/instituicaoEnsino')
 def instituicao_ensino():
+    # Busca todas as instituições no banco de dados
     instituicoes = InstituicaodeEnsino.query.all()
-    dados_instituicoes = []
 
+    # Log para verificar os valores de areas_de_formacao
     for inst in instituicoes:
-        dados_instituicoes.append({
-            'nome': inst.nome_instituicao,
-            'modalidades': inst.modalidades,
-            'reitor': inst.reitor,
-            'nota_mec': float(inst.nota_mec),
-            'quantidade_de_alunos': inst.quantidade_de_alunos
-        })
+        print(f"Instituição: {inst.nome_instituicao}, Cursos: {inst.areas_de_formacao}")
 
-    return render_template('instituicaoEnsino.html', instituicoes=dados_instituicoes)
+    return render_template('instituicaoEnsino.html', instituicoes=instituicoes)
 
 @app.route('/cardAlunos')
 def cardAlunos():
@@ -223,7 +218,40 @@ def cardAlunos():
         })
 
     return render_template('cardAlunos.html', alunos=dados_alunos)
-    
+
+def buscar_alunos_por_instituicao_e_curso(inst_id, curso):
+    return Aluno.query.filter_by(id_instituicao=inst_id, curso=curso).all()
+
+@app.route('/ver_alunos_por_curso', methods=['GET'])
+def ver_alunos_por_curso():
+    inst_id = request.args.get('inst_id')
+    curso = request.args.get('curso')
+
+    # Busca os alunos pelo curso e instituição
+    alunos = Aluno.query.filter_by(id_instituicao=inst_id, curso=curso).all()
+
+    # Converte os dados de skills para dicionários
+    alunos_com_skills = []
+    for aluno in alunos:
+        skills = aluno.skills
+        skills_dict = {
+            "Hard Skills": skills.hard_skills,
+            "Soft Skills": skills.soft_skills,
+            "Avaliação Geral": skills.avaliacao_geral,
+            "Comunicação": skills.comunicacao,
+            "Criatividade": skills.criatividade,
+            "Trabalho em Equipe": skills.trabalho_em_equipe
+        } if skills else {}
+
+        alunos_com_skills.append({
+            "nome": aluno.nome_jovem,
+            "data_nascimento": aluno.data_nascimento.strftime('%d/%m/%Y') if aluno.data_nascimento else 'N/A',
+            "curso": aluno.curso,
+            "skills": skills_dict
+        })
+
+    return render_template('cardAlunos.html', alunos=alunos_com_skills, curso=curso)
+
 @app.route('/logout')
 def logout():
     session.pop('instituicaodeEnsino_id', None)
