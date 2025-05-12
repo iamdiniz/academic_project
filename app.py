@@ -188,7 +188,7 @@ def home():
     return redirect(url_for('login'))
 
 @app.route('/instituicaoEnsino')
-def instituicao_ensino():
+def instituicaoEnsino():
     instituicoes = InstituicaodeEnsino.query.all()
     dados_instituicoes = []
 

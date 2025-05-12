@@ -2,8 +2,12 @@
 
 {% block title %}Home - Educ+Invest{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+{% endblock %}
+
 {% block body %}
-<div class="home-container">
+<div class="home-container mt-4">
     <div class="text-center">
         <h1 class="home-title">Olá, Chefe! 👋</h1>
         <p class="home-subtitle">Seja bem-vindo(a) ao painel de gestão acadêmica.</p>
