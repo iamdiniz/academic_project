@@ -99,6 +99,15 @@ def bloquear_chefe(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def bloquear_instituicao(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get('tipo_usuario') == 'instituicao':
+            flash("Acesso não permitido para o perfil instituição de ensino.", "danger")
+            return redirect(url_for('home'))  # Redireciona para a página inicial
+        return f(*args, **kwargs)
+    return decorated_function
+
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
     if request.method == 'POST':
@@ -216,6 +225,7 @@ def home():
     return redirect(url_for('login'))
 
 @app.route('/instituicaoEnsino')
+@login_required
 def instituicao_ensino():
     # Busca todas as instituições no banco de dados
     instituicoes = InstituicaodeEnsino.query.all()
@@ -227,11 +237,13 @@ def instituicao_ensino():
     return render_template('instituicaoEnsino.html', instituicoes=instituicoes)
 
 @app.route('/minhas_selecoes')
+@bloquear_instituicao
 @login_required
 def minhas_selecoes():
     return render_template('minhas_selecoes.html')
 
 @app.route('/ver_alunos_por_curso', methods=['GET'])
+@login_required
 def ver_alunos_por_curso():
     inst_id = request.args.get('inst_id')
     curso = request.args.get('curso')
@@ -263,6 +275,7 @@ def ver_alunos_por_curso():
     return render_template('cardAlunos.html', alunos=alunos_com_skills, curso=curso)
 
 @app.route('/detalhes_aluno/<int:id_aluno>')
+@login_required
 def detalhes_aluno(id_aluno):
     aluno = Aluno.query.filter_by(id_aluno=id_aluno).first()
     if not aluno:
@@ -287,6 +300,7 @@ def detalhes_aluno(id_aluno):
     return render_template('detalhes_aluno.html', aluno=aluno, skills=skills, previous_url=previous_url)
 
 @app.route('/cardAlunos')
+@login_required
 def cardAlunos():
     alunos = Aluno.query.all()
     dados_alunos = []
@@ -312,17 +326,18 @@ def carousel():
     return render_template('carousel.html')
 
 @app.route('/cursos')
+@login_required
 @bloquear_chefe
 def cursos():
     return render_template('cursos.html')
 
 @app.route('/alunos')
+@login_required
 @bloquear_chefe
 def alunos():
     return render_template('alunos.html')
 
 @app.route('/logout')
-@login_required
 def logout():
     logout_user()
     session.clear()
