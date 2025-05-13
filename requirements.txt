@@ -5,3 +5,4 @@ SQLAlchemy==2.0.35
 pymysql
 python-dotenv
 matplotlib
+flask-login

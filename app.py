@@ -1,3 +1,4 @@
+from functools import wraps
 from flask import Flask, render_template, url_for, request, redirect, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
@@ -68,6 +69,15 @@ class SkillsDoAluno(db.Model):
 with app.app_context():
     db.create_all()  # Recria as tabelas com base nos modelos
     print("Tabelas recriadas com sucesso!")
+
+def bloquear_chefe(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get('tipo_usuario') == 'chefe':
+            flash("Acesso não permitido para o perfil chefe.", "danger")
+            return redirect(url_for('home'))  # Redireciona para a página inicial
+        return f(*args, **kwargs)
+    return decorated_function
 
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
@@ -151,36 +161,38 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form['email']
-        senha = request.form['senha']
+        email = request.form.get('email')
+        senha = request.form.get('senha')
 
-        # Verifica se o login é de uma Instituição de Ensino
-        instituicaodeEnsino = InstituicaodeEnsino.query.filter_by(email=email).first()
-        if instituicaodeEnsino and check_password_hash(instituicaodeEnsino.senha, senha):
-            session['instituicaodeEnsino_id'] = instituicaodeEnsino.id_instituicao
-            return redirect(url_for('home'))  # Redireciona para a página inicial
-
-        # Verifica se o login é de um Chefe
+        # Primeiro tenta logar como chefe
         chefe = Chefe.query.filter_by(email=email).first()
         if chefe and check_password_hash(chefe.senha, senha):
-            session['chefe_id'] = chefe.id_chefe
-            return redirect(url_for('home'))  # Redireciona para a página inicial
+            session['usuario_id'] = chefe.id_chefe
+            session['tipo_usuario'] = 'chefe'
+            flash('Login realizado com sucesso!')
+            return redirect(url_for('home'))
 
-        # Se nenhum dos dois for válido
-        flash('Credenciais inválidas!')
+        # Senão, tenta como instituição
+        instituicao = InstituicaodeEnsino.query.filter_by(email=email).first()
+        if instituicao and check_password_hash(instituicao.senha, senha):
+            session['usuario_id'] = instituicao.id_instituicao
+            session['tipo_usuario'] = 'instituicao'
+            flash('Login realizado com sucesso!')
+            return redirect(url_for('home'))
+
+        flash('Email ou senha inválidos!')
         return redirect(url_for('login'))
-
     return render_template('login.html')
 
 @app.route('/home')
 def home():
     # Verifica se é uma Instituição de Ensino logada
-    instituicaodeEnsino = db.session.get(InstituicaodeEnsino, session.get('instituicaodeEnsino_id'))
+    instituicaodeEnsino = db.session.get(InstituicaodeEnsino, session.get('usuario_id')) if session.get('tipo_usuario') == 'instituicao' else None
     if instituicaodeEnsino:
         return render_template('home.html', usuario=instituicaodeEnsino, tipo_usuario='instituicao')
 
     # Verifica se é um Chefe logado
-    chefe = db.session.get(Chefe, session.get('chefe_id'))
+    chefe = db.session.get(Chefe, session.get('usuario_id')) if session.get('tipo_usuario') == 'chefe' else None
     if chefe:
         return render_template('home.html', usuario=chefe, tipo_usuario='chefe')
 
@@ -197,6 +209,10 @@ def instituicao_ensino():
         print(f"Instituição: {inst.nome_instituicao}, Cursos: {inst.areas_de_formacao}")
 
     return render_template('instituicaoEnsino.html', instituicoes=instituicoes)
+
+@app.route('/minhas_selecoes')
+def minhas_selecoes():
+    return render_template('minhas_selecoes.html')
 
 @app.route('/ver_alunos_por_curso', methods=['GET'])
 def ver_alunos_por_curso():
@@ -279,18 +295,20 @@ def carousel():
     return render_template('carousel.html')
 
 @app.route('/cursos')
+@bloquear_chefe
 def cursos():
     return render_template('cursos.html')
 
 @app.route('/alunos')
+@bloquear_chefe
 def alunos():
     return render_template('alunos.html')
 
 @app.route('/logout')
 def logout():
-    session.clear()  # ou: logout_user() se estiver usando Flask-Login
+    session.clear()
     flash('Você saiu com sucesso.', 'success')
-    return redirect(url_for('login'))  # redirecione para a tela de login
+    return redirect(url_for('login'))
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0')  # host para expor o servidor para fora do container
