@@ -1,6 +1,7 @@
 from functools import wraps
 from flask import Flask, render_template, url_for, request, redirect, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
 
@@ -9,7 +10,12 @@ app.secret_key = 'minha-chave-teste'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:educ123@db:3306/educ_invest'
 db = SQLAlchemy(app)
 
-class InstituicaodeEnsino(db.Model):
+# Configuração do flask-login
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'  # Redireciona para a página de login se não autenticado
+
+class InstituicaodeEnsino(db.Model, UserMixin):
     __tablename__ = 'instituicao_de_ensino'
 
     id_instituicao = db.Column(db.Integer, primary_key=True)
@@ -23,6 +29,9 @@ class InstituicaodeEnsino(db.Model):
     modalidades = db.Column(db.String(255), nullable=False)
     quantidade_de_alunos = db.Column(db.Integer, nullable=False)
     reitor = db.Column(db.String(255), nullable=False)
+
+    def get_id(self):
+        return str(self.id_instituicao) 
 
 class Aluno(db.Model):
     __tablename__ = 'alunos'
@@ -38,7 +47,7 @@ class Aluno(db.Model):
     formacao = db.Column(db.String(255))
     periodo = db.Column(db.Integer)
 
-class Chefe(db.Model):
+class Chefe(db.Model, UserMixin):
     __tablename__ = 'chefe'
 
     id_chefe = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -47,6 +56,9 @@ class Chefe(db.Model):
     email = db.Column(db.String(100), unique=True)  # Pode ser nulo, mas deve ser único se fornecido
     senha = db.Column(db.String(255), nullable=False)
     nome_empresa = db.Column(db.String(100))
+
+    def get_id(self):
+        return str(self.id_chefe)
 
 class SkillsDoAluno(db.Model):
     __tablename__ = 'skills_do_aluno'
@@ -69,6 +81,14 @@ class SkillsDoAluno(db.Model):
 with app.app_context():
     db.create_all()  # Recria as tabelas com base nos modelos
     print("Tabelas recriadas com sucesso!")
+
+@login_manager.user_loader
+def load_user(user_id):
+    # Tenta carregar o usuário como Chefe ou Instituição de Ensino
+    chefe = Chefe.query.get(int(user_id))
+    if chefe:
+        return chefe
+    return InstituicaodeEnsino.query.get(int(user_id))
 
 def bloquear_chefe(f):
     @wraps(f)
@@ -167,36 +187,32 @@ def login():
         # Primeiro tenta logar como chefe
         chefe = Chefe.query.filter_by(email=email).first()
         if chefe and check_password_hash(chefe.senha, senha):
-            session['usuario_id'] = chefe.id_chefe
+            login_user(chefe)
             session['tipo_usuario'] = 'chefe'
-            flash('Login realizado com sucesso!')
+            flash('Login realizado com sucesso!', 'success')
             return redirect(url_for('home'))
 
         # Senão, tenta como instituição
         instituicao = InstituicaodeEnsino.query.filter_by(email=email).first()
         if instituicao and check_password_hash(instituicao.senha, senha):
-            session['usuario_id'] = instituicao.id_instituicao
+            login_user(instituicao)
             session['tipo_usuario'] = 'instituicao'
-            flash('Login realizado com sucesso!')
+            flash('Login realizado com sucesso!', 'success')
             return redirect(url_for('home'))
 
-        flash('Email ou senha inválidos!')
+        flash('Email ou senha inválidos!', 'danger')
         return redirect(url_for('login'))
     return render_template('login.html')
 
 @app.route('/home')
+@login_required
 def home():
-    # Verifica se é uma Instituição de Ensino logada
-    instituicaodeEnsino = db.session.get(InstituicaodeEnsino, session.get('usuario_id')) if session.get('tipo_usuario') == 'instituicao' else None
-    if instituicaodeEnsino:
-        return render_template('home.html', usuario=instituicaodeEnsino, tipo_usuario='instituicao')
-
-    # Verifica se é um Chefe logado
-    chefe = db.session.get(Chefe, session.get('usuario_id')) if session.get('tipo_usuario') == 'chefe' else None
-    if chefe:
+    if session.get('tipo_usuario') == 'instituicao':
+        instituicao = db.session.get(InstituicaodeEnsino, session.get('usuario_id'))
+        return render_template('home.html', usuario=instituicao, tipo_usuario='instituicao')
+    elif session.get('tipo_usuario') == 'chefe':
+        chefe = db.session.get(Chefe, session.get('usuario_id'))
         return render_template('home.html', usuario=chefe, tipo_usuario='chefe')
-
-    # Se nenhum usuário estiver logado, redireciona para o login
     return redirect(url_for('login'))
 
 @app.route('/instituicaoEnsino')
@@ -211,6 +227,7 @@ def instituicao_ensino():
     return render_template('instituicaoEnsino.html', instituicoes=instituicoes)
 
 @app.route('/minhas_selecoes')
+@login_required
 def minhas_selecoes():
     return render_template('minhas_selecoes.html')
 
@@ -305,7 +322,9 @@ def alunos():
     return render_template('alunos.html')
 
 @app.route('/logout')
+@login_required
 def logout():
+    logout_user()
     session.clear()
     flash('Você saiu com sucesso.', 'success')
     return redirect(url_for('login'))
