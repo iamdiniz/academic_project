@@ -4,10 +4,12 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
+from unidecode import unidecode  # Biblioteca para remover acentos e caracteres especiais
+from urllib.parse import unquote
 
 app = Flask(__name__)
 app.secret_key = 'minha-chave-teste'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:educ123@db:3306/educ_invest'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:educ123@db:3306/educ_invest?charset=utf8mb4'
 db = SQLAlchemy(app)
 
 # Configuração do flask-login
@@ -128,8 +130,13 @@ def cadastro():
         if tipo_usuario == 'instituicao':
             instituicao_nome = request.form.get('instituicao_nome')
             endereco = request.form.get('endereco_instituicao')
+            infraestrutura = request.form.get('infraestrutura')
+            nota_mec = request.form.get('nota_mec')
+            areas_de_formacao = request.form.get('areas_de_formacao')
+            modalidades = request.form.get('modalidades')
+            quantidade_de_alunos = request.form.get('quantidade_de_alunos')
 
-            if not nome or not email or not senha or not instituicao_nome or not endereco:
+            if not nome or not email or not senha or not instituicao_nome or not endereco or not areas_de_formacao:
                 flash('Todos os campos obrigatórios para Instituição de Ensino devem ser preenchidos!')
                 return redirect(url_for('cadastro'))
 
@@ -138,11 +145,11 @@ def cadastro():
                     nome_instituicao=instituicao_nome,
                     email=email,
                     senha=generate_password_hash(senha),
-                    infraestrutura="Infraestrutura padrão",
-                    nota_mec=0,
-                    areas_de_formacao="Áreas padrão",
-                    modalidades="Modalidades padrão",
-                    quantidade_de_alunos=0,
+                    infraestrutura=infraestrutura,
+                    nota_mec=nota_mec,
+                    areas_de_formacao=areas_de_formacao,
+                    modalidades=modalidades,
+                    quantidade_de_alunos=quantidade_de_alunos,
                     reitor=nome,
                     endereco_instituicao=endereco
                 )
@@ -282,6 +289,8 @@ def remover_indicacao(id_aluno):
 
     return jsonify({'message': 'Indicação removida com sucesso!'}), 200
 
+from urllib.parse import unquote
+
 @app.route('/ver_alunos_por_curso', methods=['GET'])
 @bloquear_instituicao
 @login_required
@@ -289,12 +298,34 @@ def ver_alunos_por_curso():
     inst_id = request.args.get('inst_id')
     curso = request.args.get('curso')
 
+    # Decodificar o parâmetro 'curso' para evitar problemas com caracteres especiais
+    curso = unquote(curso).strip()
+
+    # Normalizar o nome do curso para remover acentos e caracteres especiais
+    curso_normalizado = unidecode(curso).lower()
+
+    # Log para depuração
+    print(f"Instituição ID: {inst_id}, Curso: {curso}, Curso Normalizado: {curso_normalizado}")
+
     # Busca os alunos pelo curso e instituição
-    alunos = Aluno.query.filter_by(id_instituicao=inst_id, curso=curso).all()
+    alunos = Aluno.query.filter(
+        Aluno.id_instituicao == inst_id
+    ).all()
+
+    # Filtrar os alunos em Python para aplicar a normalização
+    alunos_filtrados = [
+        aluno for aluno in alunos
+        if unidecode(aluno.curso).lower() == curso_normalizado
+    ]
+
+    # Verifica se há alunos encontrados
+    if not alunos_filtrados:
+        flash(f"Nenhum aluno encontrado para o curso '{curso}'.", "warning")
+        return redirect(url_for('instituicao_ensino'))
 
     # Converte os dados de skills para dicionários
     alunos_com_skills = []
-    for aluno in alunos:
+    for aluno in alunos_filtrados:
         skills = aluno.skills
         skills_dict = {
             "Hard Skills": skills.hard_skills,
@@ -306,7 +337,7 @@ def ver_alunos_por_curso():
         } if skills else {}
 
         alunos_com_skills.append({
-            "id_aluno": aluno.id_aluno,  # Corrigido para usar id_aluno
+            "id_aluno": aluno.id_aluno,
             "nome": aluno.nome_jovem,
             "data_nascimento": aluno.data_nascimento.strftime('%d/%m/%Y') if aluno.data_nascimento else 'N/A',
             "curso": aluno.curso,
@@ -400,6 +431,134 @@ def cursos():
 def alunos():
     return render_template('alunos.html')
 
+@app.route('/cadastrar_aluno', methods=['POST'])
+@login_required
+@bloquear_chefe
+def cadastrar_aluno():
+    # Dados do aluno
+    nome_jovem = request.form['nome_jovem']
+    data_nascimento = request.form['data_nascimento']
+    contato_jovem = request.form['contato_jovem']
+    email = request.form['email']
+    endereco_jovem = request.form['endereco_jovem']
+    curso = request.form['curso']
+    formacao = request.form['formacao']
+    periodo = request.form['periodo']
+
+    # Dados das skills
+    hard_skills = request.form['hard_skills']
+    soft_skills = request.form['soft_skills']
+    avaliacao_geral = request.form['avaliacao_geral']
+    participacao = request.form['participacao']
+    comunicacao = request.form['comunicacao']
+    proatividade = request.form['proatividade']
+    raciocinio = request.form['raciocinio']
+    dominio_tecnico = request.form['dominio_tecnico']
+    criatividade = request.form['criatividade']
+    trabalho_em_equipe = request.form['trabalho_em_equipe']
+
+    try:
+        # Criar o aluno
+        novo_aluno = Aluno(
+            nome_jovem=nome_jovem,
+            data_nascimento=data_nascimento,
+            contato_jovem=contato_jovem,
+            email=email,
+            endereco_jovem=endereco_jovem,
+            id_instituicao=current_user.id_instituicao,
+            curso=curso,
+            formacao=formacao,
+            periodo=periodo
+        )
+        db.session.add(novo_aluno)
+        db.session.commit()
+
+        # Criar as skills do aluno
+        skills = SkillsDoAluno(
+            id_aluno=novo_aluno.id_aluno,
+            hard_skills=hard_skills,
+            soft_skills=soft_skills,
+            avaliacao_geral=avaliacao_geral,
+            participacao=participacao,
+            comunicacao=comunicacao,
+            proatividade=proatividade,
+            raciocinio=raciocinio,
+            dominio_tecnico=dominio_tecnico,
+            criatividade=criatividade,
+            trabalho_em_equipe=trabalho_em_equipe
+        )
+        db.session.add(skills)
+        db.session.commit()
+
+        flash("Aluno cadastrado com sucesso!", "success")
+    except IntegrityError:
+        db.session.rollback()
+        flash("Erro ao cadastrar aluno. Verifique os dados e tente novamente.", "danger")
+
+    return redirect(url_for('alunos'))
+
+@app.route('/alunos_instituicao', methods=['GET', 'POST'])
+@login_required
+@bloquear_chefe
+def alunos_instituicao():
+    if session.get('tipo_usuario') != 'instituicao':
+        flash("Acesso não permitido.", "danger")
+        return redirect(url_for('home'))
+
+    instituicao_id = current_user.id_instituicao
+    cursos = Aluno.query.with_entities(Aluno.curso).filter_by(id_instituicao=instituicao_id).distinct().all()
+    cursos = [curso[0] for curso in cursos if curso[0]]  # Extrai os nomes dos cursos
+
+    filtro_curso = request.form.get('curso') if request.method == 'POST' else None
+
+    if filtro_curso:
+        alunos = Aluno.query.filter_by(id_instituicao=instituicao_id, curso=filtro_curso).all()
+    else:
+        alunos = Aluno.query.filter_by(id_instituicao=instituicao_id).all()
+
+    return render_template('alunos_instituicao.html', alunos=alunos, cursos=cursos, filtro_curso=filtro_curso)
+
+@app.route('/detalhes_aluno_instituicao/<int:id_aluno>', methods=['GET', 'POST'])
+@login_required
+@bloquear_chefe
+def detalhes_aluno_instituicao(id_aluno):
+    if session.get('tipo_usuario') != 'instituicao':
+        flash("Acesso não permitido.", "danger")
+        return redirect(url_for('home'))
+
+    aluno = Aluno.query.get_or_404(id_aluno)
+
+    if request.method == 'POST':
+        # Atualizar informações do aluno
+        aluno.nome_jovem = request.form['nome_jovem']
+        aluno.data_nascimento = request.form['data_nascimento']
+        aluno.contato_jovem = request.form['contato_jovem']
+        aluno.email = request.form['email']
+        aluno.endereco_jovem = request.form['endereco_jovem']
+        aluno.curso = request.form['curso']
+        aluno.formacao = request.form['formacao']
+        aluno.periodo = request.form['periodo']
+
+        # Atualizar informações de skills
+        skills = aluno.skills or SkillsDoAluno(id_aluno=aluno.id_aluno)
+        skills.hard_skills = request.form['hard_skills']
+        skills.soft_skills = request.form['soft_skills']
+        skills.avaliacao_geral = request.form['avaliacao_geral']
+        skills.participacao = request.form['participacao']
+        skills.comunicacao = request.form['comunicacao']
+        skills.proatividade = request.form['proatividade']
+        skills.raciocinio = request.form['raciocinio']
+        skills.dominio_tecnico = request.form['dominio_tecnico']
+        skills.criatividade = request.form['criatividade']
+        skills.trabalho_em_equipe = request.form['trabalho_em_equipe']
+
+        db.session.add(skills)
+        db.session.commit()
+        flash("Informações do aluno atualizadas com sucesso!", "success")
+        return redirect(url_for('alunos_instituicao'))
+
+    return render_template('detalhes_aluno_instituicao.html', aluno=aluno)
+
 @app.route('/perfil', methods=['GET', 'POST'])
 @login_required
 def perfil():
@@ -423,6 +582,11 @@ def perfil():
             instituicao.nome_instituicao = request.form['nome_instituicao']
             instituicao.endereco_instituicao = request.form['endereco_instituicao']
             instituicao.reitor = request.form['reitor']
+            instituicao.infraestrutura = request.form['infraestrutura']
+            instituicao.nota_mec = request.form['nota_mec']
+            instituicao.areas_de_formacao = request.form['areas_de_formacao']
+            instituicao.modalidades = request.form['modalidades']
+            instituicao.quantidade_de_alunos = request.form['quantidade_de_alunos']
             instituicao.email = request.form['email']
             if request.form['senha']:
                 instituicao.senha = generate_password_hash(request.form['senha'])

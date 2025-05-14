@@ -5,16 +5,6 @@
 
 {% block body %}
 <div class="container mt-4">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        {% endfor %}
-    {% endif %}
-    {% endwith %}
     <h1 class="text-center mb-4">Meu Perfil</h1>
 
     <form method="POST" action="{{ url_for('perfil') }}">
@@ -43,6 +33,26 @@
             <div class="mb-3">
                 <label for="reitor" class="form-label">Reitor</label>
                 <input type="text" class="form-control" id="reitor" name="reitor" value="{{ usuario.reitor }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="infraestrutura" class="form-label">Infraestrutura</label>
+                <textarea class="form-control" id="infraestrutura" name="infraestrutura" rows="3" required>{{ usuario.infraestrutura }}</textarea>
+            </div>
+            <div class="mb-3">
+                <label for="nota_mec" class="form-label">Nota MEC</label>
+                <input type="number" class="form-control" id="nota_mec" name="nota_mec" value="{{ usuario.nota_mec }}" step="0.1" required>
+            </div>
+            <div class="mb-3">
+                <label for="areas_de_formacao" class="form-label">Áreas de Formação</label>
+                <textarea class="form-control" id="areas_de_formacao" name="areas_de_formacao" rows="3" required>{{ usuario.areas_de_formacao }}</textarea>
+            </div>
+            <div class="mb-3">
+                <label for="modalidades" class="form-label">Modalidades</label>
+                <input type="text" class="form-control" id="modalidades" name="modalidades" value="{{ usuario.modalidades }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="quantidade_de_alunos" class="form-label">Quantidade de Alunos</label>
+                <input type="number" class="form-control" id="quantidade_de_alunos" name="quantidade_de_alunos" value="{{ usuario.quantidade_de_alunos }}" required>
             </div>
         {% endif %}
         <div class="mb-3">

@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% set hide_navbar = False %}
+
+{% block title %}Gerenciar Alunos - Instituição{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Gerenciar Alunos</h1>
+
+    <!-- Filtro por curso -->
+    <form method="POST" class="mb-4">
+        <div class="row">
+            <div class="col-md-8">
+                <select name="curso" class="form-select">
+                    <option value="">Todos os Cursos</option>
+                    {% for curso in cursos %}
+                        <option value="{{ curso }}" {% if curso == filtro_curso %}selected{% endif %}>{{ curso }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Lista de alunos -->
+    {% if alunos %}
+        <div class="row g-4">
+            {% for aluno in alunos %}
+                <div class="col-md-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ aluno.nome_jovem }}</h5>
+                            <p><strong>Curso:</strong> {{ aluno.curso }}</p>
+                            <p><strong>Contato:</strong> {{ aluno.contato_jovem }}</p>
+                            <p><strong>E-mail:</strong> {{ aluno.email }}</p>
+                        </div>
+                        <div class="card-footer text-end">
+                            <a href="{{ url_for('detalhes_aluno_instituicao', id_aluno=aluno.id_aluno) }}" class="btn btn-primary btn-sm">Ver Detalhes</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-center"><em>Nenhum aluno encontrado.</em></p>
+    {% endif %}
+</div>
+{% endblock %}
