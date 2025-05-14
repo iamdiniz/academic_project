@@ -1,5 +1,5 @@
 from functools import wraps
-from flask import Flask, render_template, url_for, request, redirect, session, flash
+from flask import Flask, render_template, url_for, request, redirect, session, flash, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
 from flask_sqlalchemy import SQLAlchemy
@@ -46,6 +46,9 @@ class Aluno(db.Model):
     curso = db.Column(db.String(255))
     formacao = db.Column(db.String(255))
     periodo = db.Column(db.Integer)
+    indicado_por = db.Column(db.Integer, db.ForeignKey('chefe.id_chefe'))  # Relacionamento com Chefe
+
+    chefe = db.relationship('Chefe', backref='alunos_indicados')  # Relacionamento reverso
 
 class Chefe(db.Model, UserMixin):
     __tablename__ = 'chefe'
@@ -245,9 +248,37 @@ def detalhes_instituicao(id_instituicao):
 @bloquear_instituicao
 @login_required
 def minhas_selecoes():
-    return render_template('minhas_selecoes.html')
+    if session.get('tipo_usuario') != 'chefe':
+        flash("Acesso não permitido.", "danger")
+        return redirect(url_for('home'))
+    
+    # Obtenha os alunos indicados pelo chefe logado
+    chefe_id = current_user.id_chefe
+    alunos = Aluno.query.filter_by(indicado_por=chefe_id).all()
+    return render_template('minhas_selecoes.html', alunos=alunos)
+
+@app.route('/remover_indicacao/<int:id_aluno>', methods=['POST'])
+@bloquear_instituicao
+@login_required
+def remover_indicacao(id_aluno):
+    if session.get('tipo_usuario') != 'chefe':
+        return jsonify({'error': 'Acesso não permitido.'}), 403
+
+    aluno = Aluno.query.get_or_404(id_aluno)
+    chefe_id = current_user.id_chefe
+
+    # Verifica se o aluno foi indicado pelo chefe logado
+    if aluno.indicado_por != chefe_id:
+        return jsonify({'error': 'Você não indicou este aluno.'}), 400
+
+    # Remove a indicação
+    aluno.indicado_por = None
+    db.session.commit()
+
+    return jsonify({'message': 'Indicação removida com sucesso!'}), 200
 
 @app.route('/ver_alunos_por_curso', methods=['GET'])
+@bloquear_instituicao
 @login_required
 def ver_alunos_por_curso():
     inst_id = request.args.get('inst_id')
@@ -280,6 +311,7 @@ def ver_alunos_por_curso():
     return render_template('cardAlunos.html', alunos=alunos_com_skills, curso=curso)
 
 @app.route('/detalhes_aluno/<int:id_aluno>')
+@bloquear_instituicao
 @login_required
 def detalhes_aluno(id_aluno):
     aluno = Aluno.query.filter_by(id_aluno=id_aluno).first()
@@ -304,7 +336,28 @@ def detalhes_aluno(id_aluno):
 
     return render_template('detalhes_aluno.html', aluno=aluno, skills=skills, previous_url=previous_url)
 
+@app.route('/indicar_aluno/<int:id_aluno>', methods=['POST'])
+@bloquear_instituicao
+@login_required
+def indicar_aluno(id_aluno):
+    if session.get('tipo_usuario') != 'chefe':
+        return jsonify({'error': 'Acesso não permitido.'}), 403
+
+    aluno = Aluno.query.get_or_404(id_aluno)
+    chefe_id = current_user.id_chefe
+
+    # Verifica se o aluno já foi indicado
+    if aluno.indicado_por is not None:
+        return jsonify({'error': 'Este aluno já foi indicado.'}), 400
+
+    # Atualiza o campo indicado_por
+    aluno.indicado_por = chefe_id
+    db.session.commit()
+
+    return jsonify({'message': 'Aluno indicado com sucesso!'}), 200
+
 @app.route('/cardAlunos')
+@bloquear_instituicao
 @login_required
 def cardAlunos():
     alunos = Aluno.query.all()

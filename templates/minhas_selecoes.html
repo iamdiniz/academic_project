@@ -1,31 +1,36 @@
 {% extends 'base.html' %}
 {% set hide_navbar = False %}
 
-{% block title %}Home - Educ+Invest{% endblock %}
+{% block title %}Minhas Seleções - Educ+Invest{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/minhas_selecoes.css') }}">
 {% endblock %}
 
 {% block body %}
-<div class="home-container mt-4">
-    <div class="text-center">
-        <h1 class="home-title">Teste</h1>
-        <p class="home-subtitle">Teste.</p>
-    </div>
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Minhas Seleções</h1>
 
-    <div id="animation" class="lottie-container"></div>
+    {% if alunos %}
+        <div class="row g-4">
+            {% for aluno in alunos %}
+                <div class="col-md-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ aluno.nome_jovem }}</h5>
+                            <p><strong>Curso:</strong> {{ aluno.curso }}</p>
+                            <p><strong>Contato:</strong> {{ aluno.contato_jovem }}</p>
+                            <p><strong>E-mail:</strong> {{ aluno.email }}</p>
+                        </div>
+                        <div class="card-footer text-end">
+                            <a href="{{ url_for('detalhes_aluno', id_aluno=aluno.id_aluno) }}" class="btn btn-primary btn-sm">Ver Detalhes</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-center"><em>Nenhum aluno foi indicado ainda.</em></p>
+    {% endif %}
 </div>
-
-<!-- Lottie Animation -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.2/lottie.min.js"></script>
-<script>
-    const animation = lottie.loadAnimation({
-        container: document.getElementById('animation'),
-        renderer: 'svg',
-        loop: true,
-        autoplay: true,
-        path: 'https://assets4.lottiefiles.com/packages/lf20_tno6cg2w.json'
-    });
-</script>
 {% endblock %}

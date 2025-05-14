@@ -3,10 +3,6 @@
 
 {% block title %}Detalhes do Aluno - {{ aluno.nome }}{% endblock %}
 
-<!-- {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/detalhes_aluno.css') }}">
-{% endblock %} -->
-
 {% block body %}
 <div class="container mt-4">
     <h2>Detalhes do Aluno</h2>
@@ -14,7 +10,6 @@
         <li class="list-group-item"><strong>Nome:</strong> {{ aluno.nome_jovem }}</li>
         <li class="list-group-item"><strong>Data de Nascimento:</strong> {{ aluno.data_nascimento }}</li>
         <li class="list-group-item"><strong>Curso:</strong> {{ aluno.curso }}</li>
-        <!-- Adicione outros campos se houver -->
     </ul>
 
     <h4 class="mt-4">Skills</h4>
@@ -49,6 +44,61 @@
         <p><em>Sem dados de skills disponíveis.</em></p>
     {% endif %}
 
-    <a href="{{ previous_url }}" class="btn btn-secondary mt-4">Voltar</a>
+    <!-- Botão para abrir o pop-up -->
+    <div class="mt-4">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#contatoModal">Ver Contato</button>
+        <a href="{{ previous_url }}" class="btn btn-secondary">Voltar</a>
+    </div>
 </div>
+
+<!-- Modal (Pop-up) -->
+<div class="modal fade" id="contatoModal" tabindex="-1" aria-labelledby="contatoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="contatoModalLabel">Informações de Contato</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Contato:</strong> {{ aluno.contato_jovem }}</p>
+                <p><strong>E-mail:</strong> {{ aluno.email }}</p>
+                <p><strong>Endereço:</strong> {{ aluno.endereco_jovem }}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Voltar</button>
+                <button type="button" class="btn btn-success" id="indicarAlunoBtn">Indicar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Função para exibir notificação ao indicar o aluno
+    document.getElementById('indicarAlunoBtn').addEventListener('click', function () {
+        // Faz uma requisição para adicionar o aluno à tela "Minhas Seleções"
+        fetch('{{ url_for("indicar_aluno", id_aluno=aluno.id_aluno) }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ id_aluno: {{ aluno.id_aluno }} })
+        }).then(response => response.json())
+          .then(data => {
+              if (data.error) {
+                  // Exibe um alerta se o aluno já foi indicado
+                  alert(data.error);
+              } else {
+                  // Exibe uma mensagem de sucesso
+                  alert(data.message);
+
+                  // Fecha o modal
+                  const modal = bootstrap.Modal.getInstance(document.getElementById('contatoModal'));
+                  modal.hide();
+              }
+          }).catch(error => {
+              console.error('Erro ao indicar o aluno:', error);
+              alert('Ocorreu um erro ao tentar indicar o aluno.');
+          });
+    });
+</script>
 {% endblock %}
