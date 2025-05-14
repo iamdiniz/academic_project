@@ -518,7 +518,7 @@ def cadastrar_aluno():
         db.session.rollback()
         flash("Erro ao cadastrar aluno. Verifique os dados e tente novamente.", "danger")
 
-    return redirect(url_for('alunos'))
+    return redirect(url_for('alunos_instituicao'))
 
 @app.route('/alunos_instituicao', methods=['GET', 'POST'])
 @login_required
