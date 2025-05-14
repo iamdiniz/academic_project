@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% set hide_navbar = False %}
+
+{% block title %}Home - Instituição de Ensino{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1 class="text-center">Bem-vindo, Instituição de Ensino!</h1>
+    <p class="text-center">Gerencie seus alunos e acompanhe o desempenho acadêmico.</p>
+
+    <div class="text-center mt-4">
+        <a href="{{ url_for('detalhes_instituicao', id_instituicao=current_user.id_instituicao) }}" class="btn btn-secondary">Detalhes da Instituição</a>
+    </div>
+</div>
+{% endblock %}

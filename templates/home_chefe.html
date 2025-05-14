@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% set hide_navbar = False %}
+
+{% block title %}Home - Chefe{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1 class="text-center">Bem-vindo, Chefe!</h1>
+    <p class="text-center">Gerencie suas seleções e encontre os melhores talentos.</p>
+
+    <div class="text-center mt-4">
+        <a href="{{ url_for('minhas_selecoes') }}" class="btn btn-primary">Minhas Seleções</a>
+        <a href="{{ url_for('instituicao_ensino') }}" class="btn btn-secondary">Instituições de Ensino</a>
+    </div>
+</div>
+{% endblock %}

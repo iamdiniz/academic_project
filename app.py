@@ -193,41 +193,46 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form.get('email')
-        senha = request.form.get('senha')
+        email = request.form['email']
+        senha = request.form['senha']
 
-        # Primeiro tenta logar como chefe
+        # Verifica se o usuário é um chefe
         chefe = Chefe.query.filter_by(email=email).first()
         if chefe and check_password_hash(chefe.senha, senha):
-            login_user(chefe)
+            session['user_id'] = chefe.id_chefe
             session['tipo_usuario'] = 'chefe'
-            flash('Login realizado com sucesso!', 'success')
+            login_user(chefe)
             return redirect(url_for('home'))
 
-        # Senão, tenta como instituição
+        # Verifica se o usuário é uma instituição de ensino
         instituicao = InstituicaodeEnsino.query.filter_by(email=email).first()
         if instituicao and check_password_hash(instituicao.senha, senha):
-            login_user(instituicao)
+            session['user_id'] = instituicao.id_instituicao
             session['tipo_usuario'] = 'instituicao'
-            flash('Login realizado com sucesso!', 'success')
+            login_user(instituicao)
             return redirect(url_for('home'))
 
-        flash('Email ou senha inválidos!', 'danger')
-        return redirect(url_for('login'))
+        flash("E-mail ou senha inválidos.", "danger")
     return render_template('login.html')
 
 @app.route('/home')
 @login_required
 def home():
-    if session.get('tipo_usuario') == 'instituicao':
-        instituicao = db.session.get(InstituicaodeEnsino, session.get('usuario_id'))
-        return render_template('home.html', usuario=instituicao, tipo_usuario='instituicao')
-    elif session.get('tipo_usuario') == 'chefe':
-        chefe = db.session.get(Chefe, session.get('usuario_id'))
-        return render_template('home.html', usuario=chefe, tipo_usuario='chefe')
-    return redirect(url_for('login'))
+    tipo_usuario = session.get('tipo_usuario')
+
+    if tipo_usuario == 'chefe':
+        # Renderiza a tela inicial para chefes
+        return render_template('home_chefe.html')
+    elif tipo_usuario == 'instituicao':
+        # Renderiza a tela inicial para instituições de ensino
+        return render_template('home_instituicao.html')
+    else:
+        # Caso o tipo de usuário não seja reconhecido, redireciona para o login
+        flash("Tipo de usuário inválido. Faça login novamente.", "danger")
+        return redirect(url_for('login'))
 
 @app.route('/instituicaoEnsino')
+@bloquear_instituicao
 @login_required
 def instituicao_ensino():
     # Busca todas as instituições no banco de dados
