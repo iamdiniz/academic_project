@@ -30,7 +30,7 @@
         {% for inst in instituicoes %}
             <div class="col-md-4 d-flex">
                 <div class="card shadow-sm w-100 h-100">
-                    <h5>{{ inst.nome }}</h5>
+                    <p><strong>{{ inst.nome_instituicao }}</strong></p>
                     <p><strong>Modalidades:</strong> {{ inst.modalidades }}</p>
                     <p><strong>Reitor:</strong> {{ inst.reitor }}</p>
 
@@ -58,13 +58,19 @@
                             },
                             options: {
                                 responsive: true,
+                                indexAxis: 'y', // Configuração para barras horizontais
                                 scales: {
-                                    y: {
+                                    x: {
                                         beginAtZero: true,
                                         max: 5,
                                         ticks: {
                                             stepSize: 1
                                         }
+                                    }
+                                },
+                                plugins: {
+                                    legend: {
+                                        display: false
                                     }
                                 }
                             }
@@ -85,10 +91,16 @@
                             },
                             options: {
                                 responsive: true,
+                                indexAxis: 'y', // Configuração para barras horizontais
                                 scales: {
-                                    y: {
+                                    x: {
                                         beginAtZero: true,
                                         suggestedMax: {{ inst.quantidade_de_alunos + 10 if inst.quantidade_de_alunos > 5 else 5 }}
+                                    }
+                                },
+                                plugins: {
+                                    legend: {
+                                        display: false
                                     }
                                 }
                             }
