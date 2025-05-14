@@ -134,7 +134,6 @@ def cadastro():
             nota_mec = request.form.get('nota_mec')
             areas_de_formacao = request.form.get('areas_de_formacao')
             modalidades = request.form.get('modalidades')
-            quantidade_de_alunos = request.form.get('quantidade_de_alunos')
 
             if not nome or not email or not senha or not instituicao_nome or not endereco or not areas_de_formacao:
                 flash('Todos os campos obrigatórios para Instituição de Ensino devem ser preenchidos!')
@@ -149,7 +148,7 @@ def cadastro():
                     nota_mec=nota_mec,
                     areas_de_formacao=areas_de_formacao,
                     modalidades=modalidades,
-                    quantidade_de_alunos=quantidade_de_alunos,
+                    quantidade_de_alunos=0,
                     reitor=nome,
                     endereco_instituicao=endereco
                 )
@@ -245,9 +244,9 @@ def instituicao_ensino():
     # Busca todas as instituições no banco de dados
     instituicoes = InstituicaodeEnsino.query.all()
 
-    # Log para verificar os valores de areas_de_formacao
-    for inst in instituicoes:
-        print(f"Instituição: {inst.nome_instituicao}, Cursos: {inst.areas_de_formacao}")
+    # Calcula a quantidade de alunos para cada instituição
+    for instituicao in instituicoes:
+        instituicao.quantidade_de_alunos = Aluno.query.filter_by(id_instituicao=instituicao.id_instituicao).count()
 
     return render_template('instituicaoEnsino.html', instituicoes=instituicoes)
 
@@ -289,7 +288,26 @@ def remover_indicacao(id_aluno):
 
     return jsonify({'message': 'Indicação removida com sucesso!'}), 200
 
-from urllib.parse import unquote
+@app.route('/remover_aluno/<int:id_aluno>', methods=['POST'])
+@login_required
+def remover_aluno(id_aluno):
+    aluno = Aluno.query.get_or_404(id_aluno)
+
+    try:
+        # Decrementar a quantidade de alunos na instituição
+        instituicao = InstituicaodeEnsino.query.get(aluno.id_instituicao)
+        instituicao.quantidade_de_alunos -= 1
+
+        # Remover o aluno
+        db.session.delete(aluno)
+        db.session.commit()
+
+        flash("Aluno removido com sucesso!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash("Erro ao remover aluno.", "danger")
+
+    return redirect(url_for('alunos'))
 
 @app.route('/ver_alunos_por_curso', methods=['GET'])
 @bloquear_instituicao
@@ -490,6 +508,11 @@ def cadastrar_aluno():
         db.session.add(skills)
         db.session.commit()
 
+        # Atualizar a quantidade de alunos na instituição
+        instituicao = InstituicaodeEnsino.query.get(current_user.id_instituicao)
+        instituicao.quantidade_de_alunos += 1
+        db.session.commit()
+
         flash("Aluno cadastrado com sucesso!", "success")
     except IntegrityError:
         db.session.rollback()
@@ -586,7 +609,6 @@ def perfil():
             instituicao.nota_mec = request.form['nota_mec']
             instituicao.areas_de_formacao = request.form['areas_de_formacao']
             instituicao.modalidades = request.form['modalidades']
-            instituicao.quantidade_de_alunos = request.form['quantidade_de_alunos']
             instituicao.email = request.form['email']
             if request.form['senha']:
                 instituicao.senha = generate_password_hash(request.form['senha'])
