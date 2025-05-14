@@ -400,6 +400,47 @@ def cursos():
 def alunos():
     return render_template('alunos.html')
 
+@app.route('/perfil', methods=['GET', 'POST'])
+@login_required
+def perfil():
+    tipo_usuario = session.get('tipo_usuario')
+
+    if request.method == 'POST':
+        # Atualizar informações do chefe
+        if tipo_usuario == 'chefe':
+            chefe = Chefe.query.get_or_404(current_user.id_chefe)
+            chefe.nome = request.form['nome']
+            chefe.cargo = request.form['cargo']
+            chefe.nome_empresa = request.form.get('nome_empresa')
+            chefe.email = request.form['email']
+            if request.form['senha']:
+                chefe.senha = generate_password_hash(request.form['senha'])
+            db.session.commit()
+            flash("Perfil atualizado com sucesso!", "success")
+        # Atualizar informações da instituição
+        elif tipo_usuario == 'instituicao':
+            instituicao = InstituicaodeEnsino.query.get_or_404(current_user.id_instituicao)
+            instituicao.nome_instituicao = request.form['nome_instituicao']
+            instituicao.endereco_instituicao = request.form['endereco_instituicao']
+            instituicao.reitor = request.form['reitor']
+            instituicao.email = request.form['email']
+            if request.form['senha']:
+                instituicao.senha = generate_password_hash(request.form['senha'])
+            db.session.commit()
+            flash("Perfil atualizado com sucesso!", "success")
+        return redirect(url_for('perfil'))
+
+    # Exibir informações do perfil
+    if tipo_usuario == 'chefe':
+        usuario = Chefe.query.get_or_404(current_user.id_chefe)
+    elif tipo_usuario == 'instituicao':
+        usuario = InstituicaodeEnsino.query.get_or_404(current_user.id_instituicao)
+    else:
+        flash("Tipo de usuário inválido.", "danger")
+        return redirect(url_for('home'))
+
+    return render_template('perfil.html', usuario=usuario)
+
 @app.route('/logout')
 def logout():
     logout_user()
