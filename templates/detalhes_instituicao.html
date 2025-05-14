@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% set hide_navbar = False %}
+
+{% block title %}Detalhes da Instituição - {{ instituicao.nome_instituicao }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/detalhes_instituicao.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Detalhes da Instituição</h1>
+
+    <div class="card shadow-sm p-4">
+        <h3 class="text-center">{{ instituicao.nome_instituicao }}</h3>
+        <ul class="list-group list-group-flush mt-3">
+            <li class="list-group-item"><strong>Endereço:</strong> {{ instituicao.endereco_instituicao }}</li>
+            <li class="list-group-item"><strong>E-mail:</strong> {{ instituicao.email }}</li>
+            <li class="list-group-item"><strong>Infraestrutura:</strong> {{ instituicao.infraestrutura }}</li>
+            <li class="list-group-item"><strong>Nota MEC:</strong> {{ instituicao.nota_mec }}</li>
+            <li class="list-group-item"><strong>Áreas de Formação:</strong> {{ instituicao.areas_de_formacao }}</li>
+            <li class="list-group-item"><strong>Modalidades:</strong> {{ instituicao.modalidades }}</li>
+            <li class="list-group-item"><strong>Quantidade de Alunos:</strong> {{ instituicao.quantidade_de_alunos }}</li>
+            <li class="list-group-item"><strong>Reitor:</strong> {{ instituicao.reitor }}</li>
+        </ul>
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="{{ url_for('instituicao_ensino') }}" class="btn btn-secondary">Voltar</a>
+    </div>
+</div>
+{% endblock %}

@@ -236,6 +236,11 @@ def instituicao_ensino():
 
     return render_template('instituicaoEnsino.html', instituicoes=instituicoes)
 
+@app.route('/detalhes_instituicao/<int:id_instituicao>')
+def detalhes_instituicao(id_instituicao):
+    instituicao = InstituicaodeEnsino.query.get_or_404(id_instituicao)
+    return render_template('detalhes_instituicao.html', instituicao=instituicao)
+
 @app.route('/minhas_selecoes')
 @bloquear_instituicao
 @login_required

@@ -39,7 +39,7 @@
 
                     <div class="mt-auto pt-3 d-flex justify-content-end gap-2">
                         <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalCursos{{ inst.id_instituicao }}">Ver Alunos</button>
-                        <a class="btn btn-primary btn-sm">Detalhes</a>
+                        <a href="{{ url_for('detalhes_instituicao', id_instituicao=inst.id_instituicao) }}" class="btn btn-primary btn-sm">Detalhes</a>
                     </div>
 
                     <script>
