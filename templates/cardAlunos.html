@@ -28,7 +28,7 @@
                         <script>
                             const ctx{{ loop.index }} = document.getElementById('grafico{{ loop.index }}').getContext('2d');
                             new Chart(ctx{{ loop.index }}, {
-                                type: 'radar', // Alterado para gráfico de radar
+                                type: 'radar',
                                 data: {
                                     labels: {{ aluno.skills.keys() | list | safe }},
                                     datasets: [{
@@ -43,10 +43,31 @@
                                 options: {
                                     responsive: true,
                                     scales: {
-                                        r: { // Configurações específicas para o gráfico de radar
+                                        r: {
                                             beginAtZero: true,
                                             ticks: {
+                                                display: false,  // Remove os números dentro do gráfico
                                                 stepSize: 1
+                                            },
+                                            grid: {
+                                                color: 'rgba(200, 200, 200, 0.5)'
+                                            },
+                                            angleLines: {
+                                                color: 'rgba(200, 200, 200, 0.5)'
+                                            }
+                                        }
+                                    },
+                                    plugins: {
+                                        legend: {
+                                            display: true,
+                                            position: 'top'
+                                        },
+                                        tooltip: {
+                                            enabled: true,
+                                            callbacks: {
+                                                label: function(tooltipItem) {
+                                                    return tooltipItem.label + ': ' + tooltipItem.raw;
+                                                }
                                             }
                                         }
                                     }

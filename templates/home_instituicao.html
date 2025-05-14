@@ -5,13 +5,25 @@
 
 {% block body %}
 <div class="container mt-4">
-    <h1 class="text-center">Bem-vindo, Instituição de Ensino!</h1>
-    <p class="text-center">Gerencie seus alunos e acompanhe o desempenho acadêmico.</p>
+    <h1 class="text-center">Bem-vindo, {{ current_user.nome_instituicao }}!</h1>
+    <p class="text-center">"Transformando vidas através da educação. Gerencie seus alunos e inspire o futuro."</p>
 
-    <div class="text-center mt-4">
-    <a href="{{ url_for('detalhes_instituicao', id_instituicao=current_user.id_instituicao) }}" class="btn btn-secondary">Detalhes da Instituição</a>
-    <a href="{{ url_for('cursos') }}" class="btn btn-primary">Gerenciar Cursos</a>
-    <a href="{{ url_for('alunos_instituicao') }}" class="btn btn-primary">Gerenciar Alunos</a>
+    <div class="row mt-5">
+        <div class="col-md-6">
+            <div class="card shadow-lg p-4 text-center">
+                <h3>Gerenciar Alunos</h3>
+                <p>Visualize, filtre e gerencie os alunos cadastrados na sua instituição.</p>
+                <a href="{{ url_for('alunos_instituicao') }}" class="btn btn-primary btn-lg">Gerenciar Alunos</a>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-lg p-4 text-center">
+                <h3>Cadastrar Aluno</h3>
+                <p>Adicione novos alunos à sua instituição e acompanhe seu progresso.</p>
+                <a href="{{ url_for('alunos') }}" class="btn btn-success btn-lg">Cadastrar Aluno</a>
+            </div>
+        </div>
+    </div>
 </div>
-</div>
+
 {% endblock %}

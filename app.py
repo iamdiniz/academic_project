@@ -539,7 +539,32 @@ def alunos_instituicao():
     else:
         alunos = Aluno.query.filter_by(id_instituicao=instituicao_id).all()
 
-    return render_template('alunos_instituicao.html', alunos=alunos, cursos=cursos, filtro_curso=filtro_curso)
+    # Adicionar as skills de cada aluno
+    alunos_com_skills = []
+    for aluno in alunos:
+        skills = aluno.skills
+        skills_dict = {
+            "Hard Skills": skills.hard_skills,
+            "Soft Skills": skills.soft_skills,
+            "Avaliação Geral": skills.avaliacao_geral,
+            "Participação": skills.participacao,
+            "Comunicação": skills.comunicacao,
+            "Proatividade": skills.proatividade,
+            "Raciocínio": skills.raciocinio,
+            "Domínio Técnico": skills.dominio_tecnico,
+            "Criatividade": skills.criatividade,
+            "Trabalho em Equipe": skills.trabalho_em_equipe
+        } if skills else {}
+
+        alunos_com_skills.append({
+            "id_aluno": aluno.id_aluno,
+            "nome": aluno.nome_jovem,
+            "data_nascimento": aluno.data_nascimento.strftime('%d/%m/%Y') if aluno.data_nascimento else 'N/A',
+            "curso": aluno.curso,
+            "skills": skills_dict
+        })
+
+    return render_template('alunos_instituicao.html', alunos=alunos_com_skills, cursos=cursos, filtro_curso=filtro_curso)
 
 @app.route('/detalhes_aluno_instituicao/<int:id_aluno>', methods=['GET', 'POST'])
 @login_required
