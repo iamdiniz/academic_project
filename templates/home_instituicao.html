@@ -10,6 +10,8 @@
 
     <div class="text-center mt-4">
         <a href="{{ url_for('detalhes_instituicao', id_instituicao=current_user.id_instituicao) }}" class="btn btn-secondary">Detalhes da Instituição</a>
+        <a href="{{ url_for('cursos') }}" class="btn btn-primary">Gerenciar Cursos</a>
+        <a href="{{ url_for('alunos') }}" class="btn btn-primary">Gerenciar Alunos</a>
     </div>
 </div>
 {% endblock %}
