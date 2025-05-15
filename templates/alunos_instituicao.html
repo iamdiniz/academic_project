@@ -149,7 +149,12 @@
                             </div>
                             <div class="col-md-6">
                                 <label>Curso</label>
-                                <input name="curso" class="form-control" placeholder="Curso" required>
+                                <select name="curso" class="form-select" required>
+                                    <option value="" disabled selected>Selecione o curso</option>
+                                    {% for curso in cursos_disponiveis %}
+                                        <option value="{{ curso }}">{{ curso }}</option>
+                                    {% endfor %}
+                                </select>
                             </div>
                             <div class="col-md-6">
                                 <label>Localização</label>

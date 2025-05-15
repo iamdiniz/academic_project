@@ -529,8 +529,12 @@ def alunos_instituicao():
         return redirect(url_for('home'))
 
     instituicao_id = current_user.id_instituicao
+    instituicao = InstituicaodeEnsino.query.get(instituicao_id)
+    # Supondo que os cursos estão separados por vírgula
+    cursos_disponiveis = [c.strip() for c in instituicao.areas_de_formacao.split(',')] if instituicao.areas_de_formacao else []
+
     cursos = Aluno.query.with_entities(Aluno.curso).filter_by(id_instituicao=instituicao_id).distinct().all()
-    cursos = [curso[0] for curso in cursos if curso[0]]  # Extrai os nomes dos cursos
+    cursos = [curso[0] for curso in cursos if curso[0]]
 
     filtro_curso = request.form.get('curso') if request.method == 'POST' else None
 
@@ -564,7 +568,13 @@ def alunos_instituicao():
             "skills": skills_dict
         })
 
-    return render_template('alunos_instituicao.html', alunos=alunos_com_skills, cursos=cursos, filtro_curso=filtro_curso)
+    return render_template(
+        'alunos_instituicao.html',
+        alunos=alunos_com_skills,
+        cursos=cursos,
+        filtro_curso=filtro_curso,
+        cursos_disponiveis=cursos_disponiveis  # <-- Adicione esta linha
+    )
 
 @app.route('/detalhes_aluno_instituicao/<int:id_aluno>', methods=['GET', 'POST'])
 @login_required
