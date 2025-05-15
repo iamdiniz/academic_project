@@ -263,10 +263,36 @@ def minhas_selecoes():
         flash("Acesso não permitido.", "danger")
         return redirect(url_for('home'))
     
-    # Obtenha os alunos indicados pelo chefe logado
     chefe_id = current_user.id_chefe
     alunos = Aluno.query.filter_by(indicado_por=chefe_id).all()
-    return render_template('minhas_selecoes.html', alunos=alunos)
+
+    alunos_com_skills = []
+    for aluno in alunos:
+        skills = aluno.skills
+        skills_dict = {
+            "Hard Skills": skills.hard_skills,
+            "Soft Skills": skills.soft_skills,
+            "Avaliação Geral": skills.avaliacao_geral,
+            "Participação": skills.participacao,
+            "Comunicação": skills.comunicacao,
+            "Proatividade": skills.proatividade,
+            "Raciocínio": skills.raciocinio,
+            "Domínio Técnico": skills.dominio_tecnico,
+            "Criatividade": skills.criatividade,
+            "Trabalho em Equipe": skills.trabalho_em_equipe
+        } if skills else {}
+
+        alunos_com_skills.append({
+            "id_aluno": aluno.id_aluno,
+            "nome_jovem": aluno.nome_jovem,
+            "data_nascimento": aluno.data_nascimento.strftime('%d/%m/%Y') if aluno.data_nascimento else 'N/A',
+            "curso": aluno.curso,
+            "contato_jovem": aluno.contato_jovem,
+            "email": aluno.email,
+            "skills": skills_dict
+        })
+
+    return render_template('minhas_selecoes.html', alunos=alunos_com_skills)
 
 @app.route('/remover_indicacao/<int:id_aluno>', methods=['POST'])
 @bloquear_instituicao
