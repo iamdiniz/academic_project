@@ -1,0 +1,42 @@
+
+
+{% block body %}
+<div class="container mt-4">
+    <h2>Evolução das Skills de {{ aluno.nome_jovem }}</h2>
+    {% if historico_pares %}
+        <ul class="list-group">
+            {% for par in historico_pares %}
+                <li class="list-group-item">
+                    <strong>{{ par.data.strftime('%d/%m/%Y %H:%M') }}</strong>
+                    <ul>
+                        {% for campo, label in {
+                            'hard_skills':'Hard Skills',
+                            'soft_skills':'Soft Skills',
+                            'avaliacao_geral':'Avaliação Geral',
+                            'participacao':'Participação',
+                            'comunicacao':'Comunicação',
+                            'proatividade':'Proatividade',
+                            'raciocinio':'Raciocínio',
+                            'dominio_tecnico':'Domínio Técnico',
+                            'criatividade':'Criatividade',
+                            'trabalho_em_equipe':'Trabalho em Equipe'
+                        }.items() %}
+                            {% set diff = par.atual[campo] - par.anterior[campo] %}
+                            {% if diff > 0 %}
+                                <li>Melhorou +{{ diff }} ponto{{ 's' if diff > 1 else '' }} em {{ label }}</li>
+                            {% elif diff < 0 %}
+                                <li>Diminuiu {{ diff|abs }} ponto{{ 's' if diff|abs > 1 else '' }} em {{ label }}</li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-center"><em>Sem histórico de skills para este aluno.</em></p>
+    {% endif %}
+    <div class="mt-3">
+        <a href="{{ url_for('acompanhar') }}" class="btn btn-secondary">Voltar</a>
+    </div>
+</div>
+{% endblock %}

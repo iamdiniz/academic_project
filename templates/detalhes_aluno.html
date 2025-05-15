@@ -47,9 +47,21 @@
     <!-- Botão para abrir o pop-up -->
     <div class="mt-4">
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#contatoModal">Ver Contato</button>
+        <!-- Adicione dentro do modal ou onde preferir -->
+    <button class="btn btn-warning" id="acompanharAlunoBtn">Acompanhar</button>
+    <script>
+    document.getElementById('acompanharAlunoBtn').onclick = function() {
+        fetch('{{ url_for("acompanhar_aluno", id_aluno=aluno.id_aluno) }}', {
+            method: 'POST'
+        }).then(r => r.json()).then(data => {
+            alert(data.message || data.error);
+        });
+    };
+    </script>
         <a href="{{ previous_url }}" class="btn btn-secondary">Voltar</a>
     </div>
 </div>
+
 
 <!-- Modal (Pop-up) -->
 <div class="modal fade" id="contatoModal" tabindex="-1" aria-labelledby="contatoModalLabel" aria-hidden="true">

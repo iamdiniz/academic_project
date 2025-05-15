@@ -83,6 +83,39 @@ class SkillsDoAluno(db.Model):
     # Relacionamento com o modelo Aluno
     aluno = db.relationship('Aluno', backref=db.backref('skills', uselist=False))
 
+class Acompanhamento(db.Model):
+    __tablename__ = 'acompanhamento'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id_chefe = db.Column(db.Integer, db.ForeignKey('chefe.id_chefe'), nullable=False)
+    id_aluno = db.Column(db.Integer, db.ForeignKey('alunos.id_aluno'), nullable=False)
+    data_acompanhamento = db.Column(db.DateTime, server_default=db.func.now())
+
+    chefe = db.relationship('Chefe', backref='acompanhamentos')
+    aluno = db.relationship('Aluno', backref='acompanhamentos')
+
+    __table_args__ = (
+        db.UniqueConstraint('id_chefe', 'id_aluno', name='uix_chefe_aluno'),
+    )
+
+# Adicione ao seu models.py ou app.py
+class SkillsHistorico(db.Model):
+    __tablename__ = 'skills_historico'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id_aluno = db.Column(db.Integer, db.ForeignKey('alunos.id_aluno'), nullable=False)
+    data = db.Column(db.DateTime, server_default=db.func.now())
+    hard_skills = db.Column(db.Integer)
+    soft_skills = db.Column(db.Integer)
+    avaliacao_geral = db.Column(db.Integer)
+    participacao = db.Column(db.Integer)
+    comunicacao = db.Column(db.Integer)
+    proatividade = db.Column(db.Integer)
+    raciocinio = db.Column(db.Integer)
+    dominio_tecnico = db.Column(db.Integer)
+    criatividade = db.Column(db.Integer)
+    trabalho_em_equipe = db.Column(db.Integer)
+
+    aluno = db.relationship('Aluno', backref='historicos')
+
 with app.app_context():
     db.create_all()  # Recria as tabelas com base nos modelos
     print("Tabelas recriadas com sucesso!")
@@ -638,6 +671,25 @@ def detalhes_aluno_instituicao(id_aluno):
 
         db.session.add(skills)
         db.session.commit()
+
+        # --- NOVO: Salvar snapshot no histórico ---
+        historico = SkillsHistorico(
+            id_aluno=aluno.id_aluno,
+            hard_skills=skills.hard_skills,
+            soft_skills=skills.soft_skills,
+            avaliacao_geral=skills.avaliacao_geral,
+            participacao=skills.participacao,
+            comunicacao=skills.comunicacao,
+            proatividade=skills.proatividade,
+            raciocinio=skills.raciocinio,
+            dominio_tecnico=skills.dominio_tecnico,
+            criatividade=skills.criatividade,
+            trabalho_em_equipe=skills.trabalho_em_equipe
+        )
+        db.session.add(historico)
+        db.session.commit()
+        # --- FIM DO NOVO ---
+
         flash("Informações do aluno atualizadas com sucesso!", "success")
         return redirect(url_for('alunos_instituicao'))
 
@@ -687,6 +739,85 @@ def perfil():
         return redirect(url_for('home'))
 
     return render_template('perfil.html', usuario=usuario)
+
+@app.route('/acompanhar_aluno/<int:id_aluno>', methods=['POST'])
+@login_required
+@bloquear_instituicao
+def acompanhar_aluno(id_aluno):
+    chefe_id = current_user.id_chefe
+
+    # Verifica se já está acompanhando
+    acompanhamento = Acompanhamento.query.filter_by(id_chefe=chefe_id, id_aluno=id_aluno).first()
+    if acompanhamento:
+        return jsonify({'error': 'Você já está acompanhando este aluno.'}), 400
+
+    novo_acompanhamento = Acompanhamento(id_chefe=chefe_id, id_aluno=id_aluno)
+    db.session.add(novo_acompanhamento)
+    db.session.commit()
+    return jsonify({'message': 'Aluno adicionado à sua lista de acompanhamento!'})
+
+@app.route('/acompanhar')
+@login_required
+@bloquear_instituicao
+def acompanhar():
+    chefe_id = current_user.id_chefe
+    acompanhamentos = Acompanhamento.query.filter_by(id_chefe=chefe_id).all()
+    alunos_com_skills = []
+    for ac in acompanhamentos:
+        aluno = ac.aluno
+        skills = aluno.skills
+        skills_dict = {
+            "Hard Skills": skills.hard_skills,
+            "Soft Skills": skills.soft_skills,
+            "Avaliação Geral": skills.avaliacao_geral,
+            "Participação": skills.participacao,
+            "Comunicação": skills.comunicacao,
+            "Proatividade": skills.proatividade,
+            "Raciocínio": skills.raciocinio,
+            "Domínio Técnico": skills.dominio_tecnico,
+            "Criatividade": skills.criatividade,
+            "Trabalho em Equipe": skills.trabalho_em_equipe
+        } if skills else {}
+        alunos_com_skills.append({
+            "id_aluno": aluno.id_aluno,
+            "nome_jovem": aluno.nome_jovem,
+            "data_nascimento": aluno.data_nascimento.strftime('%d/%m/%Y') if aluno.data_nascimento else 'N/A',
+            "curso": aluno.curso,
+            "contato_jovem": aluno.contato_jovem,
+            "email": aluno.email,
+            "skills": skills_dict
+        })
+    return render_template('acompanhar.html', alunos=alunos_com_skills)
+
+@app.route('/remover_acompanhamento/<int:id_aluno>', methods=['POST'])
+@login_required
+@bloquear_instituicao
+def remover_acompanhamento(id_aluno):
+    chefe_id = current_user.id_chefe
+    acompanhamento = Acompanhamento.query.filter_by(id_chefe=chefe_id, id_aluno=id_aluno).first()
+    if acompanhamento:
+        db.session.delete(acompanhamento)
+        db.session.commit()
+        return jsonify({'message': 'Acompanhamento removido com sucesso!'})
+    return jsonify({'error': 'Acompanhamento não encontrado.'}), 404
+
+@app.route('/status_aluno/<int:id_aluno>')
+@login_required
+@bloquear_instituicao
+def status_aluno(id_aluno):
+    historicos = SkillsHistorico.query.filter_by(id_aluno=id_aluno).order_by(SkillsHistorico.data.desc()).all()
+    aluno = Aluno.query.get_or_404(id_aluno)
+    campos = [
+        'hard_skills','soft_skills','avaliacao_geral','participacao','comunicacao',
+        'proatividade','raciocinio','dominio_tecnico','criatividade','trabalho_em_equipe'
+    ]
+    historico_pares = []
+    for i in range(len(historicos) - 1):
+        atual = {campo: getattr(historicos[i], campo) for campo in campos}
+        anterior = {campo: getattr(historicos[i+1], campo) for campo in campos}
+        data_atual = historicos[i].data
+        historico_pares.append({'atual': atual, 'anterior': anterior, 'data': data_atual})
+    return render_template('status_aluno.html', historico_pares=historico_pares, aluno=aluno)
 
 @app.route('/logout')
 def logout():
