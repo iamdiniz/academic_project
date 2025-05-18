@@ -107,7 +107,29 @@
                     </div>
                     <div class="col-4">
                         <ul class="navbar-nav justify-content-center mb-2 mb-lg-0">
-                            <!-- Espaço reservado para links centrais se quiser -->
+                            {% if session.get('tipo_usuario') == 'chefe' %}
+                                <li class="nav-item">
+                                    <a class="nav-link {% if request.path == url_for('instituicao_ensino') %}active{% endif %}" href="{{ url_for('instituicao_ensino') }}">
+                                        Instituições de Ensino
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {% if request.path == url_for('minhas_selecoes') %}active{% endif %}" href="{{ url_for('minhas_selecoes') }}">
+                                        Minhas Seleções
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {% if request.path == url_for('acompanhar') %}active{% endif %}" href="{{ url_for('acompanhar') }}">
+                                        Acompanhar Alunos
+                                    </a>
+                                </li>
+                            {% elif session.get('tipo_usuario') == 'instituicao' %}
+                                <li class="nav-item">
+                                    <a class="nav-link {% if request.path == url_for('alunos_instituicao') %}active{% endif %}" href="{{ url_for('alunos_instituicao') }}">
+                                        Gerenciar Alunos
+                                    </a>
+                                </li>
+                            {% endif %}
                         </ul>
                     </div>
                     <div class="col-4 text-end">
