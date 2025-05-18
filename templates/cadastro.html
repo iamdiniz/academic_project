@@ -124,16 +124,33 @@ function exibirCampos() {
     const blocoInstituicao = document.getElementById('camposInstituicao');
     const blocoChefe = document.getElementById('camposChefe');
 
+    // Seleciona todos os campos dos blocos
+    const camposInstituicao = blocoInstituicao.querySelectorAll('input, textarea');
+    const camposChefe = blocoChefe.querySelectorAll('input');
+
     if (tipo === 'instituicao') {
         blocoInstituicao.style.display = 'block';
         blocoChefe.style.display = 'none';
+        // Ativa required nos campos de instituição
+        camposInstituicao.forEach(campo => campo.required = true);
+        // Remove required dos campos de chefe
+        camposChefe.forEach(campo => campo.required = false);
     } else if (tipo === 'chefe') {
         blocoInstituicao.style.display = 'none';
         blocoChefe.style.display = 'block';
+        // Ativa required nos campos de chefe
+        camposChefe.forEach(campo => campo.required = true);
+        // Remove required dos campos de instituição
+        camposInstituicao.forEach(campo => campo.required = false);
     } else {
         blocoInstituicao.style.display = 'none';
         blocoChefe.style.display = 'none';
+        camposInstituicao.forEach(campo => campo.required = false);
+        camposChefe.forEach(campo => campo.required = false);
     }
 }
+
+// Garante que ao recarregar a página, os campos estejam corretos
+document.addEventListener('DOMContentLoaded', exibirCampos);
 </script>
 {% endblock %}
