@@ -129,6 +129,11 @@
                                         Gerenciar Alunos
                                     </a>
                                 </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {% if request.path == url_for('cursos') %}active{% endif %}" href="{{ url_for('cursos') }}">
+                                        Cursos
+                                    </a>
+                                </li>
                             {% endif %}
                         </ul>
                     </div>
@@ -179,6 +184,11 @@
             <a class="nav-link {% if request.path == url_for('alunos_instituicao') %}active{% endif %}" href="{{ url_for('alunos_instituicao') }}">
                 <i class="bi bi-mortarboard"></i>
                 <span class="sidebar-tooltip">Gerenciar Alunos</span>
+            </a>
+            <!-- Cursos -->
+            <a class="nav-link {% if request.path == url_for('cursos') %}active{% endif %}" href="{{ url_for('cursos') }}">
+                <i class="bi bi-journal-bookmark"></i>
+                <span class="sidebar-tooltip">Cursos</span>
             </a>
         {% endif %}
     </div>
