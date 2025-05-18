@@ -9,14 +9,20 @@
     <p class="text-center">"Transformando vidas através da educação. Gerencie seus alunos e inspire o futuro."</p>
 
     <div class="row mt-5">
-    <div class="col-md-6 mx-auto">
-        <div class="card shadow-lg p-4 text-center">
-            <h3>Gerenciar Alunos</h3>
-            <p>Visualize, filtre e gerencie os alunos cadastrados na sua instituição.</p>
-            <a href="{{ url_for('alunos_instituicao') }}" class="btn btn-primary btn-lg">Gerenciar Alunos</a>
+        <div class="col-md-6">
+            <div class="card shadow-lg p-4 text-center">
+                <h3>Gerenciar Alunos</h3>
+                <p>Visualize, filtre e gerencie os alunos cadastrados na sua instituição.</p>
+                <a href="{{ url_for('alunos_instituicao') }}" class="btn btn-primary btn-lg">Gerenciar Alunos</a>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-lg p-4 text-center">
+                <h3>Cursos</h3>
+                <p>Gerencie os cursos oferecidos pela sua instituição.</p>
+                <a href="{{ url_for('cursos') }}" class="btn btn-success btn-lg">Ver Cursos</a>
+            </div>
         </div>
     </div>
 </div>
-
-
 {% endblock %}
