@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% set hide_navbar = False %}
 
-{% block title %}Detalhes do Aluno - {{ aluno.nome }}{% endblock %}
+{% block title %}Detalhes do Aluno - {{ aluno.nome_jovem }}{% endblock %}
 
 {% block body %}
 <div class="container mt-4">
@@ -14,19 +14,46 @@
 
     <h4 class="mt-4">Skills</h4>
     {% if skills %}
-        <canvas id="graficoSkills" width="200" height="50"></canvas>
+        <canvas id="graficoSkills" width="400" height="200"></canvas>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
-            const ctx = document.getElementById('graficoSkills').getContext('2d');
-            new Chart(ctx, {
+            // Dados das skills
+            const skillLabels = [
+                "Hard Skills", "Soft Skills", "Avaliação Geral", "Participação",
+                "Comunicação", "Proatividade", "Raciocínio", "Domínio Técnico",
+                "Criatividade", "Trabalho em Equipe"
+            ];
+            const skillValues = [
+                {{ skills["Hard Skills"]|default(0) }},
+                {{ skills["Soft Skills"]|default(0) }},
+                {{ skills["Avaliação Geral"]|default(0) }},
+                {{ skills["Participação"]|default(0) }},
+                {{ skills["Comunicação"]|default(0) }},
+                {{ skills["Proatividade"]|default(0) }},
+                {{ skills["Raciocínio"]|default(0) }},
+                {{ skills["Domínio Técnico"]|default(0) }},
+                {{ skills["Criatividade"]|default(0) }},
+                {{ skills["Trabalho em Equipe"]|default(0) }}
+            ];
+
+            // Função para definir cor por valor
+            function getBarColor(value) {
+                if (value === 0) return 'rgba(0,0,0,0)';
+                if (value <= 3) return 'rgba(220, 53, 69, 0.8)';      // Vermelho
+                if (value <= 6) return 'rgba(255, 193, 7, 0.8)';      // Amarelo/laranja
+                return 'rgba(40, 167, 69, 0.8)';                      // Verde
+            }
+            const barColors = skillValues.map(getBarColor);
+
+            new Chart(document.getElementById('graficoSkills').getContext('2d'), {
                 type: 'bar',
                 data: {
-                    labels: {{ skills.keys() | list | safe }},
+                    labels: skillLabels,
                     datasets: [{
                         label: 'Skills',
-                        data: {{ skills.values() | list | safe }},
-                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
+                        data: skillValues,
+                        backgroundColor: barColors,
+                        borderColor: barColors.map(c => c.replace('0.8', '1')),
                         borderWidth: 1
                     }]
                 },
@@ -34,8 +61,14 @@
                     responsive: true,
                     scales: {
                         y: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            min: 0,
+                            max: 10,
+                            ticks: { stepSize: 1 }
                         }
+                    },
+                    plugins: {
+                        legend: { display: false }
                     }
                 }
             });
@@ -44,24 +77,21 @@
         <p><em>Sem dados de skills disponíveis.</em></p>
     {% endif %}
 
-    <!-- Botão para abrir o pop-up -->
     <div class="mt-4">
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#contatoModal">Ver Contato</button>
-        <!-- Adicione dentro do modal ou onde preferir -->
-    <button class="btn btn-warning" id="acompanharAlunoBtn">Acompanhar</button>
-    <script>
-    document.getElementById('acompanharAlunoBtn').onclick = function() {
-        fetch('{{ url_for("acompanhar_aluno", id_aluno=aluno.id_aluno) }}', {
-            method: 'POST'
-        }).then(r => r.json()).then(data => {
-            alert(data.message || data.error);
-        });
-    };
-    </script>
+        <button class="btn btn-warning" id="acompanharAlunoBtn">Acompanhar</button>
+        <script>
+        document.getElementById('acompanharAlunoBtn').onclick = function() {
+            fetch('{{ url_for("acompanhar_aluno", id_aluno=aluno.id_aluno) }}', {
+                method: 'POST'
+            }).then(r => r.json()).then(data => {
+                alert(data.message || data.error);
+            });
+        };
+        </script>
         <a href="{{ previous_url }}" class="btn btn-secondary">Voltar</a>
     </div>
 </div>
-
 
 <!-- Modal (Pop-up) -->
 <div class="modal fade" id="contatoModal" tabindex="-1" aria-labelledby="contatoModalLabel" aria-hidden="true">
@@ -87,7 +117,6 @@
 <script>
     // Função para exibir notificação ao indicar o aluno
     document.getElementById('indicarAlunoBtn').addEventListener('click', function () {
-        // Faz uma requisição para adicionar o aluno à tela "Minhas Seleções"
         fetch('{{ url_for("indicar_aluno", id_aluno=aluno.id_aluno) }}', {
             method: 'POST',
             headers: {
@@ -97,13 +126,9 @@
         }).then(response => response.json())
           .then(data => {
               if (data.error) {
-                  // Exibe um alerta se o aluno já foi indicado
                   alert(data.error);
               } else {
-                  // Exibe uma mensagem de sucesso
                   alert(data.message);
-
-                  // Fecha o modal
                   const modal = bootstrap.Modal.getInstance(document.getElementById('contatoModal'));
                   modal.hide();
               }

@@ -122,11 +122,12 @@ with app.app_context():
 
 @login_manager.user_loader
 def load_user(user_id):
-    # Tenta carregar o usuário como Chefe ou Instituição de Ensino
-    chefe = Chefe.query.get(int(user_id))
-    if chefe:
-        return chefe
-    return InstituicaodeEnsino.query.get(int(user_id))
+    tipo_usuario = session.get('tipo_usuario')
+    if tipo_usuario == 'chefe':
+        return Chefe.query.get(int(user_id))
+    elif tipo_usuario == 'instituicao':
+        return InstituicaodeEnsino.query.get(int(user_id))
+    return None
 
 def bloquear_chefe(f):
     @wraps(f)
@@ -303,16 +304,16 @@ def minhas_selecoes():
     for aluno in alunos:
         skills = aluno.skills
         skills_dict = {
-            "Hard Skills": skills.hard_skills,
-            "Soft Skills": skills.soft_skills,
-            "Avaliação Geral": skills.avaliacao_geral,
-            "Participação": skills.participacao,
-            "Comunicação": skills.comunicacao,
-            "Proatividade": skills.proatividade,
-            "Raciocínio": skills.raciocinio,
-            "Domínio Técnico": skills.dominio_tecnico,
-            "Criatividade": skills.criatividade,
-            "Trabalho em Equipe": skills.trabalho_em_equipe
+            "Hard Skills": skills.hard_skills if skills else 0,
+            "Soft Skills": skills.soft_skills if skills else 0,
+            "Avaliação Geral": skills.avaliacao_geral if skills else 0,
+            "Participação": skills.participacao if skills else 0,
+            "Comunicação": skills.comunicacao if skills else 0,
+            "Proatividade": skills.proatividade if skills else 0,
+            "Raciocínio": skills.raciocinio if skills else 0,
+            "Domínio Técnico": skills.dominio_tecnico if skills else 0,
+            "Criatividade": skills.criatividade if skills else 0,
+            "Trabalho em Equipe": skills.trabalho_em_equipe if skills else 0
         } if skills else {}
 
         alunos_com_skills.append({
@@ -381,9 +382,6 @@ def ver_alunos_por_curso():
     # Normalizar o nome do curso para remover acentos e caracteres especiais
     curso_normalizado = unidecode(curso).lower()
 
-    # Log para depuração
-    print(f"Instituição ID: {inst_id}, Curso: {curso}, Curso Normalizado: {curso_normalizado}")
-
     # Busca os alunos pelo curso e instituição
     alunos = Aluno.query.filter(
         Aluno.id_instituicao == inst_id
@@ -400,17 +398,21 @@ def ver_alunos_por_curso():
         flash(f"Nenhum aluno encontrado para o curso '{curso}'.", "warning")
         return redirect(url_for('instituicao_ensino'))
 
-    # Converte os dados de skills para dicionários
+    # Converte os dados de skills para dicionários completos
     alunos_com_skills = []
     for aluno in alunos_filtrados:
         skills = aluno.skills
         skills_dict = {
-            "Hard Skills": skills.hard_skills,
-            "Soft Skills": skills.soft_skills,
-            "Avaliação Geral": skills.avaliacao_geral,
-            "Comunicação": skills.comunicacao,
-            "Criatividade": skills.criatividade,
-            "Trabalho em Equipe": skills.trabalho_em_equipe
+            "Hard Skills": skills.hard_skills if skills else 0,
+            "Soft Skills": skills.soft_skills if skills else 0,
+            "Avaliação Geral": skills.avaliacao_geral if skills else 0,
+            "Participação": skills.participacao if skills else 0,
+            "Comunicação": skills.comunicacao if skills else 0,
+            "Proatividade": skills.proatividade if skills else 0,
+            "Raciocínio": skills.raciocinio if skills else 0,
+            "Domínio Técnico": skills.dominio_tecnico if skills else 0,
+            "Criatividade": skills.criatividade if skills else 0,
+            "Trabalho em Equipe": skills.trabalho_em_equipe if skills else 0
         } if skills else {}
 
         alunos_com_skills.append({
@@ -418,6 +420,8 @@ def ver_alunos_por_curso():
             "nome": aluno.nome_jovem,
             "data_nascimento": aluno.data_nascimento.strftime('%d/%m/%Y') if aluno.data_nascimento else 'N/A',
             "curso": aluno.curso,
+            "contato_jovem": aluno.contato_jovem,
+            "email": aluno.email,
             "skills": skills_dict
         })
 
@@ -478,16 +482,27 @@ def cardAlunos():
 
     for aluno in alunos:
         skills = aluno.skills
+        skills_dict = {
+            "Hard Skills": skills.hard_skills if skills else 0,
+            "Soft Skills": skills.soft_skills if skills else 0,
+            "Avaliação Geral": skills.avaliacao_geral if skills else 0,
+            "Participação": skills.participacao if skills else 0,
+            "Comunicação": skills.comunicacao if skills else 0,
+            "Proatividade": skills.proatividade if skills else 0,
+            "Raciocínio": skills.raciocinio if skills else 0,
+            "Domínio Técnico": skills.dominio_tecnico if skills else 0,
+            "Criatividade": skills.criatividade if skills else 0,
+            "Trabalho em Equipe": skills.trabalho_em_equipe if skills else 0
+        } if skills else {}
+
         dados_alunos.append({
-            'id': aluno.id_aluno,
+            'id_aluno': aluno.id_aluno,
             'nome': aluno.nome_jovem,
             'data_nascimento': aluno.data_nascimento.strftime('%d/%m/%Y') if aluno.data_nascimento else 'N/A',
             'curso': aluno.curso,
-            'skills': {
-                'Hard Skills': skills.hard_skills,
-                'Soft Skills': skills.soft_skills,
-                'Avaliação Geral': skills.avaliacao_geral,
-            } if skills else {}
+            'contato_jovem': aluno.contato_jovem,
+            'email': aluno.email,
+            'skills': skills_dict
         })
 
     return render_template('cardAlunos.html', alunos=dados_alunos)
@@ -767,17 +782,18 @@ def acompanhar():
         aluno = ac.aluno
         skills = aluno.skills
         skills_dict = {
-            "Hard Skills": skills.hard_skills,
-            "Soft Skills": skills.soft_skills,
-            "Avaliação Geral": skills.avaliacao_geral,
-            "Participação": skills.participacao,
-            "Comunicação": skills.comunicacao,
-            "Proatividade": skills.proatividade,
-            "Raciocínio": skills.raciocinio,
-            "Domínio Técnico": skills.dominio_tecnico,
-            "Criatividade": skills.criatividade,
-            "Trabalho em Equipe": skills.trabalho_em_equipe
+            "Hard Skills": skills.hard_skills if skills else 0,
+            "Soft Skills": skills.soft_skills if skills else 0,
+            "Avaliação Geral": skills.avaliacao_geral if skills else 0,
+            "Participação": skills.participacao if skills else 0,
+            "Comunicação": skills.comunicacao if skills else 0,
+            "Proatividade": skills.proatividade if skills else 0,
+            "Raciocínio": skills.raciocinio if skills else 0,
+            "Domínio Técnico": skills.dominio_tecnico if skills else 0,
+            "Criatividade": skills.criatividade if skills else 0,
+            "Trabalho em Equipe": skills.trabalho_em_equipe if skills else 0
         } if skills else {}
+
         alunos_com_skills.append({
             "id_aluno": aluno.id_aluno,
             "nome_jovem": aluno.nome_jovem,

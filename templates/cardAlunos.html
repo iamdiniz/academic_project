@@ -18,66 +18,87 @@
     <div class="row g-4">
         {% for aluno in alunos %}
             <div class="col-md-4">
-                <div class="card p-3 shadow-sm h-100 d-flex flex-column justify-content-between">
-                    <h5>{{ aluno.nome }}</h5>
-                    <p><strong>Data de Nascimento:</strong> {{ aluno.data_nascimento }}</p>
-                    <p><strong>Curso:</strong> {{ aluno.curso }}</p>
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ aluno.nome }}</h5>
+                        <p><strong>Curso:</strong> {{ aluno.curso }}</p>
+                        <p><strong>Data de Nascimento:</strong> {{ aluno.data_nascimento }}</p>
 
-                    {% if aluno.skills %}
-                        <canvas id="grafico{{ loop.index }}" style="max-width: 100%; max-height: 250px;"></canvas>
-                        <script>
-                            const ctx{{ loop.index }} = document.getElementById('grafico{{ loop.index }}').getContext('2d');
-                            new Chart(ctx{{ loop.index }}, {
-                                type: 'radar',
-                                data: {
-                                    labels: {{ aluno.skills.keys() | list | safe }},
-                                    datasets: [{
-                                        label: 'Skills',
-                                        data: {{ aluno.skills.values() | list | safe }},
-                                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                                        borderColor: 'rgba(54, 162, 235, 1)',
-                                        pointBackgroundColor: 'rgba(54, 162, 235, 1)',
-                                        borderWidth: 1
-                                    }]
-                                },
-                                options: {
-                                    responsive: true,
-                                    scales: {
-                                        r: {
-                                            beginAtZero: true,
-                                            ticks: {
-                                                display: false,  // Remove os números dentro do gráfico
-                                                stepSize: 1
-                                            },
-                                            grid: {
-                                                color: 'rgba(200, 200, 200, 0.5)'
-                                            },
-                                            angleLines: {
-                                                color: 'rgba(200, 200, 200, 0.5)'
-                                            }
-                                        }
+                        {% if aluno.skills %}
+                            <canvas id="grafico{{ loop.index }}" style="max-width: 100%; max-height: 250px;"></canvas>
+                            <script>
+                                const ctx{{ loop.index }} = document.getElementById('grafico{{ loop.index }}').getContext('2d');
+                                new Chart(ctx{{ loop.index }}, {
+                                    type: 'radar',
+                                    data: {
+                                        labels: [
+                                            "Hard Skills", "Soft Skills", "Avaliação Geral", "Participação",
+                                            "Comunicação", "Proatividade", "Raciocínio", "Domínio Técnico",
+                                            "Criatividade", "Trabalho em Equipe"
+                                        ],
+                                        datasets: [{
+                                            label: 'Skills',
+                                            data: [
+                                                {{ aluno.skills["Hard Skills"]|default(0) }},
+                                                {{ aluno.skills["Soft Skills"]|default(0) }},
+                                                {{ aluno.skills["Avaliação Geral"]|default(0) }},
+                                                {{ aluno.skills["Participação"]|default(0) }},
+                                                {{ aluno.skills["Comunicação"]|default(0) }},
+                                                {{ aluno.skills["Proatividade"]|default(0) }},
+                                                {{ aluno.skills["Raciocínio"]|default(0) }},
+                                                {{ aluno.skills["Domínio Técnico"]|default(0) }},
+                                                {{ aluno.skills["Criatividade"]|default(0) }},
+                                                {{ aluno.skills["Trabalho em Equipe"]|default(0) }}
+                                            ],
+                                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                            borderColor: 'rgba(54, 162, 235, 1)',
+                                            pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                                            borderWidth: 2
+                                        }]
                                     },
-                                    plugins: {
-                                        legend: {
-                                            display: true,
-                                            position: 'top'
+                                    options: {
+                                        responsive: true,
+                                        scales: {
+                                            r: {
+                                                beginAtZero: true,
+                                                min: 0,
+                                                max: 10,
+                                                ticks: {
+                                                    display: false,
+                                                    stepSize: 1,
+                                                    color: '#666',
+                                                    backdropColor: 'rgba(255, 255, 255, 0.8)'
+                                                },
+                                                grid: {
+                                                    color: 'rgba(200, 200, 200, 0.5)'
+                                                },
+                                                angleLines: {
+                                                    color: 'rgba(200, 200, 200, 0.5)'
+                                                }
+                                            }
                                         },
-                                        tooltip: {
-                                            enabled: true,
-                                            callbacks: {
-                                                label: function(tooltipItem) {
-                                                    return tooltipItem.label + ': ' + tooltipItem.raw;
+                                        plugins: {
+                                            legend: {
+                                                display: true,
+                                                position: 'top'
+                                            },
+                                            tooltip: {
+                                                enabled: true,
+                                                callbacks: {
+                                                    label: function(tooltipItem) {
+                                                        return tooltipItem.label + ': ' + tooltipItem.raw;
+                                                    }
                                                 }
                                             }
                                         }
                                     }
-                                }
-                            });
-                        </script>
-                    {% else %}
-                        <p><em>Sem dados de skills disponíveis.</em></p>
-                    {% endif %}
-                    <div class="mt-3 text-end">
+                                });
+                            </script>
+                        {% else %}
+                            <p><em>Sem dados de skills disponíveis.</em></p>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer text-end">
                         <a href="{{ url_for('detalhes_aluno', id_aluno=aluno.id_aluno, previous=request.full_path) }}" class="btn btn-primary">Detalhes</a>
                     </div>
                 </div>

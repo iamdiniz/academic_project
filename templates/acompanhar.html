@@ -23,14 +23,29 @@
                             new Chart(ctx{{ loop.index }}, {
                                 type: 'radar',
                                 data: {
-                                    labels: {{ aluno.skills.keys() | list | safe }},
+                                    labels: [
+                                        "Hard Skills", "Soft Skills", "Avaliação Geral", "Participação",
+                                        "Comunicação", "Proatividade", "Raciocínio", "Domínio Técnico",
+                                        "Criatividade", "Trabalho em Equipe"
+                                    ],
                                     datasets: [{
                                         label: 'Skills',
-                                        data: {{ aluno.skills.values() | list | safe }},
+                                        data: [
+                                            {{ aluno.skills["Hard Skills"]|default(0) }},
+                                            {{ aluno.skills["Soft Skills"]|default(0) }},
+                                            {{ aluno.skills["Avaliação Geral"]|default(0) }},
+                                            {{ aluno.skills["Participação"]|default(0) }},
+                                            {{ aluno.skills["Comunicação"]|default(0) }},
+                                            {{ aluno.skills["Proatividade"]|default(0) }},
+                                            {{ aluno.skills["Raciocínio"]|default(0) }},
+                                            {{ aluno.skills["Domínio Técnico"]|default(0) }},
+                                            {{ aluno.skills["Criatividade"]|default(0) }},
+                                            {{ aluno.skills["Trabalho em Equipe"]|default(0) }}
+                                        ],
                                         backgroundColor: 'rgba(54, 162, 235, 0.2)',
                                         borderColor: 'rgba(54, 162, 235, 1)',
                                         pointBackgroundColor: 'rgba(54, 162, 235, 1)',
-                                        borderWidth: 1
+                                        borderWidth: 2
                                     }]
                                 },
                                 options: {
@@ -38,6 +53,8 @@
                                     scales: {
                                         r: {
                                             beginAtZero: true,
+                                            min: 0,
+                                            max: 10,
                                             ticks: { display: false, stepSize: 1 },
                                             grid: { color: 'rgba(200, 200, 200, 0.5)' },
                                             angleLines: { color: 'rgba(200, 200, 200, 0.5)' }
