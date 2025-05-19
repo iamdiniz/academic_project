@@ -43,8 +43,15 @@
                 <input type="number" class="form-control" id="nota_mec" name="nota_mec" value="{{ usuario.nota_mec }}" step="0.1" required>
             </div>
             <div class="mb-3">
-                <label for="areas_de_formacao" class="form-label">Áreas de Formação</label>
-                <textarea class="form-control" id="areas_de_formacao" name="areas_de_formacao" rows="3" required>{{ usuario.areas_de_formacao }}</textarea>
+                <label class="form-label">Cursos da Instituição</label>
+                <ul class="list-group">
+                    {% for curso in cursos_da_instituicao %}
+                        <li class="list-group-item">{{ curso.nome }}</li>
+                    {% else %}
+                        <li class="list-group-item text-muted">Nenhum curso cadastrado.</li>
+                    {% endfor %}
+                </ul>
+                <small class="text-muted">Para adicionar cursos, vá para <a href="{{ url_for('cursos') }}">Cursos</a>.</small>
             </div>
             <div class="mb-3">
                 <label for="modalidades" class="form-label">Modalidades</label>

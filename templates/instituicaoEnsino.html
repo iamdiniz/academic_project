@@ -121,12 +121,8 @@
                                         <div class="mb-3">
                                             <label for="cursoSelect{{ inst.id_instituicao }}" class="form-label">Escolha o curso:</label>
                                             <select class="form-select" id="cursoSelect{{ inst.id_instituicao }}" name="curso" required>
-                                                {% set cursos = inst.areas_de_formacao.split(',') if inst.areas_de_formacao else [] %}
-                                                {% for curso in cursos %}
-                                                    {% set curso_limpo = curso.strip() %} <!-- Remove espaços extras -->
-                                                    {% if curso_limpo %}
-                                                        <option value="{{ curso_limpo }}">{{ curso_limpo }}</option>
-                                                    {% endif %}
+                                                {% for curso in cursos_por_instituicao[inst.id_instituicao] %}
+                                                    <option value="{{ curso }}">{{ curso }}</option>
                                                 {% endfor %}
                                             </select>
                                         </div>

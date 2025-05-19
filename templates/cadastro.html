@@ -88,15 +88,34 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Nota MEC (*)</label>
-                    <input type="number" name="nota_mec" class="form-control" min="0" max="10" step="0.1" placeholder="Nota MEC" required>
+                    <input type="number" name="nota_mec" class="form-control" min="1" max="5" step="1"
+                        placeholder="Nota MEC (1 a 5)" required id="nota_mec_input"
+                        inputmode="numeric" pattern="[1-5]">
+                    <small class="text-muted">Digite um valor entre 1 e 5.</small>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Áreas de Formação (*)</label>
-                    <textarea name="areas_de_formacao" class="form-control" placeholder="Áreas de formação (ex: Engenharia, TI, Administração)" required></textarea>
+               <div class="mb-3">
+                    <label class="form-label">Cursos da Instituição (*)</label>
+                    <div class="row">
+                        {% for curso in cursos_padrao %}
+                            <div class="col-12 col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="cursos_selecionados"
+                                        id="curso_{{ loop.index }}" value="{{ curso }}">
+                                    <label class="form-check-label" for="curso_{{ loop.index }}">{{ curso }}</label>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <small class="text-muted">Selecione um ou mais cursos.</small>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Modalidades (*)</label>
-                    <input type="text" name="modalidades" class="form-control" placeholder="Modalidades (ex: Presencial, EAD)" required>
+                    <select name="modalidades" class="form-select" required>
+                        <option value="" disabled selected>Selecione a modalidade</option>
+                        <option value="Presencial">Presencial</option>
+                        <option value="Híbrido">Híbrido</option>
+                        <option value="EAD">EAD</option>
+                    </select>
                 </div>
             </div>
 
@@ -125,22 +144,20 @@ function exibirCampos() {
     const blocoChefe = document.getElementById('camposChefe');
 
     // Seleciona todos os campos dos blocos
-    const camposInstituicao = blocoInstituicao.querySelectorAll('input, textarea');
+    // ATENÇÃO: Não inclua checkboxes de cursos aqui!
+    const camposInstituicao = blocoInstituicao.querySelectorAll('input:not([type="checkbox"]), textarea');
     const camposChefe = blocoChefe.querySelectorAll('input');
 
     if (tipo === 'instituicao') {
         blocoInstituicao.style.display = 'block';
         blocoChefe.style.display = 'none';
-        // Ativa required nos campos de instituição
+        // Ativa required nos campos de instituição (exceto checkboxes de cursos)
         camposInstituicao.forEach(campo => campo.required = true);
-        // Remove required dos campos de chefe
         camposChefe.forEach(campo => campo.required = false);
     } else if (tipo === 'chefe') {
         blocoInstituicao.style.display = 'none';
         blocoChefe.style.display = 'block';
-        // Ativa required nos campos de chefe
         camposChefe.forEach(campo => campo.required = true);
-        // Remove required dos campos de instituição
         camposInstituicao.forEach(campo => campo.required = false);
     } else {
         blocoInstituicao.style.display = 'none';
@@ -149,6 +166,45 @@ function exibirCampos() {
         camposChefe.forEach(campo => campo.required = false);
     }
 }
+
+document.querySelector('.form-box').addEventListener('submit', function(e) {
+    const checkboxes = document.querySelectorAll('input[name="cursos_selecionados"]:checked');
+    if (checkboxes.length === 0) {
+        alert('Selecione pelo menos um curso da instituição.');
+        e.preventDefault();
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const notaInput = document.getElementById('nota_mec_input');
+    if (notaInput) {
+        // Bloqueia qualquer caractere que não seja número de 1 a 5
+        notaInput.addEventListener('keydown', function(e) {
+            // Permite teclas de controle
+            if (
+                e.key === "Backspace" || e.key === "Tab" || e.key === "Delete" ||
+                e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === "Home" || e.key === "End"
+            ) {
+                return;
+            }
+            // Permite apenas números de 1 a 5
+            if (!/^[1-5]$/.test(e.key)) {
+                e.preventDefault();
+            }
+            // Impede digitar mais de um dígito
+            if (this.value.length >= 1 && this.selectionStart === this.selectionEnd) {
+                e.preventDefault();
+            }
+        });
+
+        // Impede colar valores inválidos
+        notaInput.addEventListener('input', function() {
+            let value = this.value.replace(/[^1-5]/g, '');
+            if (value.length > 1) value = value[0];
+            this.value = value;
+        });
+    }
+});
 
 // Garante que ao recarregar a página, os campos estejam corretos
 document.addEventListener('DOMContentLoaded', exibirCampos);

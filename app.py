@@ -17,6 +17,13 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'  # Redireciona para a página de login se não autenticado
 
+CURSOS_PADRAO = [
+    "Administração", "Agronomia", "Arquitetura", "Biologia", "Ciência da Computação",
+    "Direito", "Educação Física", "Enfermagem", "Engenharia", "Farmácia", "Física",
+    "Matemática", "Medicina", "Pedagogia", "Psicologia", "Química", "Sistemas de Informação",
+    # ...adicione outros cursos desejados...
+]
+
 class InstituicaodeEnsino(db.Model, UserMixin):
     __tablename__ = 'instituicao_de_ensino'
 
@@ -34,6 +41,14 @@ class InstituicaodeEnsino(db.Model, UserMixin):
 
     def get_id(self):
         return str(self.id_instituicao) 
+
+class Curso(db.Model):
+    __tablename__ = 'cursos'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    nome = db.Column(db.String(255), nullable=False)
+    id_instituicao = db.Column(db.Integer, db.ForeignKey('instituicao_de_ensino.id_instituicao'), nullable=False)
+
+    instituicao = db.relationship('InstituicaodeEnsino', backref='cursos')
 
 class Aluno(db.Model):
     __tablename__ = 'alunos'
@@ -150,13 +165,12 @@ def bloquear_instituicao(f):
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
     if request.method == 'POST':
-        tipo_usuario = request.form.get('tipo_usuario')  # Verifica o tipo de usuário
+        tipo_usuario = request.form.get('tipo_usuario')
         nome = request.form.get('nome')
         email = request.form.get('email')
         senha = request.form.get('senha')
-
-        # Validação de senha
         confirmar_senha = request.form.get('confirmar_senha')
+
         if senha != confirmar_senha:
             flash('As senhas não coincidem!')
             return redirect(url_for('cadastro'))
@@ -166,10 +180,10 @@ def cadastro():
             endereco = request.form.get('endereco_instituicao')
             infraestrutura = request.form.get('infraestrutura')
             nota_mec = request.form.get('nota_mec')
-            areas_de_formacao = request.form.get('areas_de_formacao')
             modalidades = request.form.get('modalidades')
+            cursos_selecionados = request.form.getlist('cursos_selecionados')
 
-            if not nome or not email or not senha or not instituicao_nome or not endereco or not areas_de_formacao:
+            if not nome or not email or not senha or not instituicao_nome or not endereco or not cursos_selecionados:
                 flash('Todos os campos obrigatórios para Instituição de Ensino devem ser preenchidos!')
                 return redirect(url_for('cadastro'))
 
@@ -180,7 +194,7 @@ def cadastro():
                     senha=generate_password_hash(senha),
                     infraestrutura=infraestrutura,
                     nota_mec=nota_mec,
-                    areas_de_formacao=areas_de_formacao,
+                    areas_de_formacao=", ".join(cursos_selecionados),  # Apenas para histórico, não para lógica
                     modalidades=modalidades,
                     quantidade_de_alunos=0,
                     reitor=nome,
@@ -188,6 +202,13 @@ def cadastro():
                 )
                 db.session.add(nova_instituicaodeEnsino)
                 db.session.commit()
+
+                # Salva os cursos selecionados na tabela cursos
+                for nome_curso in cursos_selecionados:
+                    curso = Curso(nome=nome_curso, id_instituicao=nova_instituicaodeEnsino.id_instituicao)
+                    db.session.add(curso)
+                db.session.commit()
+
                 flash('Cadastro de Instituição realizado com sucesso! Faça login agora.')
                 return redirect(url_for('login'))
             except IntegrityError:
@@ -224,7 +245,7 @@ def cadastro():
             flash('Tipo de usuário inválido!')
             return redirect(url_for('cadastro'))
 
-    return render_template('cadastro.html')
+    return render_template('cadastro.html', cursos_padrao=CURSOS_PADRAO)
 
 @app.route('/')
 def index():
@@ -282,7 +303,17 @@ def instituicao_ensino():
     for instituicao in instituicoes:
         instituicao.quantidade_de_alunos = Aluno.query.filter_by(id_instituicao=instituicao.id_instituicao).count()
 
-    return render_template('instituicaoEnsino.html', instituicoes=instituicoes)
+    # Novo: monta um dicionário com os cursos de cada instituição
+    cursos_por_instituicao = {
+        inst.id_instituicao: [curso.nome for curso in Curso.query.filter_by(id_instituicao=inst.id_instituicao).all()]
+        for inst in instituicoes
+    }
+
+    return render_template(
+        'instituicaoEnsino.html',
+        instituicoes=instituicoes,
+        cursos_por_instituicao=cursos_por_instituicao
+    )
 
 @app.route('/detalhes_instituicao/<int:id_instituicao>')
 def detalhes_instituicao(id_instituicao):
@@ -511,11 +542,25 @@ def cardAlunos():
 def carousel():
     return render_template('carousel.html')
 
-@app.route('/cursos')
+@app.route('/cursos', methods=['GET', 'POST'])
 @login_required
 @bloquear_chefe
 def cursos():
-    return render_template('cursos.html')
+    if session.get('tipo_usuario') != 'instituicao':
+        flash("Acesso não permitido.", "danger")
+        return redirect(url_for('home'))
+
+    if request.method == 'POST':
+        nome_curso = request.form.get('curso')
+        if nome_curso:
+            novo_curso = Curso(nome=nome_curso, id_instituicao=current_user.id_instituicao)
+            db.session.add(novo_curso)
+            db.session.commit()
+            flash('Curso cadastrado com sucesso!', 'success')
+        return redirect(url_for('cursos'))
+
+    cursos = Curso.query.filter_by(id_instituicao=current_user.id_instituicao).all()
+    return render_template('cursos.html', cursos=cursos)
 
 @app.route('/alunos')
 @login_required
@@ -603,10 +648,11 @@ def alunos_instituicao():
         return redirect(url_for('home'))
 
     instituicao_id = current_user.id_instituicao
-    instituicao = InstituicaodeEnsino.query.get(instituicao_id)
-    # Supondo que os cursos estão separados por vírgula
-    cursos_disponiveis = [c.strip() for c in instituicao.areas_de_formacao.split(',')] if instituicao.areas_de_formacao else []
 
+    # Pegue os cursos diretamente da tabela cursos
+    cursos_disponiveis = [curso.nome for curso in Curso.query.filter_by(id_instituicao=instituicao_id).all()]
+
+    # Para filtro de cursos já cadastrados em alunos (opcional)
     cursos = Aluno.query.with_entities(Aluno.curso).filter_by(id_instituicao=instituicao_id).distinct().all()
     cursos = [curso[0] for curso in cursos if curso[0]]
 
@@ -647,7 +693,7 @@ def alunos_instituicao():
         alunos=alunos_com_skills,
         cursos=cursos,
         filtro_curso=filtro_curso,
-        cursos_disponiveis=cursos_disponiveis  # <-- Adicione esta linha
+        cursos_disponiveis=cursos_disponiveis  # <-- Agora sempre atualizado!
     )
 
 @app.route('/detalhes_aluno_instituicao/<int:id_aluno>', methods=['GET', 'POST'])
@@ -735,7 +781,7 @@ def perfil():
             instituicao.reitor = request.form['reitor']
             instituicao.infraestrutura = request.form['infraestrutura']
             instituicao.nota_mec = request.form['nota_mec']
-            instituicao.areas_de_formacao = request.form['areas_de_formacao']
+            # NÃO atualize areas_de_formacao manualmente!
             instituicao.modalidades = request.form['modalidades']
             instituicao.email = request.form['email']
             if request.form['senha']:
@@ -747,13 +793,16 @@ def perfil():
     # Exibir informações do perfil
     if tipo_usuario == 'chefe':
         usuario = Chefe.query.get_or_404(current_user.id_chefe)
+        cursos_da_instituicao = []
     elif tipo_usuario == 'instituicao':
         usuario = InstituicaodeEnsino.query.get_or_404(current_user.id_instituicao)
+        # Pegue os cursos reais da tabela cursos
+        cursos_da_instituicao = Curso.query.filter_by(id_instituicao=current_user.id_instituicao).all()
     else:
         flash("Tipo de usuário inválido.", "danger")
         return redirect(url_for('home'))
 
-    return render_template('perfil.html', usuario=usuario)
+    return render_template('perfil.html', usuario=usuario, cursos_da_instituicao=cursos_da_instituicao)
 
 @app.route('/acompanhar_aluno/<int:id_aluno>', methods=['POST'])
 @login_required
