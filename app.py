@@ -831,18 +831,17 @@ def acompanhar():
         aluno = ac.aluno
         skills = aluno.skills
         skills_dict = {
-            "Hard Skills": skills.hard_skills if skills else 0,
-            "Soft Skills": skills.soft_skills if skills else 0,
-            "Avaliação Geral": skills.avaliacao_geral if skills else 0,
-            "Participação": skills.participacao if skills else 0,
-            "Comunicação": skills.comunicacao if skills else 0,
-            "Proatividade": skills.proatividade if skills else 0,
-            "Raciocínio": skills.raciocinio if skills else 0,
-            "Domínio Técnico": skills.dominio_tecnico if skills else 0,
-            "Criatividade": skills.criatividade if skills else 0,
-            "Trabalho em Equipe": skills.trabalho_em_equipe if skills else 0
+            "Hard Skills": skills.hard_skills,
+            "Soft Skills": skills.soft_skills,
+            "Avaliação Geral": skills.avaliacao_geral,
+            "Participação": skills.participacao,
+            "Comunicação": skills.comunicacao,
+            "Proatividade": skills.proatividade,
+            "Raciocínio": skills.raciocinio,
+            "Domínio Técnico": skills.dominio_tecnico,
+            "Criatividade": skills.criatividade,
+            "Trabalho em Equipe": skills.trabalho_em_equipe
         } if skills else {}
-
         alunos_com_skills.append({
             "id_aluno": aluno.id_aluno,
             "nome_jovem": aluno.nome_jovem,
