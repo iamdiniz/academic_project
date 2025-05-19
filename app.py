@@ -316,9 +316,11 @@ def instituicao_ensino():
     )
 
 @app.route('/detalhes_instituicao/<int:id_instituicao>')
+@login_required
 def detalhes_instituicao(id_instituicao):
     instituicao = InstituicaodeEnsino.query.get_or_404(id_instituicao)
-    return render_template('detalhes_instituicao.html', instituicao=instituicao)
+    cursos = Curso.query.filter_by(id_instituicao=id_instituicao).all()
+    return render_template('detalhes_instituicao.html', instituicao=instituicao, cursos=cursos)
 
 @app.route('/minhas_selecoes')
 @bloquear_instituicao

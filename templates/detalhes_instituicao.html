@@ -18,10 +18,21 @@
             <li class="list-group-item"><strong>E-mail:</strong> {{ instituicao.email }}</li>
             <li class="list-group-item"><strong>Infraestrutura:</strong> {{ instituicao.infraestrutura }}</li>
             <li class="list-group-item"><strong>Nota MEC:</strong> {{ instituicao.nota_mec }}</li>
-            <li class="list-group-item"><strong>Áreas de Formação:</strong> {{ instituicao.areas_de_formacao }}</li>
             <li class="list-group-item"><strong>Modalidades:</strong> {{ instituicao.modalidades }}</li>
             <li class="list-group-item"><strong>Quantidade de Alunos:</strong> {{ instituicao.quantidade_de_alunos }}</li>
             <li class="list-group-item"><strong>Reitor:</strong> {{ instituicao.reitor }}</li>
+            <li class="list-group-item">
+                <strong>Cursos Cadastrados:</strong>
+                {% if cursos %}
+                    <ul>
+                        {% for curso in cursos %}
+                            <li>{{ curso.nome }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    Nenhum curso cadastrado.
+                {% endif %}
+            </li>
         </ul>
     </div>
 
