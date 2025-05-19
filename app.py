@@ -553,14 +553,22 @@ def cursos():
     if request.method == 'POST':
         nome_curso = request.form.get('curso')
         if nome_curso:
-            novo_curso = Curso(nome=nome_curso, id_instituicao=current_user.id_instituicao)
-            db.session.add(novo_curso)
-            db.session.commit()
-            flash('Curso cadastrado com sucesso!', 'success')
+            # Verifica se já existe para esta instituição
+            ja_existe = Curso.query.filter_by(
+                nome=nome_curso,
+                id_instituicao=current_user.id_instituicao
+            ).first()
+            if ja_existe:
+                flash('Este curso já foi cadastrado!', 'warning')
+            else:
+                novo_curso = Curso(nome=nome_curso, id_instituicao=current_user.id_instituicao)
+                db.session.add(novo_curso)
+                db.session.commit()
+                flash('Curso cadastrado com sucesso!', 'success')
         return redirect(url_for('cursos'))
 
     cursos = Curso.query.filter_by(id_instituicao=current_user.id_instituicao).all()
-    return render_template('cursos.html', cursos=cursos)
+    return render_template('cursos.html', cursos=cursos, CURSOS_PADRAO=CURSOS_PADRAO)
 
 @app.route('/alunos')
 @login_required

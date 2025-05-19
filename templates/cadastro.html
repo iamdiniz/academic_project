@@ -143,15 +143,13 @@ function exibirCampos() {
     const blocoInstituicao = document.getElementById('camposInstituicao');
     const blocoChefe = document.getElementById('camposChefe');
 
-    // Seleciona todos os campos dos blocos
-    // ATENÇÃO: Não inclua checkboxes de cursos aqui!
-    const camposInstituicao = blocoInstituicao.querySelectorAll('input:not([type="checkbox"]), textarea');
-    const camposChefe = blocoChefe.querySelectorAll('input');
+    // Inclua selects na seleção!
+    const camposInstituicao = blocoInstituicao.querySelectorAll('input:not([type="checkbox"]), textarea, select');
+    const camposChefe = blocoChefe.querySelectorAll('input, select');
 
     if (tipo === 'instituicao') {
         blocoInstituicao.style.display = 'block';
         blocoChefe.style.display = 'none';
-        // Ativa required nos campos de instituição (exceto checkboxes de cursos)
         camposInstituicao.forEach(campo => campo.required = true);
         camposChefe.forEach(campo => campo.required = false);
     } else if (tipo === 'chefe') {
@@ -168,10 +166,13 @@ function exibirCampos() {
 }
 
 document.querySelector('.form-box').addEventListener('submit', function(e) {
-    const checkboxes = document.querySelectorAll('input[name="cursos_selecionados"]:checked');
-    if (checkboxes.length === 0) {
-        alert('Selecione pelo menos um curso da instituição.');
-        e.preventDefault();
+    const tipo = document.getElementById('tipoUsuario').value;
+    if (tipo === 'instituicao') {
+        const checkboxes = document.querySelectorAll('input[name="cursos_selecionados"]:checked');
+        if (checkboxes.length === 0) {
+            alert('Selecione pelo menos um curso da instituição.');
+            e.preventDefault();
+        }
     }
 });
 

@@ -30,6 +30,7 @@
     {% endif %}
 
     <!-- Modal -->
+
     <div class="modal fade" id="cadastroCursosModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content p-4 rounded-4">
@@ -41,7 +42,12 @@
                     <div class="modal-body">
                         <div class="mb-3">
                             <label for="curso" class="form-label">Nome do Curso</label>
-                            <input id="curso" name="curso" class="form-control" placeholder="Ex: Engenharia" required>
+                            <select id="curso" name="curso" class="form-select" required>
+                                <option value="" disabled selected>Selecione o curso</option>
+                                {% for curso in CURSOS_PADRAO %}
+                                    <option value="{{ curso }}">{{ curso }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -52,5 +58,25 @@
             </div>
         </div>
     </div>
-</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('#cadastroCursosModal form');
+    const selectCurso = document.getElementById('curso');
+    // Lista de cursos já cadastrados (passada pelo backend)
+    const cursosAdicionados = [
+        {% for curso in cursos %}
+            {{ curso.nome|tojson }}{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    form.addEventListener('submit', function(e) {
+        const cursoSelecionado = selectCurso.value;
+        if (cursosAdicionados.includes(cursoSelecionado)) {
+            alert('Este curso já foi cadastrado!');
+            e.preventDefault();
+        }
+    });
+});
+</script>
 {% endblock %}
