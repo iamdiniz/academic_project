@@ -45,55 +45,89 @@
         <div class="row">
             <div class="col-md-6">
                 <label for="hard_skills" class="form-label">Hard Skills</label>
-                <input type="number" class="form-control" id="hard_skills" name="hard_skills" value="{{ aluno.skills.hard_skills }}">
+                <input type="number" class="form-control" id="hard_skills" name="hard_skills" value="{{ aluno.skills.hard_skills }}" min="0" max="10" step="1" required>
             </div>
             <div class="col-md-6">
                 <label for="soft_skills" class="form-label">Soft Skills</label>
-                <input type="number" class="form-control" id="soft_skills" name="soft_skills" value="{{ aluno.skills.soft_skills }}">
+                <input type="number" class="form-control" id="soft_skills" name="soft_skills" value="{{ aluno.skills.soft_skills }}" min="0" max="10" step="1" required>
             </div>
         </div>
         <div class="row mt-3">
             <div class="col-md-6">
                 <label for="avaliacao_geral" class="form-label">Avaliação Geral</label>
-                <input type="number" class="form-control" id="avaliacao_geral" name="avaliacao_geral" value="{{ aluno.skills.avaliacao_geral }}">
+                <input type="number" class="form-control" id="avaliacao_geral" name="avaliacao_geral" value="{{ aluno.skills.avaliacao_geral }}" min="0" max="10" step="1" required>
             </div>
             <div class="col-md-6">
                 <label for="participacao" class="form-label">Participação</label>
-                <input type="number" class="form-control" id="participacao" name="participacao" value="{{ aluno.skills.participacao }}">
+                <input type="number" class="form-control" id="participacao" name="participacao" value="{{ aluno.skills.participacao }}" min="0" max="10" step="1" required>
             </div>
         </div>
         <div class="row mt-3">
             <div class="col-md-6">
                 <label for="comunicacao" class="form-label">Comunicação</label>
-                <input type="number" class="form-control" id="comunicacao" name="comunicacao" value="{{ aluno.skills.comunicacao }}">
+                <input type="number" class="form-control" id="comunicacao" name="comunicacao" value="{{ aluno.skills.comunicacao }}" min="0" max="10" step="1" required>
             </div>
             <div class="col-md-6">
                 <label for="proatividade" class="form-label">Proatividade</label>
-                <input type="number" class="form-control" id="proatividade" name="proatividade" value="{{ aluno.skills.proatividade }}">
+                <input type="number" class="form-control" id="proatividade" name="proatividade" value="{{ aluno.skills.proatividade }}" min="0" max="10" step="1" required>
             </div>
         </div>
         <div class="row mt-3">
             <div class="col-md-6">
                 <label for="raciocinio" class="form-label">Raciocínio</label>
-                <input type="number" class="form-control" id="raciocinio" name="raciocinio" value="{{ aluno.skills.raciocinio }}">
+                <input type="number" class="form-control" id="raciocinio" name="raciocinio" value="{{ aluno.skills.raciocinio }}" min="0" max="10" step="1" required>
             </div>
             <div class="col-md-6">
                 <label for="dominio_tecnico" class="form-label">Domínio Técnico</label>
-                <input type="number" class="form-control" id="dominio_tecnico" name="dominio_tecnico" value="{{ aluno.skills.dominio_tecnico }}">
+                <input type="number" class="form-control" id="dominio_tecnico" name="dominio_tecnico" value="{{ aluno.skills.dominio_tecnico }}" min="0" max="10" step="1" required>
             </div>
         </div>
         <div class="row mt-3">
             <div class="col-md-6">
                 <label for="criatividade" class="form-label">Criatividade</label>
-                <input type="number" class="form-control" id="criatividade" name="criatividade" value="{{ aluno.skills.criatividade }}">
+                <input type="number" class="form-control" id="criatividade" name="criatividade" value="{{ aluno.skills.criatividade }}" min="0" max="10" step="1" required>
             </div>
             <div class="col-md-6">
                 <label for="trabalho_em_equipe" class="form-label">Trabalho em Equipe</label>
-                <input type="number" class="form-control" id="trabalho_em_equipe" name="trabalho_em_equipe" value="{{ aluno.skills.trabalho_em_equipe }}">
+                <input type="number" class="form-control" id="trabalho_em_equipe" name="trabalho_em_equipe" value="{{ aluno.skills.trabalho_em_equipe }}" min="0" max="10" step="1" required>
             </div>
         </div>
 
         <button type="submit" class="btn btn-primary mt-4">Salvar Alterações</button>
     </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Seleciona todos os inputs de skills
+    const skillInputs = document.querySelectorAll(
+        '#hard_skills, #soft_skills, #avaliacao_geral, #participacao, #comunicacao, #proatividade, #raciocinio, #dominio_tecnico, #criatividade, #trabalho_em_equipe'
+    );
+    skillInputs.forEach(function(input) {
+        input.addEventListener('keydown', function(e) {
+            // Permite teclas de controle
+            if (
+                e.key === "Backspace" || e.key === "Tab" || e.key === "Delete" ||
+                e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === "Home" || e.key === "End"
+            ) {
+                return;
+            }
+            // Permite apenas números de 0 a 9
+            if (!/^[0-9]$/.test(e.key)) {
+                e.preventDefault();
+            }
+            // Impede digitar mais de dois dígitos
+            if (this.value.length >= 2 && this.selectionStart === this.selectionEnd) {
+                e.preventDefault();
+            }
+        });
+        input.addEventListener('input', function() {
+            let value = this.value.replace(/[^0-9]/g, '');
+            if (value.length > 2) value = value.slice(0, 2);
+            if (parseInt(value) > 10) value = '10';
+            this.value = value;
+        });
+    });
+});
+</script>
 {% endblock %}
