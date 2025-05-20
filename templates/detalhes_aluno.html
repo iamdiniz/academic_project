@@ -114,6 +114,21 @@
     </div>
 </div>
 
+<!-- Modal de Mensagem Customizada -->
+<div class="modal fade" id="mensagemModal" tabindex="-1" aria-labelledby="mensagemModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="mensagemModalLabel">Atenção</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body" id="mensagemModalBody">
+        <!-- Mensagem será inserida via JS -->
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
     // Função para exibir notificação ao indicar o aluno
     document.getElementById('indicarAlunoBtn').addEventListener('click', function () {
@@ -126,15 +141,24 @@
         }).then(response => response.json())
           .then(data => {
               if (data.error) {
-                  alert(data.error);
+                  // Exibe mensagem de erro no modal customizado
+                  document.getElementById('mensagemModalBody').textContent = data.error;
+                  var mensagemModal = new bootstrap.Modal(document.getElementById('mensagemModal'));
+                  mensagemModal.show();
               } else {
-                  alert(data.message);
+                  // Exibe mensagem de sucesso no modal customizado
+                  document.getElementById('mensagemModalBody').textContent = data.message;
+                  var mensagemModal = new bootstrap.Modal(document.getElementById('mensagemModal'));
+                  mensagemModal.show();
+                  // Fecha o modal de contato
                   const modal = bootstrap.Modal.getInstance(document.getElementById('contatoModal'));
                   modal.hide();
               }
           }).catch(error => {
               console.error('Erro ao indicar o aluno:', error);
-              alert('Ocorreu um erro ao tentar indicar o aluno.');
+              document.getElementById('mensagemModalBody').textContent = 'Ocorreu um erro ao tentar indicar o aluno.';
+              var mensagemModal = new bootstrap.Modal(document.getElementById('mensagemModal'));
+              mensagemModal.show();
           });
     });
 </script>
