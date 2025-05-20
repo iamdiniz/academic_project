@@ -228,6 +228,19 @@
 </div>
 
 </div>
+
+<!-- Toasts de Notificação -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
+  <div id="toastNotificacao" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body" id="toastNotificacaoBody">
+        <!-- Mensagem via JS -->
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
+    </div>
+  </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Seleciona todos os inputs de skills do modal de cadastro
@@ -257,6 +270,37 @@ document.addEventListener('DOMContentLoaded', function() {
             this.value = value;
         });
     });
+
+    // Função para exibir toast
+    window.showToast = function(mensagem, cor='success', tempo=2500, icone='') {
+        const toast = document.getElementById('toastNotificacao');
+        const toastBody = document.getElementById('toastNotificacaoBody');
+        toast.className = `toast align-items-center text-bg-${cor} border-0`;
+        toastBody.innerHTML = icone + mensagem;
+        const bsToast = new bootstrap.Toast(toast, { delay: tempo });
+        bsToast.show();
+    };
+
+    // Exibe toast para mensagens flash do Flask
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                showToast({{ message|tojson }},
+                    {% if category == 'success' %}'success'
+                    {% elif category == 'warning' %}'warning'
+                    {% elif category == 'danger' %}'danger'
+                    {% else %}'info'{% endif %},
+                    3000,
+                    {% if category == 'success' %}'<i class="bi bi-check-circle-fill me-2"></i>'
+                    {% elif category == 'warning' %}'<i class="bi bi-exclamation-triangle-fill me-2"></i>'
+                    {% elif category == 'danger' %}'<i class="bi bi-x-circle-fill me-2"></i>'
+                    {% else %}''{% endif %}
+                );
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
 });
 </script>
+<!-- Bootstrap Icons CDN para ícones -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 {% endblock %}
