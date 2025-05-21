@@ -209,7 +209,7 @@ def cadastro():
                     db.session.add(curso)
                 db.session.commit()
 
-                flash('Cadastro de Instituição realizado com sucesso! Faça login agora.')
+                flash('Cadastro de Instituição realizado com sucesso! Faça login agora.', 'success')
                 return redirect(url_for('login'))
             except IntegrityError:
                 db.session.rollback()
@@ -234,7 +234,7 @@ def cadastro():
                 )
                 db.session.add(novo_chefe)
                 db.session.commit()
-                flash('Cadastro de Chefe realizado com sucesso! Faça login agora.')
+                flash('Cadastro de Chefe realizado com sucesso! Faça login agora.', 'success')
                 return redirect(url_for('login'))
             except IntegrityError:
                 db.session.rollback()
