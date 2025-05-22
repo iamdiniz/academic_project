@@ -476,26 +476,21 @@ def ver_alunos_por_curso():
         if unidecode(aluno.curso).lower() == curso_normalizado
     ]
 
-    # Verifica se há alunos encontrados
-    if not alunos_filtrados:
-        flash(f"Nenhum aluno encontrado para o curso '{curso}'.", "warning")
-        return redirect(url_for('instituicao_ensino'))
-
-    # Converte os dados de skills para dicionários completos
     alunos_com_skills = []
     for aluno in alunos_filtrados:
         skills = aluno.skills
-        skills_dict = {
-            "Hard Skills": skills.hard_skills if skills else 0,
-            "Soft Skills": skills.soft_skills if skills else 0,
-            "Participação": skills.participacao if skills else 0,
-            "Comunicação": skills.comunicacao if skills else 0,
-            "Proatividade": skills.proatividade if skills else 0,
-            "Raciocínio": skills.raciocinio if skills else 0,
-            "Domínio Técnico": skills.dominio_tecnico if skills else 0,
-            "Criatividade": skills.criatividade if skills else 0,
-            "Trabalho em Equipe": skills.trabalho_em_equipe if skills else 0
-        } if skills else {}
+        hard_labels = []
+        hard_skills = []
+        soft_labels = []
+        soft_skills = []
+        if skills:
+            hard_dict = json.loads(skills.hard_skills_json) if skills.hard_skills_json else {}
+            soft_dict = json.loads(skills.soft_skills_json) if skills.soft_skills_json else {}
+
+            hard_labels = list(hard_dict.keys())
+            hard_skills = list(hard_dict.values())
+            soft_labels = list(soft_dict.keys())
+            soft_skills = list(soft_dict.values())
 
         alunos_com_skills.append({
             "id_aluno": aluno.id_aluno,
@@ -504,10 +499,17 @@ def ver_alunos_por_curso():
             "curso": aluno.curso,
             "contato_jovem": aluno.contato_jovem,
             "email": aluno.email,
-            "skills": skills_dict
+            "hard_labels": hard_labels,
+            "hard_skills": hard_skills,
+            "soft_labels": soft_labels,
+            "soft_skills": soft_skills
         })
 
-    return render_template('cardAlunos.html', alunos=alunos_com_skills, curso=curso)
+    mensagem = None
+    if not alunos_filtrados:
+        mensagem = f"Nenhum aluno encontrado para o curso '{curso}'."
+
+    return render_template('cardAlunos.html', alunos=alunos_com_skills, curso=curso, mensagem=mensagem)
 
 @app.route('/detalhes_aluno/<int:id_aluno>')
 @bloquear_instituicao
@@ -518,21 +520,28 @@ def detalhes_aluno(id_aluno):
         flash('Aluno não encontrado.', 'danger')
         return redirect(url_for('alunos'))
 
-    previous_url = request.args.get('previous', url_for('instituicao_ensino'))  # fallback se não houver parâmetro
+    previous_url = request.args.get('previous', url_for('instituicao_ensino'))
 
-    skills = {
-        "Hard Skills": aluno.skills.hard_skills,
-        "Soft Skills": aluno.skills.soft_skills,
-        "Participação": aluno.skills.participacao,
-        "Comunicação": aluno.skills.comunicacao,
-        "Proatividade": aluno.skills.proatividade,
-        "Raciocínio": aluno.skills.raciocinio,
-        "Domínio Técnico": aluno.skills.dominio_tecnico,
-        "Criatividade": aluno.skills.criatividade,
-        "Trabalho em Equipe": aluno.skills.trabalho_em_equipe
-    } if aluno.skills else {}
+    hard_labels, hard_values = [], []
+    soft_labels, soft_values = [], []
+    if aluno.skills:
+        import json
+        hard_dict = json.loads(aluno.skills.hard_skills_json) if aluno.skills.hard_skills_json else {}
+        soft_dict = json.loads(aluno.skills.soft_skills_json) if aluno.skills.soft_skills_json else {}
+        hard_labels = list(hard_dict.keys())
+        hard_values = list(hard_dict.values())
+        soft_labels = list(soft_dict.keys())
+        soft_values = list(soft_dict.values())
 
-    return render_template('detalhes_aluno.html', aluno=aluno, skills=skills, previous_url=previous_url)
+    return render_template(
+        'detalhes_aluno.html',
+        aluno=aluno,
+        hard_labels=hard_labels,
+        hard_values=hard_values,
+        soft_labels=soft_labels,
+        soft_values=soft_values,
+        previous_url=previous_url
+    )
 
 @app.route('/indicar_aluno/<int:id_aluno>', methods=['POST'])
 @bloquear_instituicao
@@ -559,33 +568,45 @@ def indicar_aluno(id_aluno):
 @login_required
 def cardAlunos():
     alunos = Aluno.query.all()
-    dados_alunos = []
+    alunos_com_skills = []
 
     for aluno in alunos:
         skills = aluno.skills
-        skills_dict = {
-            "Hard Skills": skills.hard_skills if skills else 0,
-            "Soft Skills": skills.soft_skills if skills else 0,
-            "Participação": skills.participacao if skills else 0,
-            "Comunicação": skills.comunicacao if skills else 0,
-            "Proatividade": skills.proatividade if skills else 0,
-            "Raciocínio": skills.raciocinio if skills else 0,
-            "Domínio Técnico": skills.dominio_tecnico if skills else 0,
-            "Criatividade": skills.criatividade if skills else 0,
-            "Trabalho em Equipe": skills.trabalho_em_equipe if skills else 0
-        } if skills else {}
+        hard_labels = []
+        soft_labels = []
+        hard_skills = []
+        soft_skills = []
+        if skills:
+            import json
+            hard_dict = json.loads(skills.hard_skills_json) if skills.hard_skills_json else {}
+            soft_dict = json.loads(skills.soft_skills_json) if skills.soft_skills_json else {}
 
-        dados_alunos.append({
-            'id_aluno': aluno.id_aluno,
-            'nome': aluno.nome_jovem,
-            'data_nascimento': aluno.data_nascimento.strftime('%d/%m/%Y') if aluno.data_nascimento else 'N/A',
-            'curso': aluno.curso,
-            'contato_jovem': aluno.contato_jovem,
-            'email': aluno.email,
-            'skills': skills_dict
+            hard_labels = list(hard_dict.keys())
+            soft_labels = list(soft_dict.keys())
+            # Unifica labels: hard + soft (sem repetir)
+            labels = hard_labels + [s for s in soft_labels if s not in hard_labels]
+            hard_skills = [hard_dict.get(label, 0) for label in labels]
+            soft_skills = [soft_dict.get(label, 0) for label in labels]
+        else:
+            labels = []
+            hard_skills = []
+            soft_skills = []
+
+        alunos_com_skills.append({
+            "id_aluno": aluno.id_aluno,
+            "nome": aluno.nome_jovem,
+            "data_nascimento": aluno.data_nascimento.strftime('%d/%m/%Y') if aluno.data_nascimento else 'N/A',
+            "curso": aluno.curso,
+            "contato_jovem": aluno.contato_jovem,
+            "email": aluno.email,
+            "hard_labels": hard_labels,
+            "soft_labels": soft_labels,
+            "labels": labels,
+            "hard_skills": hard_skills,
+            "soft_skills": soft_skills
         })
 
-    return render_template('cardAlunos.html', alunos=dados_alunos)
+    return render_template('cardAlunos.html', alunos=alunos_com_skills)
 
 @app.route('/carousel')
 def carousel():

@@ -12,70 +12,29 @@
         <li class="list-group-item"><strong>Curso:</strong> {{ aluno.curso }}</li>
     </ul>
 
-    <h4 class="mt-4">Skills</h4>
-    {% if skills %}
-        <canvas id="graficoSkills" width="400" height="200"></canvas>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script>
-            // Dados das skills
-            const skillLabels = [
-                "Hard Skills", "Soft Skills", "Avaliação Geral", "Participação",
-                "Comunicação", "Proatividade", "Raciocínio", "Domínio Técnico",
-                "Criatividade", "Trabalho em Equipe"
-            ];
-            const skillValues = [
-                {{ skills["Hard Skills"]|default(0) }},
-                {{ skills["Soft Skills"]|default(0) }},
-                {{ skills["Avaliação Geral"]|default(0) }},
-                {{ skills["Participação"]|default(0) }},
-                {{ skills["Comunicação"]|default(0) }},
-                {{ skills["Proatividade"]|default(0) }},
-                {{ skills["Raciocínio"]|default(0) }},
-                {{ skills["Domínio Técnico"]|default(0) }},
-                {{ skills["Criatividade"]|default(0) }},
-                {{ skills["Trabalho em Equipe"]|default(0) }}
-            ];
+    <div class="row mt-4">
+        <div class="col-12 col-md-6 d-flex flex-column align-items-center">
+            <h5 class="mb-2">Hard Skills</h5>
+            {% if hard_labels %}
+                <div class="w-100">
+                    <canvas id="graficoHard" style="height: 300px;"></canvas>
+                </div>
+            {% else %}
+                <p><em>Sem dados de hard skills disponíveis.</em></p>
+            {% endif %}
+        </div>
+        <div class="col-12 col-md-6 d-flex flex-column align-items-center">
+            <h5 class="mb-2">Soft Skills</h5>
+            {% if soft_labels %}
+                <div class="w-100">
+                    <canvas id="graficoSoft" style="height: 300px;"></canvas>
+                </div>
+            {% else %}
+                <p><em>Sem dados de soft skills disponíveis.</em></p>
+            {% endif %}
+        </div>
+    </div>
 
-            // Função para definir cor por valor
-            function getBarColor(value) {
-                if (value === 0) return 'rgba(0,0,0,0)';
-                if (value <= 3) return 'rgba(220, 53, 69, 0.8)';      // Vermelho
-                if (value <= 6) return 'rgba(255, 193, 7, 0.8)';      // Amarelo/laranja
-                return 'rgba(40, 167, 69, 0.8)';                      // Verde
-            }
-            const barColors = skillValues.map(getBarColor);
-
-            new Chart(document.getElementById('graficoSkills').getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: skillLabels,
-                    datasets: [{
-                        label: 'Skills',
-                        data: skillValues,
-                        backgroundColor: barColors,
-                        borderColor: barColors.map(c => c.replace('0.8', '1')),
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            min: 0,
-                            max: 10,
-                            ticks: { stepSize: 1 }
-                        }
-                    },
-                    plugins: {
-                        legend: { display: false }
-                    }
-                }
-            });
-        </script>
-    {% else %}
-        <p><em>Sem dados de skills disponíveis.</em></p>
-    {% endif %}
 
     <div class="mt-4">
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#contatoModal">Ver Contato</button>
@@ -127,7 +86,69 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+{% if hard_labels %}
+    new Chart(document.getElementById('graficoHard').getContext('2d'), {
+    type: 'bar',
+    data: {
+        labels: {{ hard_labels|tojson }},
+        datasets: [{
+            label: 'Hard Skills',
+            data: {{ hard_values|tojson }},
+            backgroundColor: 'rgba(54, 162, 235, 0.7)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1,
+            barThickness: 30 // controla a espessura das barras
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: {
+                beginAtZero: true,
+                min: 0,
+                max: 10,
+                ticks: { stepSize: 1 }
+            }
+        }
+    }
+});
+{% endif %}
+
+{% if soft_labels %}
+    new Chart(document.getElementById('graficoSoft').getContext('2d'), {
+    type: 'bar',
+    data: {
+        labels: {{ soft_labels|tojson }},
+        datasets: [{
+            label: 'Soft Skills',
+            data: {{ soft_values|tojson }},
+            backgroundColor: 'rgba(255, 99, 132, 0.7)',
+            borderColor: 'rgba(255, 99, 132, 1)',
+            borderWidth: 1,
+            barThickness: 30
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: {
+                beginAtZero: true,
+                min: 0,
+                max: 10,
+                ticks: { stepSize: 1 }
+            }
+        }
+    }
+});
+{% endif %}
+
+    
 function showToast(mensagem, cor='success', tempo=2500, icone='') {
     const toast = document.getElementById('toastNotificacao');
     const toastBody = document.getElementById('toastNotificacaoBody');
