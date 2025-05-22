@@ -762,7 +762,7 @@ def detalhes_aluno_instituicao(id_aluno):
         return redirect(url_for('home'))
 
     aluno = Aluno.query.get_or_404(id_aluno)
-    cursos_disponiveis = CURSOS_PADRAO  # Use a lista padrão para garantir integridade
+    cursos_disponiveis = [curso.nome for curso in Curso.query.filter_by(id_instituicao=aluno.id_instituicao).all()]
 
     # Pegue as listas para o formulário
     hard_labels = HARD_SKILLS_POR_CURSO.get(aluno.curso, [])
@@ -779,8 +779,8 @@ def detalhes_aluno_instituicao(id_aluno):
     if request.method == 'POST':
         # Validação do curso
         curso = request.form['curso']
-        if curso not in CURSOS_PADRAO:
-            flash("Curso inválido!", "danger")
+        if curso not in cursos_disponiveis:
+            flash("Curso inválido para esta instituição!", "danger")
             return redirect(request.url)
 
         # Atualizar informações do aluno
