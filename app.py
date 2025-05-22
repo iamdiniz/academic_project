@@ -762,6 +762,7 @@ def detalhes_aluno_instituicao(id_aluno):
         return redirect(url_for('home'))
 
     aluno = Aluno.query.get_or_404(id_aluno)
+    cursos_disponiveis = CURSOS_PADRAO  # Use a lista padrão para garantir integridade
 
     # Pegue as listas para o formulário
     hard_labels = HARD_SKILLS_POR_CURSO.get(aluno.curso, [])
@@ -776,35 +777,50 @@ def detalhes_aluno_instituicao(id_aluno):
         soft_dict = json.loads(skills.soft_skills_json) if skills.soft_skills_json else {}
 
     if request.method == 'POST':
+        # Validação do curso
+        curso = request.form['curso']
+        if curso not in CURSOS_PADRAO:
+            flash("Curso inválido!", "danger")
+            return redirect(request.url)
+
         # Atualizar informações do aluno
         aluno.nome_jovem = request.form['nome_jovem']
         aluno.data_nascimento = request.form['data_nascimento']
         aluno.contato_jovem = request.form['contato_jovem']
         aluno.email = request.form['email']
         aluno.endereco_jovem = request.form['endereco_jovem']
-        aluno.curso = request.form['curso']
+        aluno.curso = curso
         aluno.formacao = request.form['formacao']
         aluno.periodo = request.form['periodo']
 
-        # Atualizar hard skills
+        # Atualizar hard skills (dinâmico conforme curso)
+        hard_labels = HARD_SKILLS_POR_CURSO.get(curso, [])
         new_hard_dict = {}
         for label in hard_labels:
             field_name = f"hard_{label.lower().replace(' ', '_')}"
             valor = request.form.get(field_name)
+            if valor is None or valor == '':
+                flash(f"Preencha a pontuação de '{label}'!", "danger")
+                return redirect(request.url)
             try:
-                new_hard_dict[label] = int(valor) if valor is not None else 0
+                new_hard_dict[label] = int(valor)
             except ValueError:
-                new_hard_dict[label] = 0
+                flash(f"Valor inválido para '{label}'.", "danger")
+                return redirect(request.url)
 
-        # Atualizar soft skills
+        # Atualizar soft skills (fixo)
         new_soft_dict = {}
-        for label in soft_labels:
+        for label in SOFT_SKILLS:
             field_name = label.lower().replace(' ', '_')
             valor = request.form.get(field_name)
+            if valor is None or valor == '':
+                flash(f"Preencha a pontuação de '{label}'!", "danger")
+                return redirect(request.url)
             try:
-                new_soft_dict[label] = int(valor) if valor is not None else 0
+                new_soft_dict[label] = int(valor)
             except ValueError:
-                new_soft_dict[label] = 0
+                flash(f"Valor inválido para '{label}'.", "danger")
+                return redirect(request.url)
 
         # Atualiza ou cria o registro de skills
         if not skills:
@@ -820,10 +836,13 @@ def detalhes_aluno_instituicao(id_aluno):
     return render_template(
         'detalhes_aluno_instituicao.html',
         aluno=aluno,
+        cursos_disponiveis=cursos_disponiveis,
         hard_labels=hard_labels,
         soft_labels=soft_labels,
         hard_dict=hard_dict,
-        soft_dict=soft_dict
+        soft_dict=soft_dict,
+        HARD_SKILLS_POR_CURSO=HARD_SKILLS_POR_CURSO,
+        SOFT_SKILLS=SOFT_SKILLS
     )
 
 @app.route('/perfil', methods=['GET', 'POST'])

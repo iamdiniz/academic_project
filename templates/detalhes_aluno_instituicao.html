@@ -7,14 +7,14 @@
 <div class="container mt-4">
     <h1 class="text-center mb-4">Detalhes do Aluno</h1>
 
-    <form method="POST">
+    <form method="POST" onsubmit="return validateSkillsForm();" novalidate>
         <div class="mb-3">
             <label for="nome_jovem" class="form-label">Nome</label>
             <input type="text" class="form-control" id="nome_jovem" name="nome_jovem" value="{{ aluno.nome_jovem }}" required>
         </div>
         <div class="mb-3">
             <label for="data_nascimento" class="form-label">Data de Nascimento</label>
-            <input type="date" class="form-control" id="data_nascimento" name="data_nascimento" value="{{ aluno.data_nascimento }}">
+            <input type="date" class="form-control" id="data_nascimento" name="data_nascimento" value="{{ aluno.data_nascimento }}" required>
         </div>
         <div class="mb-3">
             <label for="contato_jovem" class="form-label">Contato</label>
@@ -29,8 +29,12 @@
             <input type="text" class="form-control" id="endereco_jovem" name="endereco_jovem" value="{{ aluno.endereco_jovem }}">
         </div>
         <div class="mb-3">
-            <label for="curso" class="form-label">Curso</label>
-            <input type="text" class="form-control" id="curso" name="curso" value="{{ aluno.curso }}">
+            <label>Curso</label>
+            <select name="curso" id="cursoSelect" class="form-select" required>
+                {% for curso in cursos_disponiveis %}
+                    <option value="{{ curso }}" {% if aluno.curso == curso %}selected{% endif %}>{{ curso }}</option>
+                {% endfor %}
+            </select>
         </div>
         <div class="mb-3">
             <label for="formacao" class="form-label">Formação</label>
@@ -41,24 +45,15 @@
             <input type="number" class="form-control" id="periodo" name="periodo" value="{{ aluno.periodo }}">
         </div>
 
-        <h4 class="mt-4">Skills</h4>
         <h4 class="mt-4">Hard Skills</h4>
-        <div class="row">
-            {% for label in hard_labels %}
-            <div class="col-md-6">
-                <label>{{ label }}</label>
-                <input type="number" class="form-control" name="hard_{{ label.lower().replace(' ', '_') }}"
-                    value="{{ hard_dict[label] if hard_dict[label] is defined else 0 }}" min="0" max="10" step="1" required>
-            </div>
-            {% endfor %}
-        </div>
+        <div id="hardSkillsFields" class="row"></div>
 
         <h4 class="mt-4">Soft Skills</h4>
         <div class="row">
             {% for label in soft_labels %}
             <div class="col-md-6">
                 <label>{{ label }}</label>
-                <input type="number" class="form-control" name="{{ label.lower().replace(' ', '_') }}"
+                <input type="number" class="form-control soft-skill-input" name="{{ label.lower().replace(' ', '_') }}"
                     value="{{ soft_dict[label] if soft_dict[label] is defined else 0 }}" min="0" max="10" step="1" required>
             </div>
             {% endfor %}
@@ -69,36 +64,54 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Seleciona todos os inputs de skills
-    const skillInputs = document.querySelectorAll(
-        '#hard_skills, #soft_skills, #avaliacao_geral, #participacao, #comunicacao, #proatividade, #raciocinio, #dominio_tecnico, #criatividade, #trabalho_em_equipe'
-    );
-    skillInputs.forEach(function(input) {
-        input.addEventListener('keydown', function(e) {
-            // Permite teclas de controle
-            if (
-                e.key === "Backspace" || e.key === "Tab" || e.key === "Delete" ||
-                e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === "Home" || e.key === "End"
-            ) {
-                return;
-            }
-            // Permite apenas números de 0 a 9
-            if (!/^[0-9]$/.test(e.key)) {
-                e.preventDefault();
-            }
-            // Impede digitar mais de dois dígitos
-            if (this.value.length >= 2 && this.selectionStart === this.selectionEnd) {
-                e.preventDefault();
-            }
-        });
-        input.addEventListener('input', function() {
-            let value = this.value.replace(/[^0-9]/g, '');
-            if (value.length > 2) value = value.slice(0, 2);
-            if (parseInt(value) > 10) value = '10';
-            this.value = value;
-        });
+const hardSkillsPorCurso = {{ HARD_SKILLS_POR_CURSO | tojson }};
+const cursoSelect = document.getElementById('cursoSelect');
+const hardSkillsFields = document.getElementById('hardSkillsFields');
+const currentHardDict = {{ hard_dict|tojson }};
+
+function renderHardSkillsFields() {
+    const curso = cursoSelect.value;
+    const hardSkills = hardSkillsPorCurso[curso] || [];
+    hardSkillsFields.innerHTML = '';
+    hardSkills.forEach(skill => {
+        const fieldName = 'hard_' + skill.toLowerCase().replace(/ /g, '_');
+        const value = currentHardDict[skill] !== undefined ? currentHardDict[skill] : '';
+        hardSkillsFields.innerHTML += `
+            <div class="col-md-6">
+                <label>${skill}</label>
+                <input name="${fieldName}" type="number" class="form-control hard-skill-input" min="0" max="10" step="1" required value="${value}">
+            </div>
+        `;
     });
+}
+cursoSelect.addEventListener('change', renderHardSkillsFields);
+document.addEventListener('DOMContentLoaded', renderHardSkillsFields);
+
+// Validação para não permitir campos vazios
+function validateSkillsForm() {
+    let valid = true;
+    document.querySelectorAll('.hard-skill-input, .soft-skill-input').forEach(input => {
+        if (input.value === '' || isNaN(input.value)) {
+            input.classList.add('is-invalid');
+            valid = false;
+        } else {
+            input.classList.remove('is-invalid');
+        }
+    });
+    if (!valid) {
+        alert('Preencha todos os campos de skills!');
+    }
+    return valid;
+}
+
+// Impede digitação de valores inválidos nos campos de skills
+document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('hard-skill-input') || e.target.classList.contains('soft-skill-input')) {
+        let value = e.target.value.replace(/[^0-9]/g, '');
+        if (value.length > 2) value = value.slice(0, 2);
+        if (parseInt(value) > 10) value = '10';
+        e.target.value = value;
+    }
 });
 </script>
 {% endblock %}
