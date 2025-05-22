@@ -944,17 +944,19 @@ def acompanhar():
     for ac in acompanhamentos:
         aluno = ac.aluno
         skills = aluno.skills
-        skills_dict = {
-            "Hard Skills": skills.hard_skills,
-            "Soft Skills": skills.soft_skills,
-            "Participação": skills.participacao,
-            "Comunicação": skills.comunicacao,
-            "Proatividade": skills.proatividade,
-            "Raciocínio": skills.raciocinio,
-            "Domínio Técnico": skills.dominio_tecnico,
-            "Criatividade": skills.criatividade,
-            "Trabalho em Equipe": skills.trabalho_em_equipe
-        } if skills else {}
+        hard_labels = []
+        hard_skills = []
+        soft_labels = []
+        soft_skills = []
+        if skills:
+            hard_dict = json.loads(skills.hard_skills_json) if skills.hard_skills_json else {}
+            soft_dict = json.loads(skills.soft_skills_json) if skills.soft_skills_json else {}
+
+            hard_labels = list(hard_dict.keys())
+            hard_skills = list(hard_dict.values())
+            soft_labels = list(soft_dict.keys())
+            soft_skills = list(soft_dict.values())
+
         alunos_com_skills.append({
             "id_aluno": aluno.id_aluno,
             "nome_jovem": aluno.nome_jovem,
@@ -962,7 +964,10 @@ def acompanhar():
             "curso": aluno.curso,
             "contato_jovem": aluno.contato_jovem,
             "email": aluno.email,
-            "skills": skills_dict
+            "hard_labels": hard_labels,
+            "hard_skills": hard_skills,
+            "soft_labels": soft_labels,
+            "soft_skills": soft_skills
         })
     return render_template('acompanhar.html', alunos=alunos_com_skills)
 
