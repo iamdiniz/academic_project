@@ -387,26 +387,30 @@ def minhas_selecoes():
     alunos_com_skills = []
     for aluno in alunos:
         skills = aluno.skills
-        skills_dict = {
-            "Hard Skills": skills.hard_skills if skills else 0,
-            "Soft Skills": skills.soft_skills if skills else 0,
-            "Participação": skills.participacao if skills else 0,
-            "Comunicação": skills.comunicacao if skills else 0,
-            "Proatividade": skills.proatividade if skills else 0,
-            "Raciocínio": skills.raciocinio if skills else 0,
-            "Domínio Técnico": skills.dominio_tecnico if skills else 0,
-            "Criatividade": skills.criatividade if skills else 0,
-            "Trabalho em Equipe": skills.trabalho_em_equipe if skills else 0
-        } if skills else {}
+        hard_labels = []
+        hard_skills = []
+        soft_labels = []
+        soft_skills = []
+        if skills:
+            hard_dict = json.loads(skills.hard_skills_json) if skills.hard_skills_json else {}
+            soft_dict = json.loads(skills.soft_skills_json) if skills.soft_skills_json else {}
+
+            hard_labels = list(hard_dict.keys())
+            hard_skills = list(hard_dict.values())
+            soft_labels = list(soft_dict.keys())
+            soft_skills = list(soft_dict.values())
 
         alunos_com_skills.append({
             "id_aluno": aluno.id_aluno,
-            "nome_jovem": aluno.nome_jovem,
+            "nome": aluno.nome_jovem,
             "data_nascimento": aluno.data_nascimento.strftime('%d/%m/%Y') if aluno.data_nascimento else 'N/A',
             "curso": aluno.curso,
             "contato_jovem": aluno.contato_jovem,
             "email": aluno.email,
-            "skills": skills_dict
+            "hard_labels": hard_labels,
+            "hard_skills": hard_skills,
+            "soft_labels": soft_labels,
+            "soft_skills": soft_skills
         })
 
     return render_template('minhas_selecoes.html', alunos=alunos_com_skills)
