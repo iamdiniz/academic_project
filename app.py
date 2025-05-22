@@ -163,22 +163,14 @@ class Acompanhamento(db.Model):
         db.UniqueConstraint('id_chefe', 'id_aluno', name='uix_chefe_aluno'),
     )
 
-# Adicione ao seu models.py ou app.py
 class SkillsHistorico(db.Model):
     __tablename__ = 'skills_historico'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     id_aluno = db.Column(db.Integer, db.ForeignKey('alunos.id_aluno'), nullable=False)
     data = db.Column(db.DateTime, server_default=db.func.now())
-    hard_skills = db.Column(db.Integer)
-    soft_skills = db.Column(db.Integer)
-    avaliacao_geral = db.Column(db.Integer)
-    participacao = db.Column(db.Integer)
-    comunicacao = db.Column(db.Integer)
-    proatividade = db.Column(db.Integer)
-    raciocinio = db.Column(db.Integer)
-    dominio_tecnico = db.Column(db.Integer)
-    criatividade = db.Column(db.Integer)
-    trabalho_em_equipe = db.Column(db.Integer)
+    hard_skills_json = db.Column(db.Text)  # Salva as hard skills como JSON
+    soft_skills_json = db.Column(db.Text)  # Salva as soft skills como JSON
+    # ... (pode manter os campos agregados se quiser)
 
     aluno = db.relationship('Aluno', backref='historicos')
 
@@ -855,6 +847,19 @@ def detalhes_aluno_instituicao(id_aluno):
         skills.soft_skills_json = json.dumps(new_soft_dict)
         db.session.commit()
 
+        # Salvar histórico das skills após atualizar
+        try:
+            novo_historico = SkillsHistorico(
+                id_aluno=aluno.id_aluno,
+                hard_skills_json=json.dumps(new_hard_dict),
+                soft_skills_json=json.dumps(new_soft_dict)
+            )
+            db.session.add(novo_historico)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            flash("Erro ao salvar histórico das skills.", "danger")
+
         flash("Informações do aluno atualizadas com sucesso!", "success")
         return redirect(url_for('alunos_instituicao'))
 
@@ -989,17 +994,26 @@ def remover_acompanhamento(id_aluno):
 def status_aluno(id_aluno):
     historicos = SkillsHistorico.query.filter_by(id_aluno=id_aluno).order_by(SkillsHistorico.data.desc()).all()
     aluno = Aluno.query.get_or_404(id_aluno)
-    campos = [
-        'hard_skills','soft_skills','participacao','comunicacao',
-        'proatividade','raciocinio','dominio_tecnico','criatividade','trabalho_em_equipe'
-    ]
+    historicos_dict = []
+    for hist in historicos:
+        hard = json.loads(hist.hard_skills_json) if hist.hard_skills_json else {}
+        soft = json.loads(hist.soft_skills_json) if hist.soft_skills_json else {}
+        historicos_dict.append({
+            'data': hist.data,
+            'hard_skills': hard,
+            'soft_skills': soft
+        })
+    # Gera pares para comparação de evolução
     historico_pares = []
-    for i in range(len(historicos) - 1):
-        atual = {campo: getattr(historicos[i], campo) for campo in campos}
-        anterior = {campo: getattr(historicos[i+1], campo) for campo in campos}
-        data_atual = historicos[i].data
-        historico_pares.append({'atual': atual, 'anterior': anterior, 'data': data_atual})
-    return render_template('status_aluno.html', historico_pares=historico_pares, aluno=aluno)
+    for i in range(len(historicos_dict) - 1):
+        atual = historicos_dict[i]
+        anterior = historicos_dict[i + 1]
+        historico_pares.append({
+            'data': atual['data'],
+            'atual': atual,
+            'anterior': anterior
+        })
+    return render_template('status_aluno.html', historicos=historicos_dict, historico_pares=historico_pares, aluno=aluno)
 
 @app.route('/logout')
 def logout():
