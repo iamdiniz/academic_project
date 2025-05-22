@@ -763,6 +763,18 @@ def detalhes_aluno_instituicao(id_aluno):
 
     aluno = Aluno.query.get_or_404(id_aluno)
 
+    # Pegue as listas para o formulário
+    hard_labels = HARD_SKILLS_POR_CURSO.get(aluno.curso, [])
+    soft_labels = SOFT_SKILLS
+
+    # Carregue os valores atuais
+    skills = aluno.skills
+    hard_dict = {}
+    soft_dict = {}
+    if skills:
+        hard_dict = json.loads(skills.hard_skills_json) if skills.hard_skills_json else {}
+        soft_dict = json.loads(skills.soft_skills_json) if skills.soft_skills_json else {}
+
     if request.method == 'POST':
         # Atualizar informações do aluno
         aluno.nome_jovem = request.form['nome_jovem']
@@ -774,42 +786,45 @@ def detalhes_aluno_instituicao(id_aluno):
         aluno.formacao = request.form['formacao']
         aluno.periodo = request.form['periodo']
 
-        # Atualizar informações de skills
-        skills = aluno.skills or SkillsDoAluno(id_aluno=aluno.id_aluno)
-        skills.hard_skills = request.form['hard_skills']
-        skills.soft_skills = request.form['soft_skills']
-        skills.participacao = request.form['participacao']
-        skills.comunicacao = request.form['comunicacao']
-        skills.proatividade = request.form['proatividade']
-        skills.raciocinio = request.form['raciocinio']
-        skills.dominio_tecnico = request.form['dominio_tecnico']
-        skills.criatividade = request.form['criatividade']
-        skills.trabalho_em_equipe = request.form['trabalho_em_equipe']
+        # Atualizar hard skills
+        new_hard_dict = {}
+        for label in hard_labels:
+            field_name = f"hard_{label.lower().replace(' ', '_')}"
+            valor = request.form.get(field_name)
+            try:
+                new_hard_dict[label] = int(valor) if valor is not None else 0
+            except ValueError:
+                new_hard_dict[label] = 0
 
-        db.session.add(skills)
-        db.session.commit()
+        # Atualizar soft skills
+        new_soft_dict = {}
+        for label in soft_labels:
+            field_name = label.lower().replace(' ', '_')
+            valor = request.form.get(field_name)
+            try:
+                new_soft_dict[label] = int(valor) if valor is not None else 0
+            except ValueError:
+                new_soft_dict[label] = 0
 
-        # --- NOVO: Salvar snapshot no histórico ---
-        historico = SkillsHistorico(
-            id_aluno=aluno.id_aluno,
-            hard_skills=skills.hard_skills,
-            soft_skills=skills.soft_skills,
-            participacao=skills.participacao,
-            comunicacao=skills.comunicacao,
-            proatividade=skills.proatividade,
-            raciocinio=skills.raciocinio,
-            dominio_tecnico=skills.dominio_tecnico,
-            criatividade=skills.criatividade,
-            trabalho_em_equipe=skills.trabalho_em_equipe
-        )
-        db.session.add(historico)
+        # Atualiza ou cria o registro de skills
+        if not skills:
+            skills = SkillsDoAluno(id_aluno=aluno.id_aluno)
+            db.session.add(skills)
+        skills.hard_skills_json = json.dumps(new_hard_dict)
+        skills.soft_skills_json = json.dumps(new_soft_dict)
         db.session.commit()
-        # --- FIM DO NOVO ---
 
         flash("Informações do aluno atualizadas com sucesso!", "success")
         return redirect(url_for('alunos_instituicao'))
 
-    return render_template('detalhes_aluno_instituicao.html', aluno=aluno)
+    return render_template(
+        'detalhes_aluno_instituicao.html',
+        aluno=aluno,
+        hard_labels=hard_labels,
+        soft_labels=soft_labels,
+        hard_dict=hard_dict,
+        soft_dict=soft_dict
+    )
 
 @app.route('/perfil', methods=['GET', 'POST'])
 @login_required

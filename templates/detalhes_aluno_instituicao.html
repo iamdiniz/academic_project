@@ -42,55 +42,26 @@
         </div>
 
         <h4 class="mt-4">Skills</h4>
+        <h4 class="mt-4">Hard Skills</h4>
         <div class="row">
+            {% for label in hard_labels %}
             <div class="col-md-6">
-                <label for="hard_skills" class="form-label">Hard Skills</label>
-                <input type="number" class="form-control" id="hard_skills" name="hard_skills" value="{{ aluno.skills.hard_skills }}" min="0" max="10" step="1" required>
+                <label>{{ label }}</label>
+                <input type="number" class="form-control" name="hard_{{ label.lower().replace(' ', '_') }}"
+                    value="{{ hard_dict[label] if hard_dict[label] is defined else 0 }}" min="0" max="10" step="1" required>
             </div>
-            <div class="col-md-6">
-                <label for="soft_skills" class="form-label">Soft Skills</label>
-                <input type="number" class="form-control" id="soft_skills" name="soft_skills" value="{{ aluno.skills.soft_skills }}" min="0" max="10" step="1" required>
-            </div>
+            {% endfor %}
         </div>
-        <div class="row mt-3">
+
+        <h4 class="mt-4">Soft Skills</h4>
+        <div class="row">
+            {% for label in soft_labels %}
             <div class="col-md-6">
-                <label for="avaliacao_geral" class="form-label">Avaliação Geral</label>
-                <input type="number" class="form-control" id="avaliacao_geral" name="avaliacao_geral" value="{{ aluno.skills.avaliacao_geral }}" min="0" max="10" step="1" required>
+                <label>{{ label }}</label>
+                <input type="number" class="form-control" name="{{ label.lower().replace(' ', '_') }}"
+                    value="{{ soft_dict[label] if soft_dict[label] is defined else 0 }}" min="0" max="10" step="1" required>
             </div>
-            <div class="col-md-6">
-                <label for="participacao" class="form-label">Participação</label>
-                <input type="number" class="form-control" id="participacao" name="participacao" value="{{ aluno.skills.participacao }}" min="0" max="10" step="1" required>
-            </div>
-        </div>
-        <div class="row mt-3">
-            <div class="col-md-6">
-                <label for="comunicacao" class="form-label">Comunicação</label>
-                <input type="number" class="form-control" id="comunicacao" name="comunicacao" value="{{ aluno.skills.comunicacao }}" min="0" max="10" step="1" required>
-            </div>
-            <div class="col-md-6">
-                <label for="proatividade" class="form-label">Proatividade</label>
-                <input type="number" class="form-control" id="proatividade" name="proatividade" value="{{ aluno.skills.proatividade }}" min="0" max="10" step="1" required>
-            </div>
-        </div>
-        <div class="row mt-3">
-            <div class="col-md-6">
-                <label for="raciocinio" class="form-label">Raciocínio</label>
-                <input type="number" class="form-control" id="raciocinio" name="raciocinio" value="{{ aluno.skills.raciocinio }}" min="0" max="10" step="1" required>
-            </div>
-            <div class="col-md-6">
-                <label for="dominio_tecnico" class="form-label">Domínio Técnico</label>
-                <input type="number" class="form-control" id="dominio_tecnico" name="dominio_tecnico" value="{{ aluno.skills.dominio_tecnico }}" min="0" max="10" step="1" required>
-            </div>
-        </div>
-        <div class="row mt-3">
-            <div class="col-md-6">
-                <label for="criatividade" class="form-label">Criatividade</label>
-                <input type="number" class="form-control" id="criatividade" name="criatividade" value="{{ aluno.skills.criatividade }}" min="0" max="10" step="1" required>
-            </div>
-            <div class="col-md-6">
-                <label for="trabalho_em_equipe" class="form-label">Trabalho em Equipe</label>
-                <input type="number" class="form-control" id="trabalho_em_equipe" name="trabalho_em_equipe" value="{{ aluno.skills.trabalho_em_equipe }}" min="0" max="10" step="1" required>
-            </div>
+            {% endfor %}
         </div>
 
         <button type="submit" class="btn btn-primary mt-4">Salvar Alterações</button>
