@@ -6,6 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
 from unidecode import unidecode  # Biblioteca para remover acentos e caracteres especiais
 from urllib.parse import unquote
+import json
 
 app = Flask(__name__)
 app.secret_key = 'minha-chave-teste'
@@ -21,7 +22,67 @@ CURSOS_PADRAO = [
     "Administração", "Agronomia", "Arquitetura", "Biologia", "Ciência da Computação",
     "Direito", "Educação Física", "Enfermagem", "Engenharia", "Farmácia", "Física",
     "Matemática", "Medicina", "Pedagogia", "Psicologia", "Química", "Sistemas de Informação",
-    # ...adicione outros cursos desejados...
+]
+
+# Hard skills por curso
+HARD_SKILLS_POR_CURSO = {
+    "Administração": [
+        "Gestão de Pessoas", "Finanças", "Marketing", "Empreendedorismo", "Planejamento Estratégico"
+    ],
+    "Agronomia": [
+        "Manejo de Solo", "Fitotecnia", "Irrigação", "Agroquímica", "Topografia"
+    ],
+    "Arquitetura": [
+        "Desenho Técnico", "AutoCAD", "Maquetes", "Projetos Estruturais", "História da Arquitetura"
+    ],
+    "Biologia": [
+        "Genética", "Microbiologia", "Ecologia", "Botânica", "Zoologia"
+    ],
+    "Ciência da Computação": [
+        "Algoritmos", "Estruturas de Dados", "Programação", "Banco de Dados", "Redes de Computadores"
+    ],
+    "Direito": [
+        "Direito Constitucional", "Direito Civil", "Direito Penal", "Processo Civil", "Processo Penal"
+    ],
+    "Educação Física": [
+        "Fisiologia do Exercício", "Biomecânica", "Treinamento Esportivo", "Avaliação Física", "Primeiros Socorros"
+    ],
+    "Enfermagem": [
+        "Procedimentos de Enfermagem", "Farmacologia", "Saúde Pública", "Cuidados Intensivos", "Primeiros Socorros"
+    ],
+    "Engenharia": [
+        "Cálculo", "Física", "Desenho Técnico", "Materiais de Construção", "Gestão de Projetos"
+    ],
+    "Farmácia": [
+        "Farmacologia", "Análises Clínicas", "Química Farmacêutica", "Microbiologia", "Toxicologia"
+    ],
+    "Física": [
+        "Mecânica", "Eletromagnetismo", "Óptica", "Termodinâmica", "Física Moderna"
+    ],
+    "Matemática": [
+        "Álgebra", "Geometria", "Cálculo", "Estatística", "Matemática Discreta"
+    ],
+    "Medicina": [
+        "Anatomia", "Fisiologia", "Patologia", "Clínica Médica", "Cirurgia"
+    ],
+    "Pedagogia": [
+        "Didática", "Psicologia da Educação", "Planejamento Escolar", "Avaliação Educacional", "Gestão Escolar"
+    ],
+    "Psicologia": [
+        "Psicologia Clínica", "Psicologia Organizacional", "Psicopatologia", "Psicologia do Desenvolvimento", "Psicoterapia"
+    ],
+    "Química": [
+        "Química Orgânica", "Química Inorgânica", "Fisico-Química", "Análises Químicas", "Bioquímica"
+    ],
+    "Sistemas de Informação": [
+        "Java", "Python", "DevOps", "API", "Banco de Dados"
+    ]
+}
+
+# Soft skills para todos os cursos
+SOFT_SKILLS = [
+    "Participação", "Comunicação", "Proatividade",
+    "Criatividade", "Trabalho em Equipe"
 ]
 
 class InstituicaodeEnsino(db.Model, UserMixin):
@@ -83,19 +144,9 @@ class Chefe(db.Model, UserMixin):
 class SkillsDoAluno(db.Model):
     __tablename__ = 'skills_do_aluno'
 
-    id_aluno = db.Column(db.Integer, db.ForeignKey('alunos.id_aluno'), primary_key=True)  # Relaciona com a tabela Aluno
-    hard_skills = db.Column(db.Integer)
-    soft_skills = db.Column(db.Integer)
-    avaliacao_geral = db.Column(db.Integer)
-    participacao = db.Column(db.Integer)
-    comunicacao = db.Column(db.Integer)
-    proatividade = db.Column(db.Integer)
-    raciocinio = db.Column(db.Integer)
-    dominio_tecnico = db.Column(db.Integer)
-    criatividade = db.Column(db.Integer)
-    trabalho_em_equipe = db.Column(db.Integer)
-
-    # Relacionamento com o modelo Aluno
+    id_aluno = db.Column(db.Integer, db.ForeignKey('alunos.id_aluno'), primary_key=True)
+    hard_skills_json = db.Column(db.Text)  # Hard skills dinâmicas por curso (JSON)
+    soft_skills_json = db.Column(db.Text)  # Soft skills detalhadas (JSON)
     aluno = db.relationship('Aluno', backref=db.backref('skills', uselist=False))
 
 class Acompanhamento(db.Model):
@@ -339,7 +390,6 @@ def minhas_selecoes():
         skills_dict = {
             "Hard Skills": skills.hard_skills if skills else 0,
             "Soft Skills": skills.soft_skills if skills else 0,
-            "Avaliação Geral": skills.avaliacao_geral if skills else 0,
             "Participação": skills.participacao if skills else 0,
             "Comunicação": skills.comunicacao if skills else 0,
             "Proatividade": skills.proatividade if skills else 0,
@@ -438,7 +488,6 @@ def ver_alunos_por_curso():
         skills_dict = {
             "Hard Skills": skills.hard_skills if skills else 0,
             "Soft Skills": skills.soft_skills if skills else 0,
-            "Avaliação Geral": skills.avaliacao_geral if skills else 0,
             "Participação": skills.participacao if skills else 0,
             "Comunicação": skills.comunicacao if skills else 0,
             "Proatividade": skills.proatividade if skills else 0,
@@ -474,7 +523,6 @@ def detalhes_aluno(id_aluno):
     skills = {
         "Hard Skills": aluno.skills.hard_skills,
         "Soft Skills": aluno.skills.soft_skills,
-        "Avaliação Geral": aluno.skills.avaliacao_geral,
         "Participação": aluno.skills.participacao,
         "Comunicação": aluno.skills.comunicacao,
         "Proatividade": aluno.skills.proatividade,
@@ -518,7 +566,6 @@ def cardAlunos():
         skills_dict = {
             "Hard Skills": skills.hard_skills if skills else 0,
             "Soft Skills": skills.soft_skills if skills else 0,
-            "Avaliação Geral": skills.avaliacao_geral if skills else 0,
             "Participação": skills.participacao if skills else 0,
             "Comunicação": skills.comunicacao if skills else 0,
             "Proatividade": skills.proatividade if skills else 0,
@@ -592,20 +639,27 @@ def cadastrar_aluno():
     formacao = request.form['formacao']
     periodo = request.form['periodo']
 
-    # Dados das skills
-    hard_skills = request.form['hard_skills']
-    soft_skills = request.form['soft_skills']
-    avaliacao_geral = request.form['avaliacao_geral']
-    participacao = request.form['participacao']
-    comunicacao = request.form['comunicacao']
-    proatividade = request.form['proatividade']
-    raciocinio = request.form['raciocinio']
-    dominio_tecnico = request.form['dominio_tecnico']
-    criatividade = request.form['criatividade']
-    trabalho_em_equipe = request.form['trabalho_em_equipe']
+    # Hard skills dinâmicas por curso
+    hard_skills_dict = {}
+    for label in HARD_SKILLS_POR_CURSO.get(curso, []):
+        field_name = f"hard_{label.lower().replace(' ', '_')}"
+        valor = request.form.get(field_name)
+        try:
+            hard_skills_dict[label] = int(valor) if valor is not None else 0
+        except ValueError:
+            hard_skills_dict[label] = 0
+
+    # Soft skills fixas para todos
+    soft_skills_dict = {}
+    for label in SOFT_SKILLS:
+        field_name = label.lower().replace(' ', '_')
+        valor = request.form.get(field_name)
+        try:
+            soft_skills_dict[label] = int(valor) if valor is not None else 0
+        except ValueError:
+            soft_skills_dict[label] = 0
 
     try:
-        # Criar o aluno
         novo_aluno = Aluno(
             nome_jovem=nome_jovem,
             data_nascimento=data_nascimento,
@@ -620,24 +674,14 @@ def cadastrar_aluno():
         db.session.add(novo_aluno)
         db.session.commit()
 
-        # Criar as skills do aluno
         skills = SkillsDoAluno(
             id_aluno=novo_aluno.id_aluno,
-            hard_skills=hard_skills,
-            soft_skills=soft_skills,
-            avaliacao_geral=avaliacao_geral,
-            participacao=participacao,
-            comunicacao=comunicacao,
-            proatividade=proatividade,
-            raciocinio=raciocinio,
-            dominio_tecnico=dominio_tecnico,
-            criatividade=criatividade,
-            trabalho_em_equipe=trabalho_em_equipe
+            hard_skills_json=json.dumps(hard_skills_dict),
+            soft_skills_json=json.dumps(soft_skills_dict),
         )
         db.session.add(skills)
         db.session.commit()
 
-        # Atualizar a quantidade de alunos na instituição
         instituicao = InstituicaodeEnsino.query.get(current_user.id_instituicao)
         instituicao.quantidade_de_alunos += 1
         db.session.commit()
@@ -659,10 +703,7 @@ def alunos_instituicao():
 
     instituicao_id = current_user.id_instituicao
 
-    # Pegue os cursos diretamente da tabela cursos
     cursos_disponiveis = [curso.nome for curso in Curso.query.filter_by(id_instituicao=instituicao_id).all()]
-
-    # Para filtro de cursos já cadastrados em alunos (opcional)
     cursos = Aluno.query.with_entities(Aluno.curso).filter_by(id_instituicao=instituicao_id).distinct().all()
     cursos = [curso[0] for curso in cursos if curso[0]]
 
@@ -673,29 +714,33 @@ def alunos_instituicao():
     else:
         alunos = Aluno.query.filter_by(id_instituicao=instituicao_id).all()
 
-    # Adicionar as skills de cada aluno
     alunos_com_skills = []
     for aluno in alunos:
         skills = aluno.skills
-        skills_dict = {
-            "Hard Skills": skills.hard_skills,
-            "Soft Skills": skills.soft_skills,
-            "Avaliação Geral": skills.avaliacao_geral,
-            "Participação": skills.participacao,
-            "Comunicação": skills.comunicacao,
-            "Proatividade": skills.proatividade,
-            "Raciocínio": skills.raciocinio,
-            "Domínio Técnico": skills.dominio_tecnico,
-            "Criatividade": skills.criatividade,
-            "Trabalho em Equipe": skills.trabalho_em_equipe
-        } if skills else {}
+        # Parse JSONs
+        hard_skills = []
+        hard_labels = []
+        soft_skills = []
+        soft_labels = []
+        if skills:
+            import json
+            hard_dict = json.loads(skills.hard_skills_json) if skills.hard_skills_json else {}
+            soft_dict = json.loads(skills.soft_skills_json) if skills.soft_skills_json else {}
+
+            hard_labels = list(hard_dict.keys())
+            hard_skills = list(hard_dict.values())
+            soft_labels = list(soft_dict.keys())
+            soft_skills = list(soft_dict.values())
 
         alunos_com_skills.append({
             "id_aluno": aluno.id_aluno,
             "nome": aluno.nome_jovem,
             "data_nascimento": aluno.data_nascimento.strftime('%d/%m/%Y') if aluno.data_nascimento else 'N/A',
             "curso": aluno.curso,
-            "skills": skills_dict
+            "hard_labels": hard_labels,
+            "hard_skills": hard_skills,
+            "soft_labels": soft_labels,
+            "soft_skills": soft_skills
         })
 
     return render_template(
@@ -703,7 +748,9 @@ def alunos_instituicao():
         alunos=alunos_com_skills,
         cursos=cursos,
         filtro_curso=filtro_curso,
-        cursos_disponiveis=cursos_disponiveis  # <-- Agora sempre atualizado!
+        cursos_disponiveis=cursos_disponiveis,
+        HARD_SKILLS_POR_CURSO=HARD_SKILLS_POR_CURSO,
+        SOFT_SKILLS=SOFT_SKILLS
     )
 
 @app.route('/detalhes_aluno_instituicao/<int:id_aluno>', methods=['GET', 'POST'])
@@ -731,7 +778,6 @@ def detalhes_aluno_instituicao(id_aluno):
         skills = aluno.skills or SkillsDoAluno(id_aluno=aluno.id_aluno)
         skills.hard_skills = request.form['hard_skills']
         skills.soft_skills = request.form['soft_skills']
-        skills.avaliacao_geral = request.form['avaliacao_geral']
         skills.participacao = request.form['participacao']
         skills.comunicacao = request.form['comunicacao']
         skills.proatividade = request.form['proatividade']
@@ -748,7 +794,6 @@ def detalhes_aluno_instituicao(id_aluno):
             id_aluno=aluno.id_aluno,
             hard_skills=skills.hard_skills,
             soft_skills=skills.soft_skills,
-            avaliacao_geral=skills.avaliacao_geral,
             participacao=skills.participacao,
             comunicacao=skills.comunicacao,
             proatividade=skills.proatividade,
@@ -843,7 +888,6 @@ def acompanhar():
         skills_dict = {
             "Hard Skills": skills.hard_skills,
             "Soft Skills": skills.soft_skills,
-            "Avaliação Geral": skills.avaliacao_geral,
             "Participação": skills.participacao,
             "Comunicação": skills.comunicacao,
             "Proatividade": skills.proatividade,
@@ -882,7 +926,7 @@ def status_aluno(id_aluno):
     historicos = SkillsHistorico.query.filter_by(id_aluno=id_aluno).order_by(SkillsHistorico.data.desc()).all()
     aluno = Aluno.query.get_or_404(id_aluno)
     campos = [
-        'hard_skills','soft_skills','avaliacao_geral','participacao','comunicacao',
+        'hard_skills','soft_skills','participacao','comunicacao',
         'proatividade','raciocinio','dominio_tecnico','criatividade','trabalho_em_equipe'
     ]
     historico_pares = []
