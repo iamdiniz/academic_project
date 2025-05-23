@@ -267,6 +267,11 @@ def cadastro():
                 flash('Todos os campos obrigatórios para Chefe devem ser preenchidos!')
                 return redirect(url_for('cadastro'))
 
+            # Validação do cargo
+            if cargo not in ['CEO', 'Gerente', 'Coordenador']:
+                flash('Selecione um cargo válido!', 'danger')
+                return redirect(url_for('cadastro'))
+
             try:
                 novo_chefe = Chefe(
                     nome=nome,
@@ -281,7 +286,7 @@ def cadastro():
                 return redirect(url_for('login'))
             except IntegrityError:
                 db.session.rollback()
-                flash('Erro: E-mail ou chefe já cadastrados.')
+                flash('Erro: E-mail ou chefe já cadastrados.', 'error')
                 return redirect(url_for('cadastro'))
 
         else:

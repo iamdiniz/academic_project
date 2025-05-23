@@ -132,7 +132,12 @@
             </div>
             <div class="mb-3">
                 <label class="form-label">Cargo (*)</label>
-                <input type="text" name="cargo" id="cargo" class="form-control" placeholder="Cargo na empresa" required oninput="filtrarEntrada(this, 'letras')">
+                <select name="cargo" id="cargo" class="form-select" required>
+                    <option value="" selected disabled>Selecione o cargo</option>
+                    <option value="CEO">CEO</option>
+                    <option value="Gerente">Gerente</option>
+                    <option value="Coordenador">Coordenador</option>
+                </select>
                 <div id="erro-cargo" class="invalid-feedback"></div>
             </div>
         </div>
@@ -425,5 +430,18 @@ function validarFormulario() {
 
     return !!valido;
 }
+
+function validarCamposChefe() {
+    const empresaNome = document.getElementById('empresa_nome');
+    const cargo = document.getElementById('cargo');
+
+    let valido = true;
+
+    valido &= validarCampoObrigatorio(empresaNome, 'O nome da empresa é obrigatório.', 'erro-empresa_nome');
+    valido &= validarCampo(cargo, val => ['CEO','Gerente','Coordenador'].includes(val), 'Selecione um cargo válido.', 'erro-cargo');
+
+    return !!valido;
+}
+
 </script>
 {% endblock %}
