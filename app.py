@@ -230,6 +230,11 @@ def cadastro():
                 flash('Todos os campos obrigatórios para Instituição de Ensino devem ser preenchidos!')
                 return redirect(url_for('cadastro'))
 
+            # Validação: não permitir e-mail duplicado
+            if InstituicaodeEnsino.query.filter_by(email=email).first():
+                flash('Já existe uma instituição cadastrada com este e-mail.', 'danger')
+                return redirect(url_for('cadastro'))
+
             try:
                 nova_instituicaodeEnsino = InstituicaodeEnsino(
                     nome_instituicao=instituicao_nome,
@@ -256,7 +261,7 @@ def cadastro():
                 return redirect(url_for('login'))
             except IntegrityError:
                 db.session.rollback()
-                flash('Erro: E-mail ou instituição já cadastrados.')
+                flash('Erro: E-mail ou instituição já cadastrados.', 'error')
                 return redirect(url_for('cadastro'))
 
         elif tipo_usuario == 'chefe':
@@ -890,7 +895,11 @@ def perfil():
         if tipo_usuario == 'chefe':
             chefe = Chefe.query.get_or_404(current_user.id_chefe)
             chefe.nome = request.form['nome']
-            chefe.cargo = request.form['cargo']
+            cargo = request.form['cargo']
+            if cargo not in ['CEO', 'Gerente', 'Coordenador']:
+                flash("Selecione um cargo válido.", "danger")
+                return redirect(url_for('perfil'))
+            chefe.cargo = cargo
             chefe.nome_empresa = request.form.get('nome_empresa')
             chefe.email = request.form['email']
             if request.form['senha']:
@@ -904,15 +913,26 @@ def perfil():
             instituicao.endereco_instituicao = request.form['endereco_instituicao']
             instituicao.reitor = request.form['reitor']
             instituicao.infraestrutura = request.form['infraestrutura']
-            instituicao.nota_mec = request.form['nota_mec']
-            # NÃO atualize areas_de_formacao manualmente!
-            instituicao.modalidades = request.form['modalidades']
+
+            # Validação da nota MEC
+            nota_mec = request.form['nota_mec']
+            if nota_mec not in ['1', '2', '3', '4', '5']:
+                flash("Nota MEC deve ser um valor entre 1 e 5.", "danger")
+                return redirect(url_for('perfil'))
+            instituicao.nota_mec = int(nota_mec)
+
+            # Validação das modalidades
+            modalidades = request.form['modalidades']
+            if modalidades not in ['Presencial', 'Hibrido', 'EAD']:
+                flash("Selecione uma modalidade válida.", "danger")
+                return redirect(url_for('perfil'))
+            instituicao.modalidades = modalidades
+
             instituicao.email = request.form['email']
             if request.form['senha']:
                 instituicao.senha = generate_password_hash(request.form['senha'])
             db.session.commit()
             flash("Perfil atualizado com sucesso!", "success")
-        return redirect(url_for('perfil'))
 
     # Exibir informações do perfil
     if tipo_usuario == 'chefe':

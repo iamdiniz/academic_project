@@ -15,7 +15,12 @@
             </div>
             <div class="mb-3">
                 <label for="cargo" class="form-label">Cargo</label>
-                <input type="text" class="form-control" id="cargo" name="cargo" value="{{ usuario.cargo }}" required>
+                <select class="form-select" id="cargo" name="cargo" required>
+                    <option value="" disabled {% if not usuario.cargo %}selected{% endif %}>Selecione</option>
+                    <option value="CEO" {% if usuario.cargo == 'CEO' %}selected{% endif %}>CEO</option>
+                    <option value="Gerente" {% if usuario.cargo == 'Gerente' %}selected{% endif %}>Gerente</option>
+                    <option value="Coordenador" {% if usuario.cargo == 'Coordenador' %}selected{% endif %}>Coordenador</option>
+                </select>
             </div>
             <div class="mb-3">
                 <label for="nome_empresa" class="form-label">Nome da Empresa</label>
@@ -40,7 +45,12 @@
             </div>
             <div class="mb-3">
                 <label for="nota_mec" class="form-label">Nota MEC</label>
-                <input type="number" class="form-control" id="nota_mec" name="nota_mec" value="{{ usuario.nota_mec }}" step="0.1" required>
+                <select class="form-select" id="nota_mec" name="nota_mec" required>
+                    <option value="" disabled {% if not usuario.nota_mec %}selected{% endif %}>Selecione</option>
+                    {% for n in range(1, 6) %}
+                        <option value="{{ n }}" {% if usuario.nota_mec == n %}selected{% endif %}>{{ n }}</option>
+                    {% endfor %}
+                </select>
             </div>
             <div class="mb-3">
                 <label class="form-label">Cursos da Instituição</label>
@@ -55,7 +65,12 @@
             </div>
             <div class="mb-3">
                 <label for="modalidades" class="form-label">Modalidades</label>
-                <input type="text" class="form-control" id="modalidades" name="modalidades" value="{{ usuario.modalidades }}" required>
+                <select class="form-select" id="modalidades" name="modalidades" required>
+                    <option value="" disabled {% if not usuario.modalidades %}selected{% endif %}>Selecione</option>
+                    <option value="Presencial" {% if usuario.modalidades == 'Presencial' %}selected{% endif %}>Presencial</option>
+                    <option value="Hibrido" {% if usuario.modalidades == 'Hibrido' %}selected{% endif %}>Hibrido</option>
+                    <option value="EAD" {% if usuario.modalidades == 'EAD' %}selected{% endif %}>EAD</option>
+                </select>
             </div>
         {% endif %}
         <div class="mb-3">
@@ -69,4 +84,15 @@
         <button type="submit" class="btn btn-primary">Atualizar</button>
     </form>
 </div>
+
+<script>
+document.querySelector('form').addEventListener('submit', function(e) {
+    const cargo = document.getElementById('cargo').value;
+    if (!['CEO', 'Gerente', 'Coordenador'].includes(cargo)) {
+        alert('Selecione um cargo válido.');
+        e.preventDefault();
+    }
+});
+</script>
+
 {% endblock %}
