@@ -656,35 +656,54 @@ def alunos():
 @login_required
 @bloquear_chefe
 def cadastrar_aluno():
-    # Dados do aluno
-    nome_jovem = request.form['nome_jovem']
-    data_nascimento = request.form['data_nascimento']
-    contato_jovem = request.form['contato_jovem']
-    email = request.form['email']
-    endereco_jovem = request.form['endereco_jovem']
-    curso = request.form['curso']
-    formacao = request.form['formacao']
-    periodo = request.form['periodo']
+    nome_jovem = request.form.get('nome_jovem', '').strip()
+    data_nascimento = request.form.get('data_nascimento', '').strip()
+    contato_jovem = request.form.get('contato_jovem', '').strip()
+    email = request.form.get('email', '').strip()
+    endereco_jovem = request.form.get('endereco_jovem', '').strip()
+    curso = request.form.get('curso', '').strip()
+    formacao = request.form.get('formacao', '').strip()
+    periodo = request.form.get('periodo', '').strip()
 
-    # Hard skills dinâmicas por curso
+    # Validação dos campos obrigatórios
+    if not nome_jovem or not data_nascimento or not endereco_jovem or not contato_jovem or not email or not curso or not formacao or not periodo:
+        flash("Preencha todos os campos obrigatórios!", "error")
+        return redirect(url_for('alunos_instituicao'))
+
+    # Validação do e-mail
+    if '@' not in email or '.' not in email:
+        flash("E-mail inválido!", "danger")
+        return redirect(url_for('alunos_instituicao'))
+
+    # Validação do período (agora obrigatório)
+    if not periodo.isdigit() or int(periodo) < 1 or int(periodo) > 20:
+        flash("Período deve ser um número entre 1 e 20.", "danger")
+        return redirect(url_for('alunos_instituicao'))
+
+    # Validação do contato (exemplo simples, pode ser melhorado)
+    if not contato_jovem.isdigit() or len(contato_jovem) < 8:
+        flash("Contato deve conter apenas números e ter pelo menos 8 dígitos.", "danger")
+        return redirect(url_for('alunos_instituicao'))
+
+    # Validação das hard skills
     hard_skills_dict = {}
     for label in HARD_SKILLS_POR_CURSO.get(curso, []):
         field_name = f"hard_{label.lower().replace(' ', '_')}"
         valor = request.form.get(field_name)
-        try:
-            hard_skills_dict[label] = int(valor) if valor is not None else 0
-        except ValueError:
-            hard_skills_dict[label] = 0
+        if valor is None or not valor.isdigit() or int(valor) < 0 or int(valor) > 10:
+            flash(f"Preencha corretamente a hard skill '{label}' (0 a 10).", "danger")
+            return redirect(url_for('alunos_instituicao'))
+        hard_skills_dict[label] = int(valor)
 
-    # Soft skills fixas para todos
+    # Validação das soft skills
     soft_skills_dict = {}
     for label in SOFT_SKILLS:
         field_name = label.lower().replace(' ', '_')
         valor = request.form.get(field_name)
-        try:
-            soft_skills_dict[label] = int(valor) if valor is not None else 0
-        except ValueError:
-            soft_skills_dict[label] = 0
+        if valor is None or not valor.isdigit() or int(valor) < 0 or int(valor) > 10:
+            flash(f"Preencha corretamente a soft skill '{label}' (0 a 10).", "danger")
+            return redirect(url_for('alunos_instituicao'))
+        soft_skills_dict[label] = int(valor)
 
     try:
         novo_aluno = Aluno(
@@ -810,15 +829,43 @@ def detalhes_aluno_instituicao(id_aluno):
             flash("Curso inválido para esta instituição!", "danger")
             return redirect(request.url)
 
+        # Validação dos campos obrigatórios
+        nome_jovem = request.form.get('nome_jovem', '').strip()
+        data_nascimento = request.form.get('data_nascimento', '').strip()
+        contato_jovem = request.form.get('contato_jovem', '').strip()
+        email = request.form.get('email', '').strip()
+        endereco_jovem = request.form.get('endereco_jovem', '').strip()
+        formacao = request.form.get('formacao', '').strip()
+        periodo = request.form.get('periodo', '').strip()
+
+        if not nome_jovem or not data_nascimento or not contato_jovem or not email or not endereco_jovem or not formacao or not periodo:
+            flash("Preencha todos os campos obrigatórios!", "danger")
+            return redirect(request.url)
+
+        # Validação do e-mail
+        if '@' not in email or '.' not in email:
+            flash("E-mail inválido!", "danger")
+            return redirect(request.url)
+
+        # Validação do contato
+        if not contato_jovem.isdigit() or len(contato_jovem) < 8:
+            flash("Contato deve conter apenas números e ter pelo menos 8 dígitos.", "danger")
+            return redirect(request.url)
+
+        # Validação do período
+        if not periodo.isdigit() or int(periodo) < 1 or int(periodo) > 20:
+            flash("Período deve ser um número inteiro entre 1 e 20.", "danger")
+            return redirect(request.url)
+
         # Atualizar informações do aluno
-        aluno.nome_jovem = request.form['nome_jovem']
-        aluno.data_nascimento = request.form['data_nascimento']
-        aluno.contato_jovem = request.form['contato_jovem']
-        aluno.email = request.form['email']
-        aluno.endereco_jovem = request.form['endereco_jovem']
+        aluno.nome_jovem = nome_jovem
+        aluno.data_nascimento = data_nascimento
+        aluno.contato_jovem = contato_jovem
+        aluno.email = email
+        aluno.endereco_jovem = endereco_jovem
         aluno.curso = curso
-        aluno.formacao = request.form['formacao']
-        aluno.periodo = request.form['periodo']
+        aluno.formacao = formacao
+        aluno.periodo = periodo
 
         # Atualizar hard skills (dinâmico conforme curso)
         hard_labels = HARD_SKILLS_POR_CURSO.get(curso, [])
