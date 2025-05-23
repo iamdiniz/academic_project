@@ -19,133 +19,136 @@
         </div>
     </div>
     <div class="lado-direito">
-        <!-- Mensagens de Sucesso ou Erro -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div class="alert-container">
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
 
-        <form method="POST" class="form-box">
+        <form method="POST" class="form-box" onsubmit="return validarFormulario()" novalidate>
             <h2 class="mb-4">Cadastre-se</h2>
 
             <!-- Tipo de usuário -->
             <div class="mb-3">
-                <label class="form-label">Tipo de cadastro (*)</label>
-                <select name="tipo_usuario" id="tipoUsuario" class="form-select" required onchange="exibirCampos()">
-                    <option value="" selected disabled>Selecione</option>
-                    <option value="chefe">Chefe</option>
-                    <option value="instituicao">Instituição de Ensino</option>
-                </select>
-            </div>
+            <label class="form-label">Tipo de cadastro (*)</label>
+            <select name="tipo_usuario" id="tipoUsuario" class="form-select" required onchange="exibirCampos()">
+                <option value="" selected disabled>Selecione</option>
+                <option value="chefe">Chefe</option>
+                <option value="instituicao">Instituição de Ensino</option>
+            </select>
+        </div>
 
-            <!-- Campos comuns -->
+        <!-- Campos comuns -->
+        <div class="mb-3">
+            <label for="nome" class="form-label">Nome de usuário (*)</label>
+            <input type="text" name="nome" class="form-control" id="nome" placeholder="Nome de usuário" required oninput="filtrarEntrada(this, 'letras')">
+            <div id="erro-nome" class="invalid-feedback"></div>
+        </div>
+
+        <div class="mb-3">
+            <label for="email" class="form-label">E-mail (*)</label>
+            <input type="email" name="email" id="email" class="form-control" placeholder="exemplo@dominio.com" required onblur="validarEmail(this)">
+            <div id="erro-email" class="invalid-feedback"></div>
+        </div>
+        <div class="row">
+            <div class="col-12 col-md-6 mb-3">
+                <label for="senha" class="form-label">Senha (*)</label>
+                <input type="password" name="senha" id="senha" class="form-control" placeholder="Senha com no mínimo 6 caractere" oninput="validarSenha(this)" required>
+                <div id="erro-senha" class="invalid-feedback"></div>
+                <small id="forca-senha" class="form-text"></small>
+            </div>
+            <div class="col-12 col-md-6 mb-3">
+                <label  for="confirmarSenha" class="form-label">Repita a senha (*)</label>
+                <input type="password" name="confirmar_senha" id="confirmarSenha" class="form-control" placeholder="Repita a senha" oninput="validarConfirmacaoSenha()" required>
+            </div>
+            <div id="erro-confirmarSenha" class="invalid-feedback"></div>
+        </div>
+
+        <!-- Campos específicos para instituição -->
+        <div id="camposInstituicao" style="display: none;">
             <div class="mb-3">
-                <label class="form-label">Nome de usuário (*)</label>
-                <input type="text" name="nome" class="form-control" placeholder="Nome de usuário" required>
+                <label class="form-label">Nome da Instituição (*)</label>
+                <input type="text" name="instituicao_nome" id="instituicao_nome" class="form-control" placeholder="Instituição" required oninput="filtrarEntrada(this, 'letras')">
+                <div id="erro-instituicao_nome" class="invalid-feedback"></div>
             </div>
 
             <div class="mb-3">
-                <label class="form-label">E-mail (*)</label>
-                <input type="email" name="email" class="form-control" placeholder="E-mail" required>
+                <label class="form-label">Endereço da Instituição (*)</label>
+                <input type="text" name="endereco_instituicao" id="endereco_instituicao" class="form-control" placeholder="Endereço" required>
+                <div id="erro-endereco_instituicao" class="invalid-feedback"></div>
             </div>
 
-            <div class="row">
-                <div class="col-12 col-md-6 mb-3">
-                    <label class="form-label">Senha (*)</label>
-                    <input type="password" name="senha" class="form-control" placeholder="Senha" required>
-                </div>
-                <div class="col-12 col-md-6 mb-3">
-                    <label class="form-label">Repita a senha (*)</label>
-                    <input type="password" name="confirmar_senha" class="form-control" placeholder="Repita a senha" required>
-                </div>
+            <div class="mb-3">
+                <label for="cpf" class="form-label">CNPJ (*)</label>
+                <input type="text" name="instituicao_cnpj" id="cnpj" class="form-control" placeholder="CNPJ" maxlength="14" required oninput="filtrarEntrada(this, 'numeros')">
+                <div id="erro-cnpj" class="invalid-feedback"></div>
             </div>
 
-            <!-- Campos específicos para instituição -->
-            <div id="camposInstituicao" style="display: none;">
-                <div class="mb-3">
-                    <label class="form-label">Nome da Instituição (*)</label>
-                    <input type="text" name="instituicao_nome" class="form-control" placeholder="Instituição" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Endereço da Instituição (*)</label>
-                    <input type="text" name="endereco_instituicao" class="form-control" placeholder="Endereço" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">CNPJ (*)</label>
-                    <input type="text" name="instituicao_cnpj" class="form-control" placeholder="CNPJ" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Infraestrutura (*)</label>
-                    <textarea name="infraestrutura" class="form-control" placeholder="Descreva a infraestrutura da instituição" required></textarea>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Nota MEC (*)</label>
-                    <input type="number" name="nota_mec" class="form-control" min="1" max="5" step="1"
-                        placeholder="Nota MEC (1 a 5)" required id="nota_mec_input"
-                        inputmode="numeric" pattern="[1-5]">
-                    <small class="text-muted">Digite um valor entre 1 e 5.</small>
-                </div>
-               <div class="mb-3">
-                    <label class="form-label">Cursos da Instituição (*)</label>
-                    <div class="row">
-                        {% for curso in cursos_padrao %}
-                            <div class="col-12 col-md-6">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="cursos_selecionados"
-                                        id="curso_{{ loop.index }}" value="{{ curso }}">
-                                    <label class="form-check-label" for="curso_{{ loop.index }}">{{ curso }}</label>
-                                </div>
+            <div class="mb-3">
+                <label class="form-label">Infraestrutura (*)</label>
+                <textarea name="infraestrutura" id="infraestrutura" class="form-control" placeholder="Descreva a infraestrutura da instituição" required></textarea>
+                <div id="erro-infraestrutura" class="invalid-feedback"></div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Nota MEC (*)</label>
+                <input type="number" name="nota_mec" class="form-control" min="1" max="5" step="1"
+                    placeholder="Nota MEC (1 a 5)" required id="nota_mec_input"
+                    inputmode="numeric" pattern="[1-5]">
+                <div id="erro-nota_mec_input" class="invalid-feedback"></div>
+                <small class="text-muted">Digite um valor entre 1 e 5.</small>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Cursos da Instituição (*)</label>
+                <div class="row" id="cursos_container">
+                    {% for curso in cursos_padrao %}
+                        <div class="col-12 col-md-6">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="cursos_selecionados"
+                                    id="curso_{{ loop.index }}" value="{{ curso }}">
+                                <label class="form-check-label" for="curso_{{ loop.index }}">{{ curso }}</label>
                             </div>
-                        {% endfor %}
-                    </div>
-                    <small class="text-muted">Selecione um ou mais cursos.</small>
+                        </div>
+                    {% endfor %}
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Modalidades (*)</label>
-                    <select name="modalidades" class="form-select" required>
-                        <option value="" disabled selected>Selecione a modalidade</option>
-                        <option value="Presencial">Presencial</option>
-                        <option value="Híbrido">Híbrido</option>
-                        <option value="EAD">EAD</option>
-                    </select>
-                </div>
+                <div id="erro-cursos" class="invalid-feedback d-block text-danger"></div>
+                <small class="text-muted">Selecione um ou mais cursos.</small>
             </div>
 
-            <!-- Campos específicos para chefe -->
-            <div id="camposChefe" style="display: none;">
-                <div class="mb-3">
-                    <label class="form-label">Nome da Empresa</label>
-                    <input type="text" name="empresa_nome" class="form-control" placeholder="Nome da empresa">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Cargo</label>
-                    <input type="text" name="cargo" class="form-control" placeholder="Cargo na empresa">
-                </div>
+            <div class="mb-3">
+                <label class="form-label">Modalidades (*)</label>
+                <select name="modalidades" id="modalidades" class="form-select" required>
+                    <option value="" disabled selected>Selecione a modalidade</option>
+                    <option value="Presencial">Presencial</option>
+                    <option value="Híbrido">Híbrido</option>
+                    <option value="EAD">EAD</option>
+                </select>
+                <div id="erro-modalidades" class="invalid-feedback"></div>
             </div>
+        </div>
 
-            <button type="submit" class="btn btn-success w-100">Cadastrar</button>
-            <p class="mt-3">Já tem conta? <a href="{{ url_for('login') }}">Faça login</a></p>
-        </form>
-    </div>
-</div>
+        <!-- Campos específicos para chefe -->
+        <div id="camposChefe" style="display: none;">
+            <div class="mb-3">
+                <label class="form-label">Nome da Empresa (*)</label>
+                <input type="text" name="empresa_nome" id="empresa_nome" class="form-control" placeholder="Nome da empresa" required oninput="filtrarEntrada(this, 'letras')">
+                <div id="erro-empresa_nome" class="invalid-feedback"></div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Cargo (*)</label>
+                <input type="text" name="cargo" id="cargo" class="form-control" placeholder="Cargo na empresa" required oninput="filtrarEntrada(this, 'letras')">
+                <div id="erro-cargo" class="invalid-feedback"></div>
+            </div>
+        </div>
 
-<!-- Toasts de Notificação -->
-<div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
-  <div id="toastNotificacao" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
-    <div class="d-flex">
-      <div class="toast-body" id="toastNotificacaoBody"></div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
-    </div>
-  </div>
-</div>
+        <button type="submit" class="btn btn-success w-100">Cadastrar</button>
+        <p class="mt-3">Já tem conta? <a href="{{ url_for('login') }}">Faça login</a></p>
+
+        <!-- Toasts de Notificação -->
+        <div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
+        <div id="toastNotificacao" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+            <div class="toast-body" id="toastNotificacaoBody"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
+            </div>
+        </div>
+        </div>
 
 <script>
 function exibirCampos() {
@@ -217,8 +220,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Garante que ao recarregar a página, os campos estejam corretos
-document.addEventListener('DOMContentLoaded', exibirCampos);
+
 
 window.showToast = function(mensagem, cor='success', tempo=2500, icone='') {
     const toast = document.getElementById('toastNotificacao');
@@ -233,11 +235,195 @@ document.addEventListener('DOMContentLoaded', function() {
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
-                showToast({{ message|tojson }}, 
-                          "{{ 'success' if category == 'success' else ('warning' if category == 'warning' else 'danger') }}");
+                let corToast = 'success';
+                if ('{{category}}' === 'error' || '{{category}}' === 'danger') corToast = 'danger';
+                else if ('{{category}}' === 'warning') corToast = 'warning';
+
+                showToast({{ message|tojson }}, corToast, 4000);
             {% endfor %}
         {% endif %}
     {% endwith %}
 });
+
+// Garante que ao recarregar a página, os campos estejam corretos
+document.addEventListener('DOMContentLoaded', exibirCampos);
+
+// Validações
+const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function aplicarErro(input, mensagem, idErro) {
+    const erroDiv = document.getElementById(idErro);
+    if (mensagem) {
+        input.classList.add('is-invalid');
+        input.classList.remove('is-valid');
+        erroDiv.textContent = mensagem;
+    } else {
+        input.classList.remove('is-invalid');
+        input.classList.add('is-valid');
+        erroDiv.textContent = '';
+    }
+}
+
+function validarCampoObrigatorio(input, mensagem, idErro) {
+    const valor = input.value.trim();
+    const valido = valor !== '';
+    aplicarErro(input, valido ? '' : mensagem, idErro);
+    return valido;
+}
+
+function validarCampo(input, condicao, mensagemErro, idErro) {
+    const valido = condicao(input.value);
+    aplicarErro(input, valido ? '' : mensagemErro, idErro);
+    return valido;
+}
+
+function filtrarEntrada(input, tipo) {
+    const original = input.value;
+    const filtrado = tipo === 'letras' ? original.replace(/[^A-Za-zÀ-ÿ\s]/g, '') : original.replace(/[^0-9]/g, '');
+    input.value = filtrado;
+
+    aplicarErro(
+        input,
+        original !== filtrado
+            ? (tipo === 'letras' ? "O campo só pode conter letras e espaços." : "Este campo só pode conter números.")
+            : "",
+        "erro-" + input.id
+    );
+}
+
+function validarEmail(input) {
+    const email = input.value.trim();
+    aplicarErro(input, (email && !regexEmail.test(email)) ? "Formato de e-mail inválido." : "", "erro-email");
+}
+
+function validarSenha(input) {
+    const senha = input.value;
+    aplicarErro(input, senha.length < 6 ? "A senha deve conter no mínimo 6 caracteres." : "", "erro-senha");
+
+    // Força da senha
+    let forca = 0;
+    if (senha.length >= 6) forca++;
+    if (/[A-Z]/.test(senha)) forca++;
+    if (/[0-9]/.test(senha)) forca++;
+    if (/[\W_]/.test(senha)) forca++;
+
+    let texto = "", cor = "";
+    switch (forca) {
+        case 1:
+        case 2:
+            texto = "Senha fraca";
+            cor = "text-danger";
+            break;
+        case 3:
+            texto = "Senha média";
+            cor = "text-warning";
+            break;
+        case 4:
+            texto = "Senha forte";
+            cor = "text-success";
+            break;
+    }
+
+    const forcaEl = document.getElementById("forca-senha");
+    forcaEl.textContent = texto;
+    forcaEl.className = `form-text ${cor}`;
+
+    validarConfirmacaoSenha();
+}
+
+function validarConfirmacaoSenha() {
+    const senha = document.getElementById('senha').value;
+    const confirmar = document.getElementById('confirmarSenha');
+
+    aplicarErro(
+        confirmar,
+        confirmar.value && confirmar.value !== senha ? "As senhas não coincidem." : "",
+        "erro-confirmarSenha"
+    );
+}
+
+function validarCamposComuns() {
+    const nome = document.getElementById('nome');
+    const email = document.getElementById('email');
+    const senha = document.getElementById('senha');
+    const confirmarSenha = document.getElementById('confirmarSenha');
+
+    let valido = true;
+
+    valido &= validarCampoObrigatorio(nome, 'O nome é obrigatório.', 'erro-nome');
+    valido &= validarCampo(email, val => regexEmail.test(val.trim()), 'E-mail inválido.', 'erro-email');
+    valido &= validarCampo(senha, val => val.length >= 6, 'A senha deve ter no mínimo 6 caracteres.', 'erro-senha');
+    valido &= validarCampo(confirmarSenha, val => val === senha.value && val !== '', 'As senhas não coincidem.', 'erro-confirmarSenha');
+
+    return !!valido;
+}
+
+function validarCamposInstituicao() {
+    const instituicaoNome = document.getElementById('instituicao_nome');
+    const enderecoInstituicao = document.getElementById('endereco_instituicao');
+    const cnpj = document.getElementById('cnpj');
+    const infraestrutura = document.getElementById('infraestrutura');
+    const notaMec = document.getElementById('nota_mec_input');
+    const modalidades = document.getElementById('modalidades');
+    const cursosSelecionados = document.querySelectorAll('input[name="cursos_selecionados"]:checked');
+
+    let valido = true;
+
+    valido &= validarCampoObrigatorio(instituicaoNome, 'O nome da instituição é obrigatório.', 'erro-instituicao_nome');
+    valido &= validarCampoObrigatorio(enderecoInstituicao, 'O endereço é obrigatório.', 'erro-endereco_instituicao');
+    valido &= validarCampo(cnpj, val => val.trim().length === 14, 'CNPJ deve ter 14 números.', 'erro-cnpj');
+    valido &= validarCampoObrigatorio(infraestrutura, 'Descreva a infraestrutura.', 'erro-infraestrutura');
+    valido &= validarCampo(notaMec, val => {
+        const nota = parseInt(val);
+        return !isNaN(nota) && nota >= 1 && nota <= 5;
+    }, 'Nota deve ser entre 1 e 5.', 'erro-nota_mec_input');
+    valido &= validarCampo(modalidades, val => val !== '', 'Selecione uma modalidade.', 'erro-modalidades');
+
+    if (cursosSelecionados.length === 0) {
+        document.getElementById('erro-cursos').textContent = 'Selecione pelo menos um curso.';
+        valido = false;
+    } else {
+        document.getElementById('erro-cursos').textContent = '';
+    }
+
+    return !!valido;
+}
+
+function validarCamposChefe() {
+    const empresaNome = document.getElementById('empresa_nome');
+    const cargo = document.getElementById('cargo');
+
+    let valido = true;
+
+    valido &= validarCampoObrigatorio(empresaNome, 'O nome da empresa é obrigatório.', 'erro-empresa_nome');
+    valido &= validarCampoObrigatorio(cargo, 'O cargo é obrigatório.', 'erro-cargo');
+
+    return !!valido;
+}
+
+function validarFormulario() {
+    const tipoUsuario = document.getElementById('tipoUsuario').value;
+
+    let valido = true;
+
+    valido &= validarCamposComuns();
+
+    if (tipoUsuario === 'instituicao') {
+        valido &= validarCamposInstituicao();
+    } else if (tipoUsuario === 'chefe') {
+        valido &= validarCamposChefe();
+    }
+
+    if (!valido) {
+        showToast('Existem campos inválidos. Verifique e tente novamente.', 'danger', 3500, '<i class="bi bi-exclamation-triangle-fill"></i> ');
+    }
+    
+    if (tipoUsuario !== 'instituicao' && tipoUsuario !== 'chefe') {
+        showToast('Selecione o tipo de cadastro.', 'danger', 3500, '<i class="bi bi-exclamation-triangle-fill"></i> ');
+        return false; 
+    }
+
+    return !!valido;
+}
 </script>
 {% endblock %}
