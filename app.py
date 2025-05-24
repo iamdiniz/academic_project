@@ -6,6 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
 from unidecode import unidecode  # Biblioteca para remover acentos e caracteres especiais
 from urllib.parse import unquote
+from math import ceil
 import json
 
 app = Flask(__name__)
@@ -515,7 +516,23 @@ def ver_alunos_por_curso():
     if not alunos_filtrados:
         mensagem = f"Nenhum aluno encontrado para o curso '{curso}'."
 
-    return render_template('cardAlunos.html', alunos=alunos_com_skills, curso=curso, mensagem=mensagem)
+    # PAGINAÇÃO
+    page = request.args.get('page', 1, type=int)
+    per_page = 12
+    total = len(alunos_com_skills)
+    total_pages = ceil(total / per_page)
+    start = (page - 1) * per_page
+    end = start + per_page
+    alunos_paginados = alunos_com_skills[start:end]
+
+    return render_template(
+        'cardAlunos.html',
+        alunos=alunos_paginados,
+        curso=curso,
+        mensagem=mensagem,
+        page=page,
+        total_pages=total_pages
+    )
 
 @app.route('/detalhes_aluno/<int:id_aluno>')
 @bloquear_instituicao
@@ -612,7 +629,21 @@ def cardAlunos():
             "soft_skills": soft_skills
         })
 
-    return render_template('cardAlunos.html', alunos=alunos_com_skills)
+    # Paginação
+    page = request.args.get('page', 1, type=int)
+    per_page = 12
+    total = len(alunos_com_skills)
+    total_pages = ceil(total / per_page)
+    start = (page - 1) * per_page
+    end = start + per_page
+    alunos_paginados = alunos_com_skills[start:end]
+
+    return render_template(
+        'cardAlunos.html',
+        alunos=alunos_paginados,
+        page=page,
+        total_pages=total_pages
+    )
 
 @app.route('/carousel')
 def carousel():
