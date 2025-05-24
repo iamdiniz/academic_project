@@ -363,10 +363,21 @@ def instituicao_ensino():
         for inst in instituicoes
     }
 
+    # Paginação
+    page = request.args.get('page', 1, type=int)
+    per_page = 12
+    total = len(instituicoes)
+    total_pages = ceil(total / per_page)
+    start = (page - 1) * per_page
+    end = start + per_page
+    instituicoes_paginadas = instituicoes[start:end]
+
     return render_template(
         'instituicaoEnsino.html',
-        instituicoes=instituicoes,
-        cursos_por_instituicao=cursos_por_instituicao
+        instituicoes=instituicoes_paginadas,
+        cursos_por_instituicao=cursos_por_instituicao,
+        page=page,
+        total_pages=total_pages
     )
 
 @app.route('/detalhes_instituicao/<int:id_instituicao>')
