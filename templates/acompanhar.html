@@ -8,6 +8,23 @@
 {% endblock %}
 
 {% block body %}
+{% if total_pages > 1 %}
+<nav aria-label="Paginação de alunos">
+  <ul class="pagination justify-content-center mt-4">
+    <li class="page-item {% if page == 1 %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for('acompanhar', page=page-1) }}">Anterior</a>
+    </li>
+    {% for p in range(1, total_pages+1) %}
+      <li class="page-item {% if p == page %}active{% endif %}">
+        <a class="page-link" href="{{ url_for('acompanhar', page=p) }}">{{ p }}</a>
+      </li>
+    {% endfor %}
+    <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for('acompanhar', page=page+1) }}">Próxima</a>
+    </li>
+  </ul>
+</nav>
+{% endif %}
 <div class="container mt-4">
     <h2 class="text-center mb-4">Alunos que estou acompanhando</h2>
     <div class="row g-4">

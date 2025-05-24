@@ -1102,7 +1102,22 @@ def acompanhar():
             "soft_labels": soft_labels,
             "soft_skills": soft_skills
         })
-    return render_template('acompanhar.html', alunos=alunos_com_skills)
+
+    # Paginação
+    page = request.args.get('page', 1, type=int)
+    per_page = 12
+    total = len(alunos_com_skills)
+    total_pages = ceil(total / per_page)
+    start = (page - 1) * per_page
+    end = start + per_page
+    alunos_paginados = alunos_com_skills[start:end]
+
+    return render_template(
+        'acompanhar.html',
+        alunos=alunos_paginados,
+        page=page,
+        total_pages=total_pages
+    )
 
 @app.route('/remover_acompanhamento/<int:id_aluno>', methods=['POST'])
 @login_required
