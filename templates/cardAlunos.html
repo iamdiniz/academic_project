@@ -153,7 +153,7 @@
                         {% endif %}
                     </div>
                     <div class="card-footer text-end">
-                        <a href="{{ url_for('detalhes_aluno', id_aluno=aluno.id_aluno) }}" class="btn btn-primary btn-sm">Ver Detalhes</a>
+                        <a href="{{ url_for('detalhes_aluno', id_aluno=aluno.id_aluno, previous=request.full_path) }}" class="btn btn-primary btn-sm">Ver Detalhes</a>
                     </div>
                 </div>
             </div>
