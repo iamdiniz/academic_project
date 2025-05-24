@@ -820,14 +820,25 @@ def alunos_instituicao():
             "soft_skills": soft_skills
         })
 
+    # PAGINAÇÃO
+    page = request.args.get('page', 1, type=int)
+    per_page = 12
+    total = len(alunos_com_skills)
+    total_pages = ceil(total / per_page)
+    start = (page - 1) * per_page
+    end = start + per_page
+    alunos_paginados = alunos_com_skills[start:end]
+
     return render_template(
         'alunos_instituicao.html',
-        alunos=alunos_com_skills,
+        alunos=alunos_paginados,
         cursos=cursos,
         filtro_curso=filtro_curso,
         cursos_disponiveis=cursos_disponiveis,
         HARD_SKILLS_POR_CURSO=HARD_SKILLS_POR_CURSO,
-        SOFT_SKILLS=SOFT_SKILLS
+        SOFT_SKILLS=SOFT_SKILLS,
+        page=page,
+        total_pages=total_pages
     )
 
 @app.route('/detalhes_aluno_instituicao/<int:id_aluno>', methods=['GET', 'POST'])
