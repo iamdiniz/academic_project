@@ -1169,6 +1169,32 @@ def status_aluno(id_aluno):
         })
     return render_template('status_aluno.html', historicos=historicos_dict, historico_pares=historico_pares, aluno=aluno)
 
+@app.route('/alunos_indicados')
+@bloquear_chefe
+@login_required
+def alunos_indicados():
+    if session.get('tipo_usuario') != 'instituicao':
+        flash("Acesso não permitido.", "danger")
+        return redirect(url_for('home'))
+
+    instituicao_id = current_user.id_instituicao
+    alunos = Aluno.query.filter_by(id_instituicao=instituicao_id).filter(Aluno.indicado_por.isnot(None)).all()
+
+    dados_alunos = []
+    for aluno in alunos:
+        chefe = aluno.chefe
+        dados_alunos.append({
+            "id_aluno": aluno.id_aluno,
+            "nome": aluno.nome_jovem,
+            "curso": aluno.curso,
+            "periodo": aluno.periodo,
+            "chefe_nome": chefe.nome if chefe else 'Não informado',
+            "chefe_empresa": chefe.nome_empresa if chefe else 'Não informado',
+            "data_indicacao": aluno.historicos[-1].data.strftime('%d/%m/%Y') if aluno.historicos else 'Sem histórico'
+        })
+
+    return render_template('alunos_indicados.html', alunos=dados_alunos)
+
 @app.route('/logout')
 def logout():
     logout_user()

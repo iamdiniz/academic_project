@@ -1,0 +1,46 @@
+.card {
+    border-radius: 12px;
+}
+
+.card-body {
+    padding: 1rem;
+}
+
+.card-body.border-bottom {
+    border-bottom: 1px solid #dee2e6;
+}
+
+.card-footer {
+    background-color: white;
+    border-top: none;
+}
+
+h5 {
+    font-weight: bold;
+}
+
+.badge {
+    font-size: 0.9rem;
+}
+
+.back-circle {
+    width: 40px;
+    height: 40px;
+    background-color: #1b3b4d;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+    margin-left: 0.5rem;
+    z-index: 1;
+}
+
+.back-circle svg {
+    color: white;
+}
+
+.back-circle:hover {
+    background-color: #154256;
+}
+
