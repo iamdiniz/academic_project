@@ -134,6 +134,11 @@
                                         Cursos
                                     </a>
                                 </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {% if request.path == url_for('alunos_indicados') %}active{% endif %}" href="{{ url_for('alunos_indicados') }}">
+                                        Alunos indicados
+                                    </a>
+                                </li>
                             {% endif %}
                         </ul>
                     </div>
@@ -189,6 +194,11 @@
             <a class="nav-link {% if request.path == url_for('cursos') %}active{% endif %}" href="{{ url_for('cursos') }}">
                 <i class="bi bi-journal-bookmark"></i>
                 <span class="sidebar-tooltip">Cursos</span>
+            </a>
+            <!-- Alunos indicados -->
+            <a class="nav-link {% if request.path == url_for('alunos_indicados') %}active{% endif %}" href="{{ url_for('alunos_indicados') }}">
+                <i class="bi bi-person-check"></i>
+                <span class="sidebar-tooltip">Alunos indicados</span>
             </a>
         {% endif %}
     </div>
