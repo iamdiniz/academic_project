@@ -1076,6 +1076,20 @@ def acompanhar_aluno(id_aluno):
     novo_acompanhamento = Acompanhamento(id_chefe=chefe_id, id_aluno=id_aluno)
     db.session.add(novo_acompanhamento)
     db.session.commit()
+
+    # --- NOVO: Cria snapshot das skills no momento do acompanhamento, se não existir ---
+    historico_existente = SkillsHistorico.query.filter_by(id_aluno=id_aluno).count()
+    aluno = Aluno.query.get(id_aluno)
+    if aluno and aluno.skills and historico_existente == 0:
+        novo_historico = SkillsHistorico(
+            id_aluno=aluno.id_aluno,
+            hard_skills_json=aluno.skills.hard_skills_json,
+            soft_skills_json=aluno.skills.soft_skills_json
+        )
+        db.session.add(novo_historico)
+        db.session.commit()
+    # -------------------------------------------------------------------------------
+
     return jsonify({'message': 'Aluno adicionado à sua lista de acompanhamento!'})
 
 @app.route('/acompanhar')
@@ -1159,13 +1173,21 @@ def status_aluno(id_aluno):
         })
     # Gera pares para comparação de evolução
     historico_pares = []
-    for i in range(len(historicos_dict) - 1):
-        atual = historicos_dict[i]
-        anterior = historicos_dict[i + 1]
+    if len(historicos_dict) > 1:
+        for i in range(len(historicos_dict) - 1):
+            atual = historicos_dict[i]
+            anterior = historicos_dict[i + 1]
+            historico_pares.append({
+                'data': atual['data'],
+                'atual': atual,
+                'anterior': anterior
+            })
+    elif len(historicos_dict) == 1:
+        # Só existe um snapshot, exibe como "atual" sem comparação
         historico_pares.append({
-            'data': atual['data'],
-            'atual': atual,
-            'anterior': anterior
+            'data': historicos_dict[0]['data'],
+            'atual': historicos_dict[0],
+            'anterior': None
         })
     return render_template('status_aluno.html', historicos=historicos_dict, historico_pares=historico_pares, aluno=aluno)
 

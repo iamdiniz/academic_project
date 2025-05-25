@@ -4,60 +4,42 @@
     {% if historico_pares %}
         <ul class="list-group">
             {% for par in historico_pares %}
-                <li class="list-group-item">
-                    <strong>{{ par.data.strftime('%d/%m/%Y %H:%M') }}</strong>
-                    <ul>
-                        <li><strong>Hard Skills:</strong>
+                <li class="list-group-item mb-3">
+                    <strong>Data:</strong> {{ par.data.strftime('%d/%m/%Y %H:%M') }}<br>
+                    {% if par.anterior %}
+                        <ul>
+                        {% for skill, valor in par.atual.hard_skills.items() %}
+                            {% set diff = valor - par.anterior.hard_skills.get(skill, 0) %}
+                            {% if diff > 0 %}
+                                <li>Melhorou +{{ diff }} ponto{{ 's' if diff > 1 else '' }} em {{ skill }}</li>
+                            {% elif diff < 0 %}
+                                <li>Diminuiu {{ diff|abs }} ponto{{ 's' if diff < -1 else '' }} em {{ skill }}</li>
+                            {% endif %}
+                        {% endfor %}
+                        {% for skill, valor in par.atual.soft_skills.items() %}
+                            {% set diff = valor - par.anterior.soft_skills.get(skill, 0) %}
+                            {% if diff > 0 %}
+                                <li>Melhorou +{{ diff }} ponto{{ 's' if diff > 1 else '' }} em {{ skill }}</li>
+                            {% elif diff < 0 %}
+                                <li>Diminuiu {{ diff|abs }} ponto{{ 's' if diff < -1 else '' }} em {{ skill }}</li>
+                            {% endif %}
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div>
+                            <strong>Snapshot inicial:</strong>
                             <ul>
-                                {% for label, valor_atual in par.atual.hard_skills.items() %}
-                                    {% set valor_anterior = par.anterior.hard_skills.get(label, 0) %}
-                                    {% set diff = valor_atual - valor_anterior %}
-                                    {% if diff > 0 %}
-                                        <li>Melhorou +{{ diff }} ponto{{ 's' if diff > 1 else '' }} em {{ label }}</li>
-                                    {% elif diff < 0 %}
-                                        <li>Diminuiu {{ diff|abs }} ponto{{ 's' if diff|abs > 1 else '' }} em {{ label }}</li>
-                                    {% endif %}
-                                {% endfor %}
+                            {% for skill, valor in par.atual.hard_skills.items() %}
+                                <li>{{ skill }}: {{ valor }}</li>
+                            {% endfor %}
+                            {% for skill, valor in par.atual.soft_skills.items() %}
+                                <li>{{ skill }}: {{ valor }}</li>
+                            {% endfor %}
                             </ul>
-                        </li>
-                        <li><strong>Soft Skills:</strong>
-                            <ul>
-                                {% for label, valor_atual in par.atual.soft_skills.items() %}
-                                    {% set valor_anterior = par.anterior.soft_skills.get(label, 0) %}
-                                    {% set diff = valor_atual - valor_anterior %}
-                                    {% if diff > 0 %}
-                                        <li>Melhorou +{{ diff }} ponto{{ 's' if diff > 1 else '' }} em {{ label }}</li>
-                                    {% elif diff < 0 %}
-                                        <li>Diminuiu {{ diff|abs }} ponto{{ 's' if diff|abs > 1 else '' }} em {{ label }}</li>
-                                    {% endif %}
-                                {% endfor %}
-                            </ul>
-                        </li>
-                    </ul>
+                        </div>
+                    {% endif %}
                 </li>
             {% endfor %}
-        </ul>
-    {% elif historicos %}
-        <div class="alert alert-info text-center">
-            Só existe um registro de skills para este aluno.<br>
-            Último snapshot:
-        </div>
-        <ul class="list-group mb-3">
-            <li class="list-group-item"><strong>Data:</strong> {{ historicos[0].data.strftime('%d/%m/%Y %H:%M') }}</li>
-            <li class="list-group-item"><strong>Hard Skills:</strong>
-                <ul>
-                    {% for label, valor in historicos[0].hard_skills.items() %}
-                        <li>{{ label }}: {{ valor }}</li>
-                    {% endfor %}
-                </ul>
-            </li>
-            <li class="list-group-item"><strong>Soft Skills:</strong>
-                <ul>
-                    {% for label, valor in historicos[0].soft_skills.items() %}
-                        <li>{{ label }}: {{ valor }}</li>
-                    {% endfor %}
-                </ul>
-            </li>
         </ul>
     {% else %}
         <p class="text-center"><em>Sem histórico de skills para este aluno.</em></p>
