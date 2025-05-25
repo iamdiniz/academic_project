@@ -1,0 +1,153 @@
+/* Reset básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Estilo para o botão de voltar */
+.back-circle {
+    width: 40px;
+    height: 40px;
+    background-color: #1b3b4d;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+    margin-left: 0.5rem;
+    z-index: 1;
+}
+
+.back-circle svg {
+    color: white;
+}
+
+.back-circle:hover {
+    background-color: #154256;
+}
+
+/* Estilo dos títulos */
+h1, h5 {
+    color: #333;
+}
+
+/* Cards de alunos */
+.card {
+    border-radius: 12px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.card-footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    border-radius: 0 0 12px 12px;
+}
+
+/* Modal estilizado */
+.modal-content {
+    background-color: #212529;
+    color: white;
+    border-radius: 1rem;
+}
+
+.modal-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.modal-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+label {
+    font-weight: 500;
+}
+
+/* Toast de notificação */
+.toast {
+    border-radius: 0.75rem;
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+}
+
+/* Estilo dos botões */
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+/* Gráficos */
+canvas {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Paginação */
+.pagination .page-link {
+    border-radius: 8px;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+/* Inputs de skills */
+.skill-input {
+    text-align: center;
+}
+
+/* Responsividade */
+
+/* Telas médias (tablet) */
+@media (max-width: 768px) {
+    .back-circle {
+        width: 35px;
+        height: 35px;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    .modal-dialog {
+        margin: 1rem;
+    }
+
+    .col-md-4, .col-md-6, .col-md-3 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    .btn {
+        width: 100%;
+    }
+}
+
+/* Telas pequenas (smartphones) */
+@media (max-width: 576px) {
+    h1 {
+        font-size: 1.3rem;
+    }
+
+    .back-circle {
+        width: 30px;
+        height: 30px;
+    }
+
+    .pagination {
+        flex-wrap: wrap;
+    }
+
+    .pagination .page-item {
+        margin-bottom: 5px;
+    }
+
+    .modal-dialog {
+        margin: 0.5rem;
+    }
+}
