@@ -719,12 +719,6 @@ def cursos():
     cursos = Curso.query.filter_by(id_instituicao=current_user.id_instituicao).all()
     return render_template('cursos.html', cursos=cursos, CURSOS_PADRAO=CURSOS_PADRAO)
 
-@app.route('/alunos')
-@login_required
-@bloquear_chefe
-def alunos():
-    return render_template('alunos.html')
-
 @app.route('/cadastrar_aluno', methods=['POST'])
 @login_required
 @bloquear_chefe
