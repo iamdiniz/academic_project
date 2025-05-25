@@ -1195,6 +1195,23 @@ def alunos_indicados():
 
     return render_template('alunos_indicados.html', alunos=dados_alunos)
 
+@app.route('/configuracoes', methods=['GET', 'POST'])
+@login_required
+def configuracoes():
+    tipo_usuario = session.get('tipo_usuario')
+
+    if tipo_usuario == 'chefe':
+        usuario = Chefe.query.get_or_404(current_user.id_chefe)
+        cursos_da_instituicao = []
+    elif tipo_usuario == 'instituicao':
+        usuario = InstituicaodeEnsino.query.get_or_404(current_user.id_instituicao)
+        cursos_da_instituicao = Curso.query.filter_by(id_instituicao=current_user.id_instituicao).all()
+    else:
+        flash("Tipo de usuário inválido.", "danger")
+        return redirect(url_for('home'))
+
+    return render_template('configuracoes.html', usuario=usuario, cursos_da_instituicao=cursos_da_instituicao)
+
 @app.route('/logout')
 def logout():
     logout_user()

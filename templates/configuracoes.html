@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% set hide_navbar = False %}
+
+{% block title %}Alunos - Educ+Invest{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/configuracoes.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4 position-relative">
+        <a href="{{ url_for('home') }}" class="back-circle position-absolute start-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" class="bi bi-arrow-left" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M15 8a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 7.5H14.5a.5.5 0 0 1 .5.5z"/>
+            </svg>
+        </a>
+        <h1 class="m-0 w-100 text-center">Configurações</h1>
+  </div>
+
+  <div class="row">
+
+    <div class="col-md-3">
+        <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+            <button class="nav-link active btn btn-primary" id="perfil-tab" data-bs-toggle="pill" data-bs-target="#perfil" type="button" role="tab" aria-controls="perfil" aria-selected="true">
+                Minha Conta
+            </button>
+            <button class="nav-link btn btn-outline-primary" id="suporte-tab" data-bs-toggle="pill" data-bs-target="#suporte" type="button" role="tab" aria-controls="suporte" aria-selected="false">
+                Suporte
+            </button>
+            <button class="nav-link btn btn-outline-primary" id="faq-tab" data-bs-toggle="pill" data-bs-target="#faq" type="button" role="tab" aria-controls="faq" aria-selected="false">
+                FAQ
+            </button>
+            <button class="nav-link btn btn-outline-primary" id="sobre-tab" data-bs-toggle="pill" data-bs-target="#sobre" type="button" role="tab" aria-controls="sobre" aria-selected="false">
+                Sobre Nós
+            </button>
+        </div>
+    </div>
+
+    <!-- Conteúdo das abas -->
+    <div class="col-md-9">
+      <div class="tab-content p-4 border border-start-0 bg-light" id="v-pills-tabContent">
+
+        <!-- Minha Conta -->
+        <div class="tab-pane fade show active" id="perfil" role="tabpanel">
+          <h5 class="text-center">Minha Conta</h5>
+          <hr>
+          <section method="POST" action="{{ url_for('configuracoes') }}">
+              <div class="mb-3">
+                 {% if session.get('tipo_usuario') == 'chefe' %}
+                <p><strong>Nome:</strong> {{ usuario.nome }}</p>
+                <p><strong>Cargo:</strong> {{ usuario.cargo }}</p>
+                <p><strong>Empresa:</strong> {{ usuario.nome_empresa }}</p>
+                <p><strong>Email:</strong> {{ usuario.email }}</p>
+
+            {% elif session.get('tipo_usuario') == 'instituicao' %}
+                <p><strong>Nome da Instituição:</strong> {{ usuario.nome_instituicao }}</p>
+                <p><strong>Endereço:</strong> {{ usuario.endereco_instituicao }}</p>
+                <p><strong>Reitor:</strong> {{ usuario.reitor }}</p>
+                <p><strong>Infraestrutura:</strong> {{ usuario.infraestrutura }}</p>
+                <p><strong>Nota MEC:</strong> {{ usuario.nota_mec }}</p>
+                <p><strong>Modalidades:</strong> {{ usuario.modalidades }}</p>
+                <p><strong>Email:</strong> {{ usuario.email }}</p>
+                <div class="mb-3">
+                  <strong>Cursos da Instituição:</strong>
+                    <ul class="list-group">
+                        {% for curso in cursos_da_instituicao %}
+                            <li class="list-group-item">{{ curso.nome }}</li>
+                        {% else %}
+                            <li class="list-group-item text-muted">Nenhum curso cadastrado.</li>
+                        {% endfor %}
+                    </ul>
+                  </div>
+                </div>
+            {% endif %}
+
+            <a href="{{ url_for('perfil') }}" class="btn btn-primary mt-3">Editar Perfil</a>
+          </section>
+
+        </div>
+
+        <!-- Aba Suporte -->
+        <div class="tab-pane fade" id="suporte" role="tabpanel">
+          <h5 class="text-center">Suporte</h5>
+          <hr>
+          <p>📧 Email 1: guilhermekauadinizc@gmail.com</p>
+          <p>📧 Email 2: brunobelarmino326@gmail.com</p>
+        </div>
+
+        <!-- Aba FAQ -->
+        <div class="tab-pane fade" id="faq" role="tabpanel">
+          <h5 class="text-center">FAQ - Perguntas Frequentes</h5>
+          <hr>
+          <ul>
+            <li><strong>Como redefinir minha senha?</strong> <br>
+              Opção 1 — Vá na nav superior e clique em "Perfil", logo após clicar aparecerá umas opções, clique em "Ver perfil", altere sua senha e clique em "Atualizar".<br>
+              Opção 2 — Vá na nav superior e clique em "Perfil", logo após clicar aparecerá umas opções, clique em "Configurações", clique em "Minha Conta", clique em "Editar Perfil", altere sua senha e clique em "Atualizar".</li>
+            <hr>
+            <li><strong>Como alterar as informações da minha conta?</strong> <br>
+              Opção 1 — Vá na nav superior e clique em "Perfil", logo após clicar aparecerá umas opções, clique em "Ver perfil", altere o que for necessário e clique em "Atualizar".<br>
+              Opção 2 — Vá na nav superior e clique em "Perfil", logo após clicar aparecerá umas opções, clique em "Configurações", clique em "Minha Conta", clique em "Editar Perfil", altere o que for necessário e clique em "Atualizar".</li>
+          </ul>
+        </div>
+
+        <!-- Aba Sobre Nós -->
+        <div class="tab-pane fade" id="sobre" role="tabpanel">
+          <h5 class="text-center">Sobre Nós</h5>
+          <hr>
+          <div class="content">
+            <div class="text">
+                <p>O <strong>Educ+Invest</strong> é uma plataforma inovadora que conecta instituições de ensino, empresas e jovens talentos em formação. Nosso objetivo é criar uma ponte eficiente entre o mercado de trabalho e a educação, facilitando a identificação e o desenvolvimento de profissionais com alto potencial.</p>
+                <p>Com o Educ+Invest, líderes de empresas podem acessar dados e indicadores de desempenho de alunos de diversas instituições parceiras. Isso permite acompanhar o progresso, avaliar competências e selecionar jovens para entrevistas e contratações de forma ágil, segura e transparente.</p>
+            </div>
+            <div class="content">
+              <div class="text">
+                <p>Estamos alinhados ao <strong>ODS 8.6 da ONU</strong>, comprometidos em reduzir os índices de desemprego juvenil. Acreditamos na formação qualificada, no desenvolvimento de competências e na geração de oportunidades para jovens talentos.</p>
+                <p>Nosso compromisso é oferecer uma plataforma robusta, ética e eficiente, fortalecendo o ecossistema educacional e o mercado de trabalho.</p>
+              </div>
+              <img src="{{ url_for('static', filename='img/onu.png') }}" class="d-block mx-auto w-50 w-md-50" alt="onu">
+            </div>
+            <div class="content">
+              <img src="{{ url_for('static', filename='img/jovens_work.png') }}" class="d-block mx-auto w-50 w-md-50" alt="jovens">
+              <div class="text">
+                  <p>Ao oferecer uma solução tecnológica de alta performance, o Educ+Invest visa não apenas facilitar processos seletivos, mas também criar oportunidades reais para jovens em formação. As instituições de ensino gerenciam os dados acadêmicos e organizam os alunos cadastrados, fornecendo informações que ajudam nas análises e tomadas de decisão dos líderes empresariais.</p>
+                  <p>Estamos comprometidos em construir um futuro onde educação e mercado caminhem lado a lado, impulsionando o desenvolvimento social, econômico e profissional.  Juntos, podemos fazer a diferença na vida dos jovens e nas empresas que buscam talentos.</p>
+              </div>
+            </div>
+          </div>
+          <footer>
+            &copy; 2025 Educ+Invest
+          </footer>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div aria-live="polite" aria-atomic="true" class="toast-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="toast align-items-center text-white bg-{{ 'success' if category == 'success' else 'danger' }} border-0 show mb-2" role="alert">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            {{ message }}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
+{% endblock %}
