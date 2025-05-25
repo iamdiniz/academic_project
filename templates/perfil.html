@@ -26,6 +26,10 @@
                 <label for="nome_empresa" class="form-label">Nome da Empresa</label>
                 <input type="text" class="form-control" id="nome_empresa" name="nome_empresa" value="{{ usuario.nome_empresa }}">
             </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">E-mail</label>
+                <input type="email" class="form-control" id="email" name="email" value="{{ usuario.email }}" required>
+            </div>
         {% elif session.get('tipo_usuario') == 'instituicao' %}
             <div class="mb-3">
                 <label for="nome_instituicao" class="form-label">Nome da Instituição</label>
@@ -72,6 +76,10 @@
                     <option value="EAD" {% if usuario.modalidades == 'EAD' %}selected{% endif %}>EAD</option>
                 </select>
             </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">E-mail</label>
+                <input type="email" class="form-control" id="email" name="email" value="{{ usuario.email }}" required>
+            </div>
         {% endif %}
         <div class="mb-3">
             <label for="senha" class="form-label">Senha</label>
@@ -83,11 +91,13 @@
 
 <script>
 document.querySelector('form').addEventListener('submit', function(e) {
+    {% if session.get('tipo_usuario') == 'chefe' %}
     const cargo = document.getElementById('cargo').value;
     if (!['CEO', 'Gerente', 'Coordenador'].includes(cargo)) {
         alert('Selecione um cargo válido.');
         e.preventDefault();
     }
+    {% endif %}
 });
 </script>
 

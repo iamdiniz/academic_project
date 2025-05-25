@@ -175,6 +175,20 @@ class SkillsHistorico(db.Model):
 
     aluno = db.relationship('Aluno', backref='historicos')
 
+class Indicacao(db.Model):
+    __tablename__ = 'indicacoes'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id_chefe = db.Column(db.Integer, db.ForeignKey('chefe.id_chefe'), nullable=False)
+    id_aluno = db.Column(db.Integer, db.ForeignKey('alunos.id_aluno'), nullable=False)
+    data_indicacao = db.Column(db.DateTime, server_default=db.func.now())
+
+    chefe = db.relationship('Chefe', backref='indicacoes')
+    aluno = db.relationship('Aluno', backref='indicacoes')
+
+    __table_args__ = (
+        db.UniqueConstraint('id_chefe', 'id_aluno', name='uix_chefe_aluno_indicacao'),
+    )
+
 with app.app_context():
     db.create_all()  # Recria as tabelas com base nos modelos
     print("Tabelas recriadas com sucesso!")
@@ -396,7 +410,10 @@ def minhas_selecoes():
         return redirect(url_for('home'))
     
     chefe_id = current_user.id_chefe
-    alunos = Aluno.query.filter_by(indicado_por=chefe_id).all()
+
+    # Busca todos os alunos indicados por este chefe usando a tabela Indicacao
+    indicacoes = Indicacao.query.filter_by(id_chefe=chefe_id).all()
+    alunos = [indicacao.aluno for indicacao in indicacoes]
 
     alunos_com_skills = []
     for aluno in alunos:
@@ -598,15 +615,15 @@ def indicar_aluno(id_aluno):
     if session.get('tipo_usuario') != 'chefe':
         return jsonify({'error': 'Acesso não permitido.'}), 403
 
-    aluno = Aluno.query.get_or_404(id_aluno)
     chefe_id = current_user.id_chefe
 
-    # Verifica se o aluno já foi indicado
-    if aluno.indicado_por is not None:
-        return jsonify({'error': 'Este aluno já foi indicado.'}), 400
+    # Verifica se já existe indicação deste chefe para este aluno
+    ja_indicado = Indicacao.query.filter_by(id_chefe=chefe_id, id_aluno=id_aluno).first()
+    if ja_indicado:
+        return jsonify({'error': 'Você já indicou este aluno.'}), 400
 
-    # Atualiza o campo indicado_por
-    aluno.indicado_por = chefe_id
+    nova_indicacao = Indicacao(id_chefe=chefe_id, id_aluno=id_aluno)
+    db.session.add(nova_indicacao)
     db.session.commit()
 
     return jsonify({'message': 'Aluno indicado com sucesso!'}), 200
@@ -1200,21 +1217,22 @@ def alunos_indicados():
         return redirect(url_for('home'))
 
     instituicao_id = current_user.id_instituicao
-    alunos = Aluno.query.filter_by(id_instituicao=instituicao_id).filter(Aluno.indicado_por.isnot(None)).all()
 
+    # Busca todos os alunos da instituição que possuem pelo menos uma indicação
+    alunos = Aluno.query.filter_by(id_instituicao=instituicao_id).all()
     dados_alunos = []
     for aluno in alunos:
-        chefe = aluno.chefe
-        dados_alunos.append({
-            "id_aluno": aluno.id_aluno,
-            "nome": aluno.nome_jovem,
-            "curso": aluno.curso,
-            "periodo": aluno.periodo,
-            "chefe_nome": chefe.nome if chefe else 'Não informado',
-            "chefe_empresa": chefe.nome_empresa if chefe else 'Não informado',
-            "data_indicacao": aluno.historicos[-1].data.strftime('%d/%m/%Y') if aluno.historicos else 'Sem histórico'
-        })
-
+        for indicacao in aluno.indicacoes:
+            chefe = indicacao.chefe
+            dados_alunos.append({
+                "id_aluno": aluno.id_aluno,
+                "nome": aluno.nome_jovem,
+                "curso": aluno.curso,
+                "periodo": aluno.periodo,
+                "chefe_nome": chefe.nome if chefe else 'Não informado',
+                "chefe_empresa": chefe.nome_empresa if chefe else 'Não informado',
+                "data_indicacao": indicacao.data_indicacao.strftime('%d/%m/%Y') if indicacao.data_indicacao else 'Sem data'
+            })
     return render_template('alunos_indicados.html', alunos=dados_alunos)
 
 @app.route('/configuracoes', methods=['GET', 'POST'])
