@@ -26,19 +26,29 @@
         <!-- Slides -->
         <div class="carousel-inner rounded shadow">
             <div class="carousel-item active text-center px-2">
-                <img src="{{ url_for('static', filename='img/inve.png') }}" class="d-block mx-auto w-50 w-md-50" alt="inve">
                 <h3 class="text-black mt-3 fade-in-text"><strong>Conexão entre Talento e Oportunidade</strong></h3>
+                <img src="{{ url_for('static', filename='img/inve.png') }}" class="d-block mx-auto w-50 w-md-50" alt="inve">
                 <p class="text-black fade-in-text"><strong>Encontre os talentos certos entre os estudantes mais promissores das melhores instituições de ensino.</strong></p>
             </div>
             <div class="carousel-item text-center px-2">
-                <img src="{{ url_for('static', filename='img/oisa.png') }}" class="d-block mx-auto w-50 w-md-50" alt="oisa">
                 <h3 class="text-black mt-3 fade-in-text"><strong>Antecipe o Futuro da Sua Empresa</strong></h3>
+                <img src="{{ url_for('static', filename='img/oisa.png') }}" class="d-block mx-auto w-50 w-md-50" alt="oisa">
                 <p class="text-black fade-in-text"><strong>Indique hoje os profissionais que farão a diferença no amanhã da sua organização.</strong></p>
             </div>
             <div class="carousel-item text-center px-2">
                 <h3 class="text-black mt-3 fade-in-text"><strong>Recrutamento Inteligente</strong></h3>
                 <img src="{{ url_for('static', filename='img/educ.png') }}" class="d-block mx-auto w-50 w-md-50" alt="educ">
                 <p class="text-black fade-in-text"><strong>Agilize o processo de contratação com perfis acadêmicos alinhados às necessidades da sua empresa.</strong></p>
+            </div>
+            <div class="carousel-item text-center px-2">
+                <h3 class="text-black mt-3 fade-in-text"><strong>Uma Plataforma Ética e Eficiente</strong></h3>
+                <img src="{{ url_for('static', filename='img/win.png') }}" class="d-block mx-auto w-50 w-md-50" alt="educ">
+                <p class="text-black fade-in-text"><strong>Fortalecendo o ecossistema educacional e o mercado de trabalho com soluções inovadoras.</strong></p>
+            </div>
+            <div class="carousel-item text-center px-2">
+                <h3 class="text-black mt-3 fade-in-text"><strong>A Busca por Talentos: Um Desafio Compartilhado</strong></h3>
+                <img src="{{ url_for('static', filename='img/procura.png') }}" class="d-block mx-auto w-50 w-md-50" alt="educ">
+                <p class="text-black fade-in-text"><strong>Explore como a parceria entre empresas e instituições de ensino pode revolucionar a identificação de profissionais qualificados.</strong></p>
             </div>
 
         <!-- Controles -->
@@ -52,45 +62,164 @@
         </button>
     </div>
 </div>
+<br>
+ <!-- Hero Section -->
+    <section class="hero text-center">
+        <div class="container">
+            <h1>DashTalent</h1>
+            <p class="lead">Conectando talentos, instituições e empresas para construir futuros de sucesso.</p>
+        </div>
+    </section>
+    <br>
+    <!-- Sobre o Projeto -->
+    <section class="container scroll-anim">
+        <div class="row align-items-center">
+            <div class="col-md-6 scroll-anim">
+                <img src="{{ url_for('static', filename='img/mnna.avif') }}" class="img-fluid rounded" alt="mnna">
+            </div>
+            <div class="col-md-6 scroll-anim">
+                <p>
+                    O <strong>DashTalent</strong> nasceu com a missão de transformar a forma como jovens são preparados e inseridos no mercado de trabalho.
+                    Por meio da nossa plataforma, empresas podem acompanhar o desempenho de estudantes de diversas instituições, facilitando a identificação
+                    de talentos com alto potencial para contratações futuras.
+                </p>
+                <p>
+                    As instituições de ensino são responsáveis por cadastrar e fornecer dados acadêmicos dos alunos, garantindo informações precisas
+                    e atualizadas. Este ecossistema gera oportunidades, promove o desenvolvimento profissional e contribui diretamente para a redução
+                    do desemprego juvenil, alinhando-se ao <strong>ODS 8.6 da ONU</strong>.
+                </p>
+            </div>
+        </div>
+    </section>
 
-<!-- Cards -->
-<section class="bg-light py-5">
-    <div class="container text-center">
-        <h2 class="display-6 fw-bold mb-5">
-            Instituições de Ensino que oferecem seus alunos para o mercado
-        </h2>
-        <div class="row justify-content-center g-4">
-            <!-- Card 1 -->
-            <div class="col-12 col-sm-6 col-lg-4">
-                <div class="card h-100 shadow-sm card-hover">
+    <!-- Benefícios -->
+    <section class="container scroll-anim">
+        <div class="text-center section-title scroll-anim">
+            <h2>Benefícios do DashTalent</h2>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4 scroll-anim">
+                <div class="card shadow-sm">
+                    <img src="{{ url_for('static', filename='img/selecao.png') }}" class="card-img-top" alt="Oportunidade">
                     <div class="card-body">
-                        <h5 class="card-title"><strong>Uninassau</strong></h5>
-                        <p class="card-text">Clique no botão abaixo e veja detalhes dessa faculdade</p>
-                        <a href="/login" class="btn btn-primary w-100 btn-glow">Detalhes</a>
+                        <h5 class="card-title">Geração de Oportunidades</h5>
+                        <p class="card-text">Facilita o acesso dos jovens ao mercado de trabalho, conectando-os diretamente às empresas.</p>
                     </div>
                 </div>
             </div>
-            <!-- Card 2 -->
-            <div class="col-12 col-sm-6 col-lg-4">
-                <div class="card h-100 shadow-sm card-hover">
+            <div class="col-md-4 scroll-anim">
+                <div class="card shadow-sm">
+                    <img src="{{ url_for('static', filename='img/acompanhamento.avif') }}" class="card-img-top" alt="Acompanhamento">
                     <div class="card-body">
-                        <h5 class="card-title"><strong>Unicap</strong></h5>
-                        <p class="card-text">Clique no botão abaixo e veja detalhes dessa faculdade</p>
-                        <a href="/login" class="btn btn-primary w-100 btn-glow">Detalhes</a>
+                        <h5 class="card-title">Acompanhamento de Desempenho</h5>
+                        <p class="card-text">As empresas podem visualizar dashboards com estatísticas, desempenho e evolução dos alunos.</p>
                     </div>
                 </div>
             </div>
-            <!-- Card 3 -->
-            <div class="col-12 col-sm-6 col-lg-4">
-                <div class="card h-100 shadow-sm card-hover">
+            <div class="col-md-4 scroll-anim">
+                <div class="card shadow-sm">
+                    <img src="{{ url_for('static', filename='img/onu.png') }}" class="card-img-top" alt="Desenvolvimento">
                     <div class="card-body">
-                        <h5 class="card-title"><strong>Unibra</strong></h5>
-                        <p class="card-text">Clique no botão abaixo e veja detalhes dessa faculdade</p>
-                        <a href="/login" class="btn btn-primary w-100 btn-glow">Detalhes</a>
+                        <h5 class="card-title">Desenvolvimento Sustentável</h5>
+                        <p class="card-text">Contribui para os Objetivos de Desenvolvimento Sustentável, promovendo educação e emprego digno.</p>
                     </div>
                 </div>
             </div>
         </div>
+    </section>
+    <br>
+
+<!-- Cards -->
+<div class="container-fluid mt-4 scroll-anim">
+    <h2 class="text-center">Instituição de Ensino</h2>
+        <p>**INFORMAÇÕES DEMONSTRATIVAS</p>
+
+  <div class="card-container">
+    <!-- Card 1 -->
+    <div class="card shadow p-3">
+      <h5><strong>UniFutura</strong></h5>
+      <p><strong>Modalidades:</strong> Presencial</p>
+      <p><strong>Reitor:</strong> Ana Paula</p>
+
+      <label>Nota MEC</label>
+      <div class="chart-bar">
+        <div class="bar bar-blue" style="width: 90%;"></div>
+      </div>
+
+      <label>Qtd Alunos</label>
+      <div class="chart-bar">
+        <div class="bar bar-pink" style="width: 70%;"></div>
+      </div>
+
+      <div class="d-flex justify-content-between mt-2">
+        <a href="/login" class="btn btn-primary w-100 btn-glow">Detalhes</a>
+      </div>
     </div>
-</section>
+
+    <!-- Card 2 -->
+    <div class="card shadow p-3">
+      <h5><strong>TechMais</strong></h5>
+      <p><strong>Modalidades:</strong> EAD</p>
+      <p><strong>Reitor:</strong> Carlos Silva</p>
+
+      <label>Nota MEC</label>
+      <div class="chart-bar">
+        <div class="bar bar-blue" style="width: 60%;"></div>
+      </div>
+
+      <label>Qtd Alunos</label>
+      <div class="chart-bar">
+        <div class="bar bar-pink" style="width: 80%;"></div>
+      </div>
+
+      <div class="d-flex justify-content-between mt-2">
+        <a href="/login" class="btn btn-primary w-100 btn-glow">Detalhes</a>
+      </div>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="card shadow p-3">
+      <h5><strong>Instituto Alfa</strong></h5>
+      <p><strong>Modalidades:</strong> Híbrido</p>
+      <p><strong>Reitor:</strong> Juliana Rocha</p>
+
+      <label>Nota MEC</label>
+      <div class="chart-bar">
+        <div class="bar bar-blue" style="width: 100%;"></div>
+      </div>
+
+      <label>Qtd Alunos</label>
+      <div class="chart-bar">
+        <div class="bar bar-pink" style="width: 75%;"></div>
+      </div>
+
+      <div class="d-flex justify-content-between mt-2">
+        <a href="/login" class="btn btn-primary w-100 btn-glow">Detalhes</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Rodapé -->
+<footer class="text-center scroll-anim">
+    <p>&copy; 2025 DashTalent. Todos os direitos reservados.</p>
+</footer>
+
+<script>
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('active');
+            }
+        });
+    }, {
+        threshold: 0.2 // 20% do elemento visível já dispara
+    });
+
+    document.querySelectorAll('.scroll-anim').forEach(el => {
+        observer.observe(el);
+    });
+</script>
+
 {% endblock %}
