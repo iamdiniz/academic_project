@@ -190,6 +190,7 @@ class Indicacao(db.Model):
     )
 
 with app.app_context():
+    db.drop_all()  # Remove todas as tabelas
     db.create_all()  # Recria as tabelas com base nos modelos
     print("Tabelas recriadas com sucesso!")
 
@@ -719,6 +720,25 @@ def cursos():
     cursos = Curso.query.filter_by(id_instituicao=current_user.id_instituicao).all()
     return render_template('cursos.html', cursos=cursos, CURSOS_PADRAO=CURSOS_PADRAO)
 
+def validar_skills_por_curso(curso, hard_skills_dict, soft_skills_dict):
+    # Curso deve ser válido
+    if curso not in HARD_SKILLS_POR_CURSO:
+        return False, f"Curso '{curso}' não é permitido."
+    # Hard skills: 5, nomes exatos, valores entre 0 e 10
+    hard_labels = HARD_SKILLS_POR_CURSO[curso]
+    if set(hard_skills_dict.keys()) != set(hard_labels):
+        return False, f"As hard skills devem ser exatamente: {', '.join(hard_labels)}."
+    for valor in hard_skills_dict.values():
+        if not isinstance(valor, int) or valor < 0 or valor > 10:
+            return False, "Todas as hard skills devem ser números inteiros de 0 a 10."
+    # Soft skills: 5, nomes exatos, valores entre 0 e 10
+    if set(soft_skills_dict.keys()) != set(SOFT_SKILLS):
+        return False, f"As soft skills devem ser exatamente: {', '.join(SOFT_SKILLS)}."
+    for valor in soft_skills_dict.values():
+        if not isinstance(valor, int) or valor < 0 or valor > 10:
+            return False, "Todas as soft skills devem ser números inteiros de 0 a 10."
+    return True, ""
+
 @app.route('/cadastrar_aluno', methods=['POST'])
 @login_required
 @bloquear_chefe
@@ -1227,7 +1247,22 @@ def alunos_indicados():
                 "chefe_empresa": chefe.nome_empresa if chefe else 'Não informado',
                 "data_indicacao": indicacao.data_indicacao.strftime('%d/%m/%Y') if indicacao.data_indicacao else 'Sem data'
             })
-    return render_template('alunos_indicados.html', alunos=dados_alunos)
+    
+    # Paginação
+    page = request.args.get('page', 1, type=int)
+    per_page = 12
+    total = len(dados_alunos)
+    total_pages = ceil(total / per_page)
+    start = (page - 1) * per_page
+    end = start + per_page
+    alunos_paginados = dados_alunos[start:end]
+
+    return render_template(
+        'alunos_indicados.html',
+        alunos=alunos_paginados,
+        page=page,
+        total_pages=total_pages
+    )
 
 @app.route('/configuracoes', methods=['GET', 'POST'])
 @login_required
