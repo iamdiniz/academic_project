@@ -1,3 +1,16 @@
+body {
+    background: #f8f9fa;
+    margin: 0;
+    padding: 0;
+}
+
+main {
+    margin-left: 72px;
+    padding-top: 72px;
+    min-height: 100vh;
+}
+
+/* Navbar */
 .custom-navbar {
     background-color: #1B3B4D;
 }
@@ -11,6 +24,11 @@
     color: #d1ecf1;
 }
 
+.custom-navbar .navbar-brand {
+    font-size: 1.4rem;
+    color: #ffffff;
+}
+
 .custom-logout {
     color: #dc3545;
     font-weight: bold;
@@ -21,17 +39,90 @@
     color: #842029;
 }
 
-/* Alinhamento e espaçamento */
-.custom-navbar .navbar-collapse .row {
-    width: 100%;
+.custom-navbar .navbar-nav.justify-content-center .nav-item {
+    margin: 0 20px; 
 }
 
-.custom-navbar .navbar-nav.justify-content-center .nav-item {
-    margin: 0 10px;
+/* Navbar - Link ativo com fundo */
+.custom-navbar .nav-link.active {
+    background-color: #495057;
+    border-radius: 8px;
+    color: #ffffff;
+}
+
+.custom-navbar .nav-link.active:hover {
+    color: #d1ecf1;
+}
+
+/* Sidebar */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 72px;
+    background: #1b3b4d;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    z-index: 1040;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.07);
+}
+
+.sidebar .nav-link {
+    color: #adb5bd;
+    font-size: 1.7rem;
+    margin: 18px 0;
+    padding: 0;
+    border-radius: 12px;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s;
+    position: relative;
+}
+
+.sidebar .nav-link.active,
+.sidebar .nav-link:hover {
+    background: #495057;
+    color: #fff;
+}
+
+.sidebar .nav-link .sidebar-tooltip {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    left: 60px;
+    background: #343a40;
+    color: #fff;
+    padding: 4px 14px;
+    border-radius: 6px;
+    font-size: 1rem;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+    z-index: 1050;
+}
+
+.sidebar .nav-link:hover .sidebar-tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Main Container */
+main.no-navbar {
+    margin-left: 0 !important;
+    padding-top: 0 !important;
 }
 
 /* Responsividade */
+
+/* Para tablets e celulares */
 @media (max-width: 991.98px) {
+    /* Navbar colapsada */
     .custom-navbar .navbar-collapse .row {
         flex-direction: column;
         align-items: stretch;
@@ -45,5 +136,55 @@
 
     .custom-navbar .text-end {
         text-align: center !important;
+    }
+}
+
+/* Ajustes Sidebar e Main em telas menores */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 56px;
+        padding-top: 60px;
+    }
+
+    main {
+        margin-left: 56px;
+    }
+
+    .sidebar .nav-link {
+        font-size: 1.5rem;
+        width: 44px;
+        height: 44px;
+    }
+
+    .sidebar .nav-link .sidebar-tooltip {
+        font-size: 0.9rem;
+        left: 50px;
+    }
+}
+
+/* Para celulares bem pequenos */
+@media (max-width: 576px) {
+    .sidebar {
+        width: 50px;
+        padding-top: 56px;
+    }
+
+    main {
+        margin-left: 50px;
+    }
+
+    .sidebar .nav-link {
+        font-size: 1.4rem;
+        width: 40px;
+        height: 40px;
+    }
+
+    .sidebar .nav-link .sidebar-tooltip {
+        font-size: 0.8rem;
+        left: 46px;
+    }
+
+    .custom-navbar .navbar-brand {
+        font-size: 1.2rem;
     }
 }

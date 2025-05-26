@@ -1,57 +1,22 @@
-/* Paleta: #1B3B4D - fundo escuro, branco para textos principais */
-.custom-navbar {
-    background-color: #1B3B4D;
-}
-
-.navbar-brand {
-    font-size: 1.4rem;
-    color: #ffffff;
-}
-
-.nav-link {
-    color: #ffffff;
-    margin-right: 1rem;
-    transition: color 0.3s ease;
-}
-
-.nav-link:hover {
-    color: #d1ecf1;
-}
-
-/* Botão "Sair" estiloso */
-.custom-logout-button {
-    background-color: #ffffff;
-    color: #1B3B4D;
-    border: 2px solid #ffffff;
-    font-weight: bold;
-    padding: 0.4rem 1rem;
-    border-radius: 1rem;
-    transition: all 0.3s ease;
-}
-
-.custom-logout-button:hover {
-    background-color: transparent;
-    color: #ffffff;
-    border: 2px solid #ffffff;
-}
-
-/* Home centralizada */
 .home-container {
     padding-top: 5rem;
     text-align: center;
     color: #1B3B4D;
     background-color: #f4f6f9;
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .home-title {
-    font-size: 2.5rem;
+    font-size: 2.8rem;
     font-weight: bold;
     margin-bottom: 1rem;
 }
 
 .home-subtitle {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     color: #6c757d;
 }
 
@@ -62,11 +27,13 @@
 
 .container-principal {
     display: flex;
-    min-height: 100vh;
+    flex: 1;
+    min-height: calc(100vh - 72px); 
     flex-wrap: wrap;
 }
 
-.lado-esquerdo, .lado-direito {
+.lado-esquerdo,
+.lado-direito {
     flex: 1;
     display: flex;
     align-items: center;
@@ -75,13 +42,59 @@
 }
 
 /* Responsividade */
+
+/* Telas médias (tablet) */
+@media (max-width: 991.98px) {
+    .home-title {
+        font-size: 2.4rem;
+    }
+
+    .home-subtitle {
+        font-size: 1.1rem;
+    }
+
+    .lottie-container {
+        max-width: 320px;
+    }
+}
+
+/* Telas pequenas (celular) */
 @media (max-width: 768px) {
     .container-principal {
         flex-direction: column;
     }
 
-    .lado-esquerdo, .lado-direito {
+    .lado-esquerdo,
+    .lado-direito {
         flex: none;
         width: 100%;
+        padding: 1rem;
+    }
+
+    .home-title {
+        font-size: 2rem;
+    }
+
+    .home-subtitle {
+        font-size: 1rem;
+    }
+
+    .lottie-container {
+        max-width: 280px;
+    }
+}
+
+/* Celulares muito pequenos */
+@media (max-width: 576px) {
+    .home-title {
+        font-size: 1.8rem;
+    }
+
+    .home-subtitle {
+        font-size: 0.95rem;
+    }
+
+    .lottie-container {
+        max-width: 240px;
     }
 }
