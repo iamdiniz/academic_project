@@ -1,28 +1,4 @@
-body {
-    background-color: #f8f9fa;
-    font-family: Arial, sans-serif;
-}
-
-.card {
-    border-radius: 10px;
-}
-
-.card-header {
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-}
-
-img {
-    display: block;
-    margin: 0 auto;
-}
-
-.progress {
-    height: 20px;
-    font-size: 0.75rem;
-}
-
-/* Estilo para o botão de voltar */
+/* ==== Estilo do botão de voltar ==== */
 .back-circle {
     width: 40px;
     height: 40px;
@@ -34,6 +10,7 @@ img {
     text-decoration: none;
     margin-left: 0.5rem;
     z-index: 1;
+    transition: background-color 0.3s;
 }
 
 .back-circle svg {
@@ -44,22 +21,39 @@ img {
     background-color: #154256;
 }
 
-/* Responsividade */
+/* ==== Estilo do título para evitar sobreposição ==== */
+.page-title {
+    margin: 0;
+    width: 100%;
+    text-align: center;
+    padding-left: 3rem;
+    padding-right: 3rem;
+}
 
-/* Telas médias (tablet) */
+/* ==== Responsividade ==== */
+
+/* Tablets (<= 768px) */
 @media (max-width: 768px) {
     .back-circle {
         width: 35px;
         height: 35px;
     }
- 
+
+    .page-title {
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
 }
 
-/* Telas pequenas (smartphones) */
+/* Smartphones (<= 576px) */
 @media (max-width: 576px) {
     .back-circle {
         width: 30px;
         height: 30px;
     }
 
+    .page-title {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
 }

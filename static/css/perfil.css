@@ -1,28 +1,3 @@
-body {
-    background-color: #f8f9fa;
-    font-family: Arial, sans-serif;
-}
-
-.card {
-    border-radius: 10px;
-}
-
-.card-header {
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-}
-
-img {
-    display: block;
-    margin: 0 auto;
-}
-
-.progress {
-    height: 20px;
-    font-size: 0.75rem;
-}
-
-/* Estilo para o botão de voltar */
 .back-circle {
     width: 40px;
     height: 40px;
@@ -52,7 +27,6 @@ img {
         width: 35px;
         height: 35px;
     }
- 
 }
 
 /* Telas pequenas (smartphones) */
@@ -61,5 +35,12 @@ img {
         width: 30px;
         height: 30px;
     }
+}
 
+@media (max-width: 576px) {
+    form .form-control,
+    form .form-select,
+    form textarea {
+        width: 100%;
+    }
 }
