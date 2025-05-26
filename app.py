@@ -190,7 +190,6 @@ class Indicacao(db.Model):
     )
 
 with app.app_context():
-    db.drop_all()  # Remove todas as tabelas
     db.create_all()  # Recria as tabelas com base nos modelos
     print("Tabelas recriadas com sucesso!")
 
