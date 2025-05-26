@@ -19,9 +19,18 @@ main {
     color: #ffffff;
 }
 
-.custom-navbar .nav-link:hover,
-.dropdown-menu .dropdown-item:hover {
+.custom-navbar .nav-link:hover {
+    background-color: #495057;
     color: #d1ecf1;
+}
+
+.dropdown-menu{
+    color: #d1ecf1;
+}
+
+.dropdown-item:hover{
+    background-color: #1B3B4D;
+    color: #ffffff;
 }
 
 .custom-navbar .navbar-brand {
@@ -35,8 +44,8 @@ main {
 }
 
 .custom-logout:hover {
-    background-color: #f8d7da;
-    color: #842029;
+    background-color: #842029;
+    color: #f8d7da;
 }
 
 .custom-navbar .navbar-nav.justify-content-center .nav-item {
