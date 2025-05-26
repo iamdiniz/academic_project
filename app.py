@@ -168,12 +168,13 @@ class SkillsHistorico(db.Model):
     __tablename__ = 'skills_historico'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     id_aluno = db.Column(db.Integer, db.ForeignKey('alunos.id_aluno'), nullable=False)
+    id_chefe = db.Column(db.Integer, db.ForeignKey('chefe.id_chefe'), nullable=False)  # NOVO
     data = db.Column(db.DateTime, server_default=db.func.now())
-    hard_skills_json = db.Column(db.Text)  # Salva as hard skills como JSON
-    soft_skills_json = db.Column(db.Text)  # Salva as soft skills como JSON
-    # ... (pode manter os campos agregados se quiser)
+    hard_skills_json = db.Column(db.Text)
+    soft_skills_json = db.Column(db.Text)
 
     aluno = db.relationship('Aluno', backref='historicos')
+    chefe = db.relationship('Chefe', backref='historicos')
 
 class Indicacao(db.Model):
     __tablename__ = 'indicacoes'
@@ -190,6 +191,7 @@ class Indicacao(db.Model):
     )
 
 with app.app_context():
+    db.drop_all()  # Remove todas as tabelas
     db.create_all()  # Recria as tabelas com base nos modelos
     print("Tabelas recriadas com sucesso!")
 
@@ -1001,14 +1003,17 @@ def detalhes_aluno_instituicao(id_aluno):
         skills.soft_skills_json = json.dumps(new_soft_dict)
         db.session.commit()
 
-        # Salvar histórico das skills após atualizar
+        # Salvar histórico das skills após atualizar para todos os chefes que acompanham este aluno
         try:
-            novo_historico = SkillsHistorico(
-                id_aluno=aluno.id_aluno,
-                hard_skills_json=json.dumps(new_hard_dict),
-                soft_skills_json=json.dumps(new_soft_dict)
-            )
-            db.session.add(novo_historico)
+            acompanhamentos = Acompanhamento.query.filter_by(id_aluno=aluno.id_aluno).all()
+            for ac in acompanhamentos:
+                novo_historico = SkillsHistorico(
+                    id_aluno=aluno.id_aluno,
+                    id_chefe=ac.id_chefe,
+                    hard_skills_json=json.dumps(new_hard_dict),
+                    soft_skills_json=json.dumps(new_soft_dict)
+                )
+                db.session.add(novo_historico)
             db.session.commit()
         except Exception as e:
             db.session.rollback()
@@ -1107,12 +1112,13 @@ def acompanhar_aluno(id_aluno):
     db.session.add(novo_acompanhamento)
     db.session.commit()
 
-    # --- NOVO: Cria snapshot das skills no momento do acompanhamento, se não existir ---
-    historico_existente = SkillsHistorico.query.filter_by(id_aluno=id_aluno).count()
+    # Cria snapshot das skills no momento do acompanhamento, se não existir para este chefe
+    historico_existente = SkillsHistorico.query.filter_by(id_aluno=id_aluno, id_chefe=chefe_id).count()
     aluno = Aluno.query.get(id_aluno)
     if aluno and aluno.skills and historico_existente == 0:
         novo_historico = SkillsHistorico(
             id_aluno=aluno.id_aluno,
+            id_chefe=chefe_id,  # Salva o chefe responsável pelo snapshot
             hard_skills_json=aluno.skills.hard_skills_json,
             soft_skills_json=aluno.skills.soft_skills_json
         )
@@ -1190,7 +1196,8 @@ def remover_acompanhamento(id_aluno):
 @login_required
 @bloquear_instituicao
 def status_aluno(id_aluno):
-    historicos = SkillsHistorico.query.filter_by(id_aluno=id_aluno).order_by(SkillsHistorico.data.desc()).all()
+    chefe_id = current_user.id_chefe
+    historicos = SkillsHistorico.query.filter_by(id_aluno=id_aluno, id_chefe=chefe_id).order_by(SkillsHistorico.data.desc()).all()
     aluno = Aluno.query.get_or_404(id_aluno)
     historicos_dict = []
     for hist in historicos:
