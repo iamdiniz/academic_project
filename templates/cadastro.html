@@ -8,20 +8,61 @@
 {% endblock %}
 
 {% block body %}
-<div class="container-principal">
-    <div class="lado-esquerdo">
-        <div class="conteudo-esquerdo">
-            <h1>Bem-vindo!</h1>
-            <p>Cadastre-se para acessar a plataforma.</p>
-            <a href="{{ url_for('carousel') }}">
-                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo Educ+Invest" class="logo-img">
-            </a>
+<div class="container-principal" role="main" aria-label="Tela de cadastro do Educ+Invest">
+    <section class="lado-esquerdo" aria-label="Valores e missão do Educ+Invest">
+        <div class="feature">
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+                <circle cx="32" cy="32" r="30" fill="#ffd166"/>
+                <path fill="#6a4c93" d="M23 27h18v10H23z"/>
+            </svg>
+            <div class="feature-text">
+                <h3>Conexão Eficiente</h3>
+                <p>Ligamos jovens talentos e empresas com tecnologia de ponta.</p>
+            </div>
         </div>
-    </div>
-    <div class="lado-direito">
+
+        <div class="feature">
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+                <rect width="64" height="64" fill="#ffd166" rx="32"/>
+                <path fill="#6a4c93" d="M32 12a12 12 0 1 0 0 24 12 12 0 0 0 0-24z"/>
+            </svg>
+            <div class="feature-text">
+                <h3>Desenvolvimento Qualificado</h3>
+                <p>Apoiamos a formação e crescimento dos jovens profissionais.</p>
+            </div>
+        </div>
+
+        <div class="feature">
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+                <circle cx="32" cy="32" r="30" fill="#ffd166"/>
+                <path fill="#6a4c93" d="M40 24h-16l-4 16h24l-4-16z"/>
+            </svg>
+            <div class="feature-text">
+                <h3>ODS 8.6</h3>
+                <p>Compromisso com a redução do desemprego juvenil global.</p>
+            </div>
+        </div>
+
+        <div class="feature">
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+                <circle cx="32" cy="32" r="30" fill="#ffd166"/>
+                <path fill="#6a4c93" d="M21 38h22v4H21z"/>
+            </svg>
+            <div class="feature-text">
+                <h3>Transparência</h3>
+                <p>Dados seguros para decisões claras entre empresas e instituições.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="lado-direito" aria-label="Formulário de cadastro">
 
         <form method="POST" class="form-box" onsubmit="return validarFormulario()" novalidate>
-            <h2 class="mb-4">Cadastre-se</h2>
+        <a href="{{url_for('carousel')}}">
+            <h2 class="text-center" >DashTalent</h2>
+        </a>
+        <br>
+        <div class="welcome-text" tabindex="0">Bem-vindo! Faça seu cadastro.</div>
 
             <!-- Tipo de usuário -->
             <div class="mb-3">
@@ -153,7 +194,10 @@
             <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
             </div>
         </div>
-        </div>
+    </div>
+    </form>
+    </section>
+    </div>
 
 <script>
 function exibirCampos() {

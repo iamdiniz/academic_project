@@ -10,9 +10,12 @@
     background-color: #1b3b4d !important;
     color: white;
     display: flex;
-    justify-content: flex-start;
     align-items: center;
     padding: 40px;
+    flex-direction: column; 
+    align-items: flex-start;
+    gap: 20px; 
+    flex-direction: column;      
 }
 
 .conteudo-esquerdo {
@@ -68,7 +71,127 @@ button.btn-success {
     padding: 10px;
 }
 
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 
+* {
+    box-sizing: border-box;
+}
+
+.feature {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    opacity: 0;
+    animation: slideIn 0.8s ease forwards;
+
+}
+
+.feature:nth-child(1) { animation-delay: 0.2s; }
+.feature:nth-child(2) { animation-delay: 0.4s; }
+.feature:nth-child(3) { animation-delay: 0.6s; }
+.feature:nth-child(4) { animation-delay: 0.8s; }
+
+.feature svg {
+    width: 40px;
+    height: 60px;
+    flex-shrink: 0;
+    margin-top: 4px;
+
+}
+
+.feature-text h3 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin: 0;
+    max-width: 300px; /* Limita largura para melhor visualização */
+
+}
+
+.feature-text p {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.4;
+    color: #f0e6ff;
+}
+
+.welcome-text {
+    margin-bottom: 25px;
+    font-size: 1.7rem;
+    font-weight: 600;
+    color: #333;
+    text-align: center;
+}
+
+.form-group {
+    margin-bottom: 28px;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group input {
+    padding: 14px 22px;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus {
+    border-color: #4a3fbd;
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(74, 63, 189, 0.2);
+}
+
+button {
+    cursor: pointer;
+    background-color: #4a3fbd;
+    color: white;
+    font-weight: 600;
+    font-size: 1.2rem;
+    padding: 15px 0;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(74,63,189,0.4);
+    transition: background-color 0.3s ease;
+    animation: pulse 2s infinite;
+}
+
+button:hover {
+    background-color: #3b3296;
+}
+
+.forgot-password {
+    text-align: right;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.forgot-password a {
+    color: #666;
+    text-decoration: none;
+}
+
+.forgot-password a:hover {
+    color: #4a3fbd;
+}
+
+.register-link {
+    margin-top: 18px;
+    text-align: center;
+    font-size: 0.95rem;
+}
+
+.register-link a {
+    color: #4a3fbd;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.register-link a:hover {
+    text-decoration: underline;
+}
+
+/* Responsivo */
 @media (max-width: 768px) {
     .container-principal {
         flex-direction: column;
@@ -90,5 +213,69 @@ button.btn-success {
     .form-box {
         max-width: 100%;
         padding: 20px;
+    }
+}
+
+@media (max-width: 600px) {
+    .welcome-text {
+        font-size: 1.4rem;
+    }
+
+    .form-group input {
+        padding: 12px 18px;
+        font-size: 0.95rem;
+    }
+
+    button {
+        font-size: 1rem;
+        padding: 12px 0;
+    }
+
+    .feature svg {
+        width: 45px;
+        height: 45px;
+    }
+
+    .feature-text h3 {
+        font-size: 1.2rem;
+    }
+
+    .feature-text p {
+        font-size: 0.9rem;
+    }
+}
+
+/* Animações */
+@keyframes fadeInUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-40px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(74, 63, 189, 0.5);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(74, 63, 189, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(74, 63, 189, 0);
     }
 }
