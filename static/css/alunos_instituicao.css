@@ -27,11 +27,6 @@
     background-color: #154256;
 }
 
-/* Estilo dos títulos */
-h1, h5 {
-    color: #333;
-}
-
 /* Cards de alunos */
 .card {
     border-radius: 12px;
