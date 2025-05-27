@@ -153,6 +153,9 @@
                     <div class="mt-3 text-end">
                         <a href="{{ url_for('detalhes_aluno', id_aluno=aluno.id_aluno, previous=request.full_path) }}" class="btn btn-primary btn-sm">Detalhes</a>
                         <button class="btn btn-info btn-sm" onclick="abrirStatus({{ aluno.id_aluno }})">Últimos Status</button>
+                        <form method="post" action="{{ url_for('remover_acompanhamento', id_aluno=aluno.id_aluno) }}" style="display:inline;" onsubmit="return confirm('Deseja realmente remover este aluno do acompanhamento?');">
+                            <button type="button" class="btn btn-danger btn-sm" onclick="abrirModalRemover({{ aluno.id_aluno }})">Remover</button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -189,4 +192,76 @@ function abrirStatus(id_aluno) {
         });
 }
 </script>
+
+<!-- Modal de confirmação de remoção -->
+<div class="modal fade" id="modalRemoverAcompanhamento" tabindex="-1" aria-labelledby="modalRemoverLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalRemoverLabel">Remover acompanhamento</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        Deseja realmente remover este aluno do acompanhamento?
+      </div>
+      <div class="modal-footer">
+        <form id="formRemoverAcompanhamento" method="post">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-danger">Remover</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toasts de Notificação -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
+  <div id="toastNotificacao" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body" id="toastNotificacaoBody"></div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
+    </div>
+  </div>
+</div>
+
+<script>
+function showToast(message, type='success', timeout=4000, icon='') {
+    const toast = document.getElementById('toastNotificacao');
+    const toastBody = document.getElementById('toastNotificacaoBody');
+    toast.className = `toast align-items-center text-bg-${type} border-0`;
+    toastBody.innerHTML = icon + message;
+    const bsToast = new bootstrap.Toast(toast, { delay: timeout });
+    bsToast.show();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                showToast({{ message|tojson }},
+                    {% if category == 'success' %}'success'
+                    {% elif category == 'warning' %}'warning'
+                    {% elif category == 'danger' %}'danger'
+                    {% else %}'info'{% endif %},
+                    4000,
+                    {% if category == 'success' %}'<i class="bi bi-check-circle-fill me-2"></i>'
+                    {% elif category == 'warning' %}'<i class="bi bi-exclamation-triangle-fill me-2"></i>'
+                    {% elif category == 'danger' %}'<i class="bi bi-x-circle-fill me-2"></i>'
+                    {% else %}''{% endif %}
+                );
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+});
+</script>
+
+<script>
+function abrirModalRemover(id_aluno) {
+    const form = document.getElementById('formRemoverAcompanhamento');
+    form.action = '/remover_acompanhamento/' + id_aluno;
+    var modal = new bootstrap.Modal(document.getElementById('modalRemoverAcompanhamento'));
+    modal.show();
+}
+</script>
+
 {% endblock %}

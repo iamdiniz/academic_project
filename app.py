@@ -1201,12 +1201,14 @@ def acompanhar():
 @bloquear_instituicao
 def remover_acompanhamento(id_aluno):
     chefe_id = current_user.id_chefe
-    acompanhamento = Acompanhamento.query.filter_by(id_chefe=chefe_id, id_aluno=id_aluno).first()
-    if acompanhamento:
-        db.session.delete(acompanhamento)
+    ac = Acompanhamento.query.filter_by(id_chefe=chefe_id, id_aluno=id_aluno).first()
+    if ac:
+        db.session.delete(ac)
         db.session.commit()
-        return jsonify({'message': 'Acompanhamento removido com sucesso!'})
-    return jsonify({'error': 'Acompanhamento não encontrado.'}), 404
+        flash("Aluno removido do acompanhamento.", "success")
+    else:
+        flash("Acompanhamento não encontrado.", "danger")
+    return redirect(url_for('acompanhar'))
 
 @app.route('/status_aluno/<int:id_aluno>')
 @login_required
