@@ -5,13 +5,39 @@
 
 {% block body %}
 <div class="container mt-4">
-    <h1 class="text-center">Bem-vindo, Chefe!</h1>
-    <p class="text-center">Gerencie suas seleções e encontre os melhores talentos.</p>
+    <h1 class="text-center mb-3">Bem-vindo, {{ current_user.nome_empresa }}!</h1>
+    <p class="text-center mb-5">Gerencie suas seleções e encontre os melhores talentos.</p>
 
-    <div class="text-center mt-4">
-        <a href="{{ url_for('minhas_selecoes') }}" class="btn btn-primary">Minhas Seleções</a>
-        <a href="{{ url_for('instituicao_ensino') }}" class="btn btn-secondary">Instituições de Ensino</a>
-        <a href="{{ url_for('acompanhar') }}" class="btn btn-warning">Acompanhar Alunos</a>
+    <div class="row g-4 justify-content-center">
+        <div class="col-md-4">
+            <div class="card shadow-lg p-4 text-center h-100">
+                <h3>Minhas Seleções</h3>
+                <p>Gerencie suas seleções e acompanhe os candidatos.</p>
+                <a href="{{ url_for('minhas_selecoes') }}" class="btn btn-primary btn-lg">
+                    Ver Seleções
+                </a>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-lg p-4 text-center h-100">
+                <h3>Instituições de Ensino</h3>
+                <p>Consulte as instituições parceiras e explore os cursos disponíveis.</p>
+                <a href="{{ url_for('instituicao_ensino') }}" class="btn btn-success btn-lg">
+                    Ver Instituições
+                </a>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-lg p-4 text-center h-100">
+                <h3>Acompanhar Alunos</h3>
+                <p>Monitore o desenvolvimento dos alunos e descubra novos talentos.</p>
+                <a href="{{ url_for('acompanhar') }}" class="btn btn-warning btn-lg">
+                    Acompanhar Alunos
+                </a>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
