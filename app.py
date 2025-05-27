@@ -508,23 +508,36 @@ def remover_aluno(id_aluno):
 def ver_alunos_por_curso():
     inst_id = request.args.get('inst_id')
     curso = request.args.get('curso')
+    filtro_tipo = request.args.get('filtro_tipo')
+    periodo = request.args.get('periodo')
+    habilidade = request.args.get('habilidade')
 
     # Decodificar o parâmetro 'curso' para evitar problemas com caracteres especiais
     curso = unquote(curso).strip()
-
-    # Normalizar o nome do curso para remover acentos e caracteres especiais
     curso_normalizado = unidecode(curso).lower()
 
-    # Busca os alunos pelo curso e instituição
     alunos = Aluno.query.filter(
         Aluno.id_instituicao == inst_id
     ).all()
 
-    # Filtrar os alunos em Python para aplicar a normalização
     alunos_filtrados = [
         aluno for aluno in alunos
         if unidecode(aluno.curso).lower() == curso_normalizado
     ]
+
+    # Filtro por período
+    if periodo and periodo.isdigit():
+        alunos_filtrados = [aluno for aluno in alunos_filtrados if str(aluno.periodo) == periodo]
+
+    # Ordenação por habilidade
+    if habilidade:
+        def get_skill(aluno):
+            skills = aluno.skills
+            if skills:
+                hard_dict = json.loads(skills.hard_skills_json) if skills.hard_skills_json else {}
+                return hard_dict.get(habilidade, 0)
+            return 0
+        alunos_filtrados = sorted(alunos_filtrados, key=get_skill, reverse=True)
 
     alunos_com_skills = []
     for aluno in alunos_filtrados:
@@ -557,7 +570,10 @@ def ver_alunos_por_curso():
 
     mensagem = None
     if not alunos_filtrados:
-        mensagem = f"Nenhum aluno encontrado para o curso '{curso}'."
+        if periodo and periodo.isdigit():
+            mensagem = f"Nenhum aluno encontrado para o período '{periodo}' no curso '{curso}'."
+        else:
+            mensagem = f"Nenhum aluno encontrado para o curso '{curso}'."
 
     # PAGINAÇÃO
     page = request.args.get('page', 1, type=int)
@@ -574,7 +590,8 @@ def ver_alunos_por_curso():
         curso=curso,
         mensagem=mensagem,
         page=page,
-        total_pages=total_pages
+        total_pages=total_pages,
+        HARD_SKILLS_POR_CURSO=HARD_SKILLS_POR_CURSO
     )
 
 @app.route('/detalhes_aluno/<int:id_aluno>')

@@ -43,7 +43,62 @@
             </svg>
         </a>
         <h1 class="m-0 w-100 text-center">Lista de Alunos</h1>
-  </div>
+    </div>
+
+    <!-- Formulário de Filtro -->
+    <form method="get" class="row g-3 mb-4" action="{{ url_for('ver_alunos_por_curso') }}">
+        <input type="hidden" name="inst_id" value="{{ request.args.get('inst_id', '') }}">
+        <input type="hidden" name="curso" value="{{ curso }}">
+        <div class="col-md-3">
+            <label for="periodo" class="form-label">Período (1 a 20)</label>
+            <input type="number" min="1" max="20" class="form-control" id="periodo" name="periodo" value="{{ request.args.get('periodo', '') }}">
+        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const periodoInput = document.getElementById('periodo');
+                if (periodoInput) {
+                    periodoInput.addEventListener('input', function() {
+                        let val = this.value.replace(/[^0-9]/g, '');
+                        if (val.length > 2) val = val.slice(0, 2);
+                        if (val !== '') {
+                            let num = parseInt(val, 10);
+                            if (num < 1) num = 1;
+                            if (num > 20) num = 20;
+                            this.value = num;
+                        } else {
+                            this.value = '';
+                        }
+                    });
+                    // Impede colar valores inválidos
+                    periodoInput.addEventListener('paste', function(e) {
+                        e.preventDefault();
+                    });
+                }
+            });
+        </script>
+        <div class="col-md-4">
+            <label for="habilidade" class="form-label">Habilidade</label>
+            <select id="habilidade" name="habilidade" class="form-select">
+                <option value="">Selecione</option>
+                {% if HARD_SKILLS_POR_CURSO and curso in HARD_SKILLS_POR_CURSO %}
+                    {% for label in HARD_SKILLS_POR_CURSO[curso] %}
+                        <option value="{{ label }}" {% if request.args.get('habilidade') == label %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                {% endif %}
+            </select>
+        </div>
+        <div class="col-md-2 align-self-end">
+            <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+        </div>
+    </form>
+    <script>
+    function toggleFiltroHabilidade() {
+        var tipo = document.getElementById('filtro_tipo').value;
+        document.getElementById('filtro_periodo_div').style.display = tipo === 'periodo' ? 'block' : 'none';
+        document.getElementById('filtro_habilidade_div').style.display = tipo === 'habilidade' ? 'block' : 'none';
+    }
+    document.addEventListener('DOMContentLoaded', toggleFiltroHabilidade);
+    </script>
 
     <div class="row g-4">
         {% for aluno in alunos %}
