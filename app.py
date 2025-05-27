@@ -510,7 +510,7 @@ def ver_alunos_por_curso():
     curso = request.args.get('curso')
     filtro_tipo = request.args.get('filtro_tipo')
     periodo = request.args.get('periodo')
-    habilidade = request.args.get('habilidade')
+    habilidade = request.args.getlist('habilidade')  # <-- sempre retorna lista
 
     # Decodificar o parâmetro 'curso' para evitar problemas com caracteres especiais
     curso = unquote(curso).strip()
@@ -529,15 +529,23 @@ def ver_alunos_por_curso():
     if periodo and periodo.isdigit():
         alunos_filtrados = [aluno for aluno in alunos_filtrados if str(aluno.periodo) == periodo]
 
-    # Ordenação por habilidade
+    # Ordenação por múltiplas habilidades (hard e soft)
     if habilidade:
-        def get_skill(aluno):
+        def get_total_skills(aluno):
             skills = aluno.skills
+            total = 0
             if skills:
                 hard_dict = json.loads(skills.hard_skills_json) if skills.hard_skills_json else {}
-                return hard_dict.get(habilidade, 0)
-            return 0
-        alunos_filtrados = sorted(alunos_filtrados, key=get_skill, reverse=True)
+                soft_dict = json.loads(skills.soft_skills_json) if skills.soft_skills_json else {}
+                for hab in habilidade:
+                    if ':' in hab:
+                        tipo, nome = hab.split(':', 1)
+                        if tipo == 'hard':
+                            total += hard_dict.get(nome, 0)
+                        elif tipo == 'soft':
+                            total += soft_dict.get(nome, 0)
+            return total
+        alunos_filtrados = sorted(alunos_filtrados, key=get_total_skills, reverse=True)
 
     alunos_com_skills = []
     for aluno in alunos_filtrados:
@@ -591,7 +599,8 @@ def ver_alunos_por_curso():
         mensagem=mensagem,
         page=page,
         total_pages=total_pages,
-        HARD_SKILLS_POR_CURSO=HARD_SKILLS_POR_CURSO
+        HARD_SKILLS_POR_CURSO=HARD_SKILLS_POR_CURSO,
+        SOFT_SKILLS=SOFT_SKILLS
     )
 
 @app.route('/detalhes_aluno/<int:id_aluno>')

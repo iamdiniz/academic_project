@@ -44,6 +44,28 @@ img {
     background-color: #154256;
 }
 
+/* Visto só aparece verde quando o checkbox está marcado */
+.form-check-label .checkmark {
+    visibility: hidden;
+    color: #198754;
+    font-weight: bold;
+    margin-right: 4px;
+    font-size: 1.2em;
+}
+.form-check-input:checked + .form-check-label .checkmark {
+    visibility: visible;
+}
+
+.dropdown-item .checkmark {
+    visibility: hidden;
+    color: #198754;
+    font-weight: bold;
+    font-size: 1.2em;
+}
+.skill-checkbox:checked + .checkmark {
+    visibility: visible;
+}
+
 /* Responsividade */
 
 /* Telas médias (tablet) */

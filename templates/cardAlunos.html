@@ -76,28 +76,54 @@
                 }
             });
         </script>
-        <div class="col-md-4">
-            <label for="habilidade" class="form-label">Habilidade</label>
-            <select id="habilidade" name="habilidade" class="form-select">
-                <option value="">Selecione</option>
-                {% if HARD_SKILLS_POR_CURSO and curso in HARD_SKILLS_POR_CURSO %}
-                    {% for label in HARD_SKILLS_POR_CURSO[curso] %}
-                        <option value="{{ label }}" {% if request.args.get('habilidade') == label %}selected{% endif %}>{{ label }}</option>
+        <div class="col-md-5">
+            <label class="form-label mb-2">Habilidades em destaque</label>
+            <div class="dropdown">
+                <button class="form-control text-start dropdown-toggle" type="button" id="dropdownSkills" data-bs-toggle="dropdown" aria-expanded="false">
+                    <span id="selectedSkillsText">Selecione habilidades...</span>
+                </button>
+                <ul class="dropdown-menu w-100" aria-labelledby="dropdownSkills" style="min-width: 250px; max-width: 350px; max-height: 300px; overflow-y: auto;">
+                    {% if HARD_SKILLS_POR_CURSO and curso in HARD_SKILLS_POR_CURSO %}
+                        {% for label in HARD_SKILLS_POR_CURSO[curso] %}
+                        <li>
+                            <label class="dropdown-item d-flex align-items-center">
+                                <input type="checkbox" class="form-check-input me-2 skill-checkbox" name="habilidade" value="hard:{{ label }}"
+                                    {% if 'hard:' ~ label in request.args.getlist('habilidade') %}checked{% endif %}>
+                                <span class="checkmark me-2">&#10003;</span>
+                                <span>{{ label }}</span>
+                            </label>
+                        </li>
+                        {% endfor %}
+                    {% endif %}
+                    {% for label in SOFT_SKILLS %}
+                    <li>
+                        <label class="dropdown-item d-flex align-items-center">
+                            <input type="checkbox" class="form-check-input me-2 skill-checkbox" name="habilidade" value="soft:{{ label }}"
+                                {% if 'soft:' ~ label in request.args.getlist('habilidade') %}checked{% endif %}>
+                            <span class="checkmark me-2">&#10003;</span>
+                            <span>{{ label }}</span>
+                        </label>
+                    </li>
                     {% endfor %}
-                {% endif %}
-            </select>
+                </ul>
+            </div>
         </div>
-        <div class="col-md-2 align-self-end">
+        <div class="col-md-2 d-flex align-items-end">
             <button type="submit" class="btn btn-primary w-100">Filtrar</button>
         </div>
     </form>
     <script>
-    function toggleFiltroHabilidade() {
-        var tipo = document.getElementById('filtro_tipo').value;
-        document.getElementById('filtro_periodo_div').style.display = tipo === 'periodo' ? 'block' : 'none';
-        document.getElementById('filtro_habilidade_div').style.display = tipo === 'habilidade' ? 'block' : 'none';
-    }
-    document.addEventListener('DOMContentLoaded', toggleFiltroHabilidade);
+    document.addEventListener('DOMContentLoaded', function() {
+        function updateSelectedSkillsText() {
+            const checked = document.querySelectorAll('.skill-checkbox:checked');
+            const selected = Array.from(checked).map(cb => cb.parentElement.querySelectorAll('span')[1].innerText);
+            document.getElementById('selectedSkillsText').innerText = selected.length ? selected.join(', ') : 'Selecione habilidades...';
+        }
+        document.querySelectorAll('.skill-checkbox').forEach(cb => {
+            cb.addEventListener('change', updateSelectedSkillsText);
+        });
+        updateSelectedSkillsText();
+    });
     </script>
 
     <div class="row g-4">
