@@ -44,7 +44,7 @@
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link {% if request.path == url_for('acompanhar') %}active{% endif %}" href="{{ url_for('acompanhar') }}">
-                                        Acompanhar Alunos
+                                        Monitorar Alunos
                                     </a>
                                 </li>
                             {% elif session.get('tipo_usuario') == 'instituicao' %}
@@ -103,7 +103,7 @@
             </a>
             <a class="nav-link {% if request.path == url_for('acompanhar') %}active{% endif %}" href="{{ url_for('acompanhar') }}">
                 <i class="bi bi-people"></i>
-                <span class="sidebar-tooltip">Acompanhar Alunos</span>
+                <span class="sidebar-tooltip">Monitorar Alunos</span>
             </a>
         {% elif session.get('tipo_usuario') == 'instituicao' %}
             <a class="nav-link {% if request.path == url_for('alunos_instituicao') %}active{% endif %}" href="{{ url_for('alunos_instituicao') }}">
