@@ -39,7 +39,7 @@
         <h1 class="m-0 w-100 text-center title-responsive">Alunos em monitoramento</h1>
     </div>
 
-    <div class="text-center"><p>Alunos monitorados por você</p></div>
+    <div class="text-center"><p>Alunos monitorados por você</p></div><br>
 
     {% if alunos %}
     <div class="row g-4">
@@ -47,7 +47,7 @@
             <div class="col-md-4">
                 <div class="card p-3 shadow-sm h-100 d-flex flex-column justify-content-between">
                     <h5>{{ aluno.nome_jovem }}</h5>
-                    <p><strong>Curso:</strong> {{ aluno.curso }}</p>
+                    <p><strong>Curso:</strong> {{ aluno.curso }}</p><br>
                     {% if aluno.hard_labels or aluno.soft_labels %}
                         <canvas id="grafico{{ loop.index }}" style="max-width: 100%; max-height: 250px;"></canvas>
                         <script>

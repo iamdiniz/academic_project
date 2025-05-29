@@ -18,6 +18,11 @@
     background-color: #154256;
 }
 
+h5,
+ p {
+    margin-bottom: 0px; 
+}
+
 /* ===== CARDS ===== */
 .card {
     border-radius: 0.75rem;
@@ -30,15 +35,6 @@
 }
 .row.g-4 > [class*='col-'] {
     display: flex;
-}
-
-/* ===== TITULOS E TEXTOS ===== */
-h2, h5 {
-    color: #333;
-}
-p {
-    color: #555;
-    font-size: 0.95rem;
 }
 
 /* ===== PAGINAÇÃO ===== */
