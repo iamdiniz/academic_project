@@ -39,7 +39,7 @@
             <h1 class="m-0 w-100 text-center">Minhas Seleções</h1>
     </div>
 
-    <div class="text-center"><p>Alunos que você indicou!</p></div>
+    <div class="text-center"><p>Alunos que você indicou!</p></div><br>
 
     {% if alunos %}
         <div class="row g-4">
@@ -50,7 +50,7 @@
                             <h5 class="card-title">{{ aluno.nome }}</h5>
                             <p><strong>Curso:</strong> {{ aluno.curso }}</p>
                             <p><strong>Periodo:</strong> {{ aluno.periodo }}</p>
-                            <p><strong>Data de Nascimento:</strong> {{ aluno.data_nascimento }}</p>
+                            <p><strong>Data de Nascimento:</strong> {{ aluno.data_nascimento }}</p><br>
 
                             {% if aluno.hard_labels or aluno.soft_labels %}
                                 <canvas id="grafico{{ loop.index }}" style="max-width: 100%; max-height: 250px;"></canvas>

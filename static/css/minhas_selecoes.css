@@ -30,8 +30,23 @@
     padding-right: 3rem;
 }
 
-/* ==== Responsividade ==== */
+ h5,
+ p {
+    margin-bottom: 0px; /* ou 2px se quiser ainda mais junto */
+}
 
+/* ======= CARDS ======= */
+.card {
+    border-radius: 0.75rem;
+    transition: transform 0.2s ease;
+    min-height: 100%;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+/* ==== Responsividade ==== */
 /* Tablets (<= 768px) */
 @media (max-width: 768px) {
     .back-circle {
