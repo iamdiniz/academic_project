@@ -1,28 +1,15 @@
-.card {
-    border-radius: 12px;
-}
-
-.card-body {
-    padding: 1rem;
-}
-
-.card-body.border-bottom {
-    border-bottom: 1px solid #dee2e6;
-}
-
-.card-footer {
-    background-color: white;
-    border-top: none;
-}
-
-h5 {
+/* ===== TÍTULOS E TEXTOS ===== */
+h2, h5 {
+    color: #333;
     font-weight: bold;
 }
 
-.badge {
-    font-size: 0.9rem;
+p {
+    color: #555;
+    font-size: 0.95rem;
 }
 
+/* ===== BOTÃO DE VOLTAR ===== */
 .back-circle {
     width: 40px;
     height: 40px;
@@ -44,3 +31,162 @@ h5 {
     background-color: #154256;
 }
 
+/* ===== CARDS ===== */
+.card {
+    border-radius: 0.75rem;
+    transition: transform 0.2s ease;
+    min-height: 100%;
+    flex: 1;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.row.g-4 > [class*='col-'] {
+    display: flex;
+}
+
+.card-body {
+    padding: 1rem;
+}
+
+.card-body.border-bottom {
+    border-bottom: 1px solid #dee2e6;
+}
+
+.card-footer {
+    background-color: white;
+    border-top: none;
+}
+
+/* ===== PAGINAÇÃO ===== */
+.pagination .page-link {
+    color: #0d6efd;
+}
+
+.pagination .page-link:hover {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+/* ===== BOTÕES ===== */
+.btn {
+    border-radius: 0.5rem;
+}
+
+/* Cores personalizadas dos botões */
+.btn-info {
+    background-color: #0dcaf0;
+    border-color: #0dcaf0;
+}
+
+.btn-info:hover {
+    background-color: #31d2f2;
+    border-color: #25cff2;
+}
+
+.btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+/* Organização dos botões nos cards */
+.card .mt-3 {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+.card .mt-3 .btn {
+    flex: 1 1 auto;
+    min-width: 100px;
+}
+
+/* ===== MODAL ===== */
+.modal-content {
+    border-radius: 0.75rem;
+}
+
+.modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+/* ===== TÍTULO RESPONSIVO ===== */
+.title-responsive {
+    font-size: 2rem;
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+    line-height: 1.2;
+}
+
+/* ===== RESPONSIVIDADE ===== */
+@media (max-width: 768px) {
+    .back-circle {
+        width: 35px;
+        height: 35px;
+    }
+    h1 {
+        font-size: 1.5rem;
+    }
+    .modal-dialog {
+        margin: 1rem;
+    }
+    .title-responsive {
+        font-size: 1.5rem;
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+}
+
+@media (max-width: 576px) {
+    h2 {
+        font-size: 1.5rem;
+    }
+    h5 {
+        font-size: 1.1rem;
+    }
+    p {
+        font-size: 0.9rem;
+    }
+    .card {
+        padding: 1rem;
+    }
+    .modal-body {
+        max-height: 60vh;
+    }
+    .back-circle {
+        width: 30px;
+        height: 30px;
+    }
+    .pagination {
+        flex-wrap: wrap;
+    }
+    .pagination .page-item {
+        margin-bottom: 5px;
+    }
+    .title-responsive {
+        font-size: 1.2rem;
+        padding-left: 2.5rem;
+        padding-right: 2.5rem;
+    }
+    .card .mt-3 {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .card .mt-3 .btn {
+        width: 100%;
+    }
+}
