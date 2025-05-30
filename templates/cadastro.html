@@ -77,26 +77,41 @@
         <!-- Campos comuns -->
         <div class="mb-3">
             <label for="nome" class="form-label">Nome de usuário (*)</label>
-            <input type="text" name="nome" class="form-control" id="nome" placeholder="Nome de usuário" required oninput="filtrarEntrada(this, 'letras')">
+            <input type="text" name="nome" class="form-control" id="nome" 
+                placeholder="Nome de usuário" required 
+                oninput="filtrarEntrada(this, 'letras')" 
+                minlength="3" maxlength="30" pattern="[A-Za-zÀ-ÿ\s]+" 
+                title="Apenas letras, mínimo de 3 e máximo de 30 caracteres">
             <div id="erro-nome" class="invalid-feedback"></div>
         </div>
 
         <div class="mb-3">
             <label for="email" class="form-label">E-mail (*)</label>
-            <input type="email" name="email" id="email" class="form-control" placeholder="exemplo@dominio.com" required onblur="validarEmail(this)">
+            <input type="email" name="email" id="email" class="form-control"
+                placeholder="exemplo@dominio.com" required 
+                maxlength="50" title="Insira um e-mail válido com até 50 caracteres" 
+                onblur="validarEmail(this)">
             <div id="erro-email" class="invalid-feedback"></div>
         </div>
         <div class="row">
             <div class="col-12 col-md-6 mb-3">
                 <label for="senha" class="form-label">Senha (*)</label>
-                <input type="password" name="senha" id="senha" class="form-control" placeholder="Senha com no mínimo 6 caractere" oninput="validarSenha(this)" required>
+                <input type="password" name="senha" id="senha" class="form-control" 
+                    placeholder="Senha com no mínimo 6 caracteres" required 
+                    minlength="6" maxlength="20"
+                    oninput="validarSenha(this)" 
+                    title="Senha entre 6 e 20 caracteres">
                 <div id="erro-senha" class="invalid-feedback"></div>
                 <small id="forca-senha" class="form-text"></small>
             </div>
             <div class="col-12 col-md-6 mb-3">
                 <label  for="confirmarSenha" class="form-label">Repita a senha (*)</label>
-                <input type="password" name="confirmar_senha" id="confirmarSenha" class="form-control" placeholder="Repita a senha" oninput="validarConfirmacaoSenha()" required>
-            </div>
+                <input type="password" name="confirmar_senha" id="confirmarSenha" class="form-control" 
+                    placeholder="Repita a senha" required 
+                    minlength="6" maxlength="20"
+                    oninput="validarConfirmacaoSenha()" 
+                    title="Confirme a senha com o mesmo número de caracteres">
+                </div>
             <div id="erro-confirmarSenha" class="invalid-feedback"></div>
         </div>
 
@@ -104,25 +119,38 @@
         <div id="camposInstituicao" style="display: none;">
             <div class="mb-3">
                 <label class="form-label">Nome da Instituição (*)</label>
-                <input type="text" name="instituicao_nome" id="instituicao_nome" class="form-control" placeholder="Instituição" required oninput="filtrarEntrada(this, 'letras')">
+                <input type="text" name="instituicao_nome" id="instituicao_nome" class="form-control"
+                    placeholder="Instituição" required 
+                    maxlength="30" pattern="[A-Za-zÀ-ÿ\s]+" 
+                    title="Apenas letras. Máximo de 30 caracteres" 
+                    oninput="filtrarEntrada(this, 'letras')">
                 <div id="erro-instituicao_nome" class="invalid-feedback"></div>
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Endereço da Instituição (*)</label>
-                <input type="text" name="endereco_instituicao" id="endereco_instituicao" class="form-control" placeholder="Endereço" required>
+                <input type="text" name="endereco_instituicao" id="endereco_instituicao" class="form-control"
+                    placeholder="Endereço" required 
+                    maxlength="80" title="Máximo de 80 caracteres">
                 <div id="erro-endereco_instituicao" class="invalid-feedback"></div>
             </div>
-
             <div class="mb-3">
                 <label for="cpf" class="form-label">CNPJ (*)</label>
-                <input type="text" name="instituicao_cnpj" id="cnpj" class="form-control" placeholder="CNPJ" maxlength="14" required oninput="filtrarEntrada(this, 'numeros')">
+                <input type="text" name="instituicao_cnpj" id="cnpj" class="form-control" 
+                    placeholder="CNPJ (somente números)" required 
+                    maxlength="14" minlength="14"
+                    pattern="\d{14}" inputmode="numeric"
+                    oninput="filtrarEntrada(this, 'numeros')"
+                    title="Informe exatamente 14 números do CNPJ">
                 <div id="erro-cnpj" class="invalid-feedback"></div>
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Infraestrutura (*)</label>
-                <textarea name="infraestrutura" id="infraestrutura" class="form-control" placeholder="Descreva a infraestrutura da instituição" required></textarea>
+                <textarea name="infraestrutura" id="infraestrutura" class="form-control" 
+                        placeholder="Descreva a infraestrutura da instituição. Exemplo:2 Blocos, com 3 Laboratórios cada, com 1 Refeitório cada e 1 Auditório" required 
+                        maxlength="150" minlength="20"
+                        title="Mínimo de 20 e máximo de 150 caracteres"></textarea>
                 <div id="erro-infraestrutura" class="invalid-feedback"></div>
             </div>
 
@@ -168,7 +196,11 @@
         <div id="camposChefe" style="display: none;">
             <div class="mb-3">
                 <label class="form-label">Nome da Empresa (*)</label>
-                <input type="text" name="empresa_nome" id="empresa_nome" class="form-control" placeholder="Nome da empresa" required oninput="filtrarEntrada(this, 'letras')">
+                <input type="text" name="empresa_nome" id="empresa_nome" class="form-control"
+                    placeholder="Nome da empresa" required 
+                    maxlength="30" pattern="[A-Za-zÀ-ÿ\s]+" 
+                    title="Apenas letras. Máximo de 30 caracteres" 
+                    oninput="filtrarEntrada(this, 'letras')">
                 <div id="erro-empresa_nome" class="invalid-feedback"></div>
             </div>
             <div class="mb-3">
@@ -268,8 +300,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
-
-
 
 window.showToast = function(mensagem, cor='success', tempo=2500, icone='') {
     const toast = document.getElementById('toastNotificacao');
@@ -374,10 +404,12 @@ function validarSenha(input) {
     }
 
     const forcaEl = document.getElementById("forca-senha");
-    forcaEl.textContent = texto;
-    forcaEl.className = `form-text ${cor}`;
+    if (forcaEl) { 
+        forcaEl.textContent = texto;
+        forcaEl.className = `form-text ${cor}`;
+    }
 
-    validarConfirmacaoSenha();
+    validarConfirmacaoSenha(); 
 }
 
 function validarConfirmacaoSenha() {
@@ -399,9 +431,9 @@ function validarCamposComuns() {
 
     let valido = true;
 
-    valido &= validarCampoObrigatorio(nome, 'O nome é obrigatório.', 'erro-nome');
-    valido &= validarCampo(email, val => regexEmail.test(val.trim()), 'E-mail inválido.', 'erro-email');
-    valido &= validarCampo(senha, val => val.length >= 6, 'A senha deve ter no mínimo 6 caracteres.', 'erro-senha');
+    valido &= validarCampo(nome, val => /^[A-Za-zÀ-ÿ\s]{3,30}$/.test(val), 'Nome inválido. Apenas letras entre 3 e 30 caracteres.', 'erro-nome'); 
+    valido &= validarCampo(email, val => regexEmail.test(val.trim()) && val.length <= 50, 'E-mail inválido.', 'erro-email');
+    valido &= validarCampo(senha, val => val.length >= 6 && val.length <= 20, 'Senha entre 6 e 20 caracteres.', 'erro-senha'); 
     valido &= validarCampo(confirmarSenha, val => val === senha.value && val !== '', 'As senhas não coincidem.', 'erro-confirmarSenha');
 
     return !!valido;
@@ -418,21 +450,16 @@ function validarCamposInstituicao() {
 
     let valido = true;
 
-    valido &= validarCampoObrigatorio(instituicaoNome, 'O nome da instituição é obrigatório.', 'erro-instituicao_nome');
-    valido &= validarCampoObrigatorio(enderecoInstituicao, 'O endereço é obrigatório.', 'erro-endereco_instituicao');
-    valido &= validarCampo(cnpj, val => val.trim().length === 14, 'CNPJ deve ter 14 números.', 'erro-cnpj');
-    valido &= validarCampoObrigatorio(infraestrutura, 'Descreva a infraestrutura.', 'erro-infraestrutura');
-    valido &= validarCampo(notaMec, val => {
-        const nota = parseInt(val);
-        return !isNaN(nota) && nota >= 1 && nota <= 5;
-    }, 'Nota deve ser entre 1 e 5.', 'erro-nota_mec_input');
+    valido &= validarCampo(instituicaoNome, val => /^[A-Za-zÀ-ÿ\s]{1,30}$/.test(val), 'Nome inválido. Apenas letras até 30 caracteres.', 'erro-instituicao_nome'); 
+    valido &= validarCampo(enderecoInstituicao, val => val.length <= 80 && val.length > 15, 'Endereço obrigatório e máximo 80 caracteres.', 'erro-endereco_instituicao'); 
+    valido &= validarCampo(cnpj, val => /^\d{14}$/.test(val), 'CNPJ deve conter exatamente 14 números.', 'erro-cnpj'); 
+    valido &= validarCampo(infraestrutura, val => val.length >= 20 && val.length <= 150, 'Descreva a infraestrutura entre 20 e 150 caracteres.', 'erro-infraestrutura'); 
+    valido &= validarCampo(notaMec, val => /^[1-5]$/.test(val), 'Nota deve ser entre 1 e 5.', 'erro-nota_mec_input'); 
     valido &= validarCampo(modalidades, val => val !== '', 'Selecione uma modalidade.', 'erro-modalidades');
 
     if (cursosSelecionados.length === 0) {
-        document.getElementById('erro-cursos').textContent = 'Selecione pelo menos um curso.';
+        alert("Selecione pelo menos um curso.");
         valido = false;
-    } else {
-        document.getElementById('erro-cursos').textContent = '';
     }
 
     return !!valido;
@@ -444,7 +471,7 @@ function validarCamposChefe() {
 
     let valido = true;
 
-    valido &= validarCampoObrigatorio(empresaNome, 'O nome da empresa é obrigatório.', 'erro-empresa_nome');
+    valido &= validarCampoObrigatorio(empresaNome && val.length <= 30, 'O nome da empresa é obrigatório.', 'erro-empresa_nome');
     valido &= validarCampoObrigatorio(cargo, 'O cargo é obrigatório.', 'erro-cargo');
 
     return !!valido;
