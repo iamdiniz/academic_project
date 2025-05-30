@@ -202,14 +202,17 @@
                         <div class="col-md-6">
                             <label>Nome Completo</label>
                             <input name="nome_jovem" class="form-control" placeholder="Nome do aluno" required>
+                        <div class="invalid-feedback"></div>
                         </div>
                         <div class="col-md-3">
                             <label>Data de Nascimento</label>
                             <input name="data_nascimento" type="date" class="form-control" required>
+                        <div class="invalid-feedback"></div>
                         </div>
                         <div class="col-md-3">
                             <label>Período</label>
                             <input name="periodo" type="number" class="form-control" placeholder="7" required min="1" max="20">
+                        <div class="invalid-feedback"></div>
                         </div>
                         <div class="col-md-6">
                             <label>Curso</label>
@@ -219,22 +222,27 @@
                                     <option value="{{ curso }}">{{ curso }}</option>
                                 {% endfor %}
                             </select>
+                        <div class="invalid-feedback"></div>
                         </div>
                         <div class="col-md-6">
                             <label>Localização</label>
                             <input name="endereco_jovem" class="form-control" placeholder="Localização" required>
+                        <div class="invalid-feedback"></div>
                         </div>
                         <div class="col-md-6">
                             <label>Contato</label>
                             <input name="contato_jovem" class="form-control" placeholder="81982763814" required>
+                        <div class="invalid-feedback"></div>
                         </div>
                         <div class="col-md-6">
                             <label>E-mail</label>
                             <input name="email" type="email" class="form-control" placeholder="email@exemplo.com" required>
+                        <div class="invalid-feedback"></div>
                         </div>
                         <div class="col-md-12">
                             <label>Formação</label>
                             <textarea name="formacao" class="form-control" placeholder="Pós Graduado em Eng. Software." required></textarea>
+                        <div class="invalid-feedback"></div>
                         </div>
                     </div>
                     <hr>
@@ -244,6 +252,7 @@
                             <label>Hard Skills do Curso</label>
                             <div id="hardSkillsFields" class="row g-3"></div>
                         </div>
+                    <label>Soft Skills</label>
                         {% for soft in SOFT_SKILLS %}
                     <div class="col-md-6">
                         <label>{{ soft }}</label>
@@ -398,110 +407,162 @@ function applySkillInputValidation() {
 
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.querySelector('#cadastroModal form');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            let valido = true;
-            let msg = '';
+    if (!form) return;
 
-            // Nome
-            const nome = form.querySelector('[name="nome_jovem"]');
-            if (!nome.value.trim()) {
-                valido = false; msg += 'Nome obrigatório.\n';
-            }
+    const nomeInput = form.querySelector('[name="nome_jovem"]');
+    const dataInput = form.querySelector('[name="data_nascimento"]');
+    const enderecoInput = form.querySelector('[name="endereco_jovem"]');
+    const contatoInput = form.querySelector('[name="contato_jovem"]');
+    const emailInput = form.querySelector('[name="email"]');
+    const formacaoInput = form.querySelector('[name="formacao"]');
+    const periodoInput = form.querySelector('[name="periodo"]');
 
-            // Data de nascimento
-            const data = form.querySelector('[name="data_nascimento"]');
-            if (!data.value.trim()) {
-                valido = false; msg += 'Data de nascimento obrigatória.\n';
-            }
+    //= APLICA LIMITES DIRETOS NOS INPUTS=
+    nomeInput.maxLength = 30;
+    emailInput.maxLength = 50;
+    formacaoInput.maxLength = 80;
+    enderecoInput.maxLength = 150;
 
-            // Localização
-            const endereco = form.querySelector('[name="endereco_jovem"]');
-            if (!endereco.value.trim()) {
-                valido = false; msg += 'Localização obrigatória.\n';
-            }
+    // Impede números no nome
+    nomeInput.addEventListener('input', function() {
+        this.value = this.value.replace(/[^A-Za-zÀ-ú\s]/g, '').slice(0, 30);
+        toggleFieldError(this, this.value.trim() === '', "Nome obrigatório.");
+    });
 
-            // Contato
-            const contato = form.querySelector('[name="contato_jovem"]');
-            if (!contato.value.trim() || isNaN(contato.value) || contato.value.length < 8) {
-                valido = false; msg += 'Contato obrigatório, apenas números e pelo menos 8 dígitos.\n';
-            }
+    // Validação contato: apenas números, máx 11, autoformata
+    contatoInput.addEventListener('input', function () {
+        let cleaned = this.value.replace(/\D/g, '').slice(0, 11); 
 
-            // E-mail
-            const email = form.querySelector('[name="email"]');
-            if (!email.value.trim() || !email.value.includes('@') || !email.value.includes('.')) {
-                valido = false; msg += 'E-mail obrigatório e válido.\n';
-            }
+        // Aplica a máscara
+        if (cleaned.length <= 10) {
+            this.value = cleaned.replace(/^(\d{2})(\d{4})(\d{0,4})$/, '($1) $2-$3');
+        } else {
+            this.value = cleaned.replace(/^(\d{2})(\d{5})(\d{0,4})$/, '($1) $2-$3');
+        }
+    });
 
-            // Curso
-            const curso = form.querySelector('[name="curso"]');
-            if (!curso.value) {
-                valido = false; msg += 'Selecione o curso.\n';
-            }
+    // Restringe número de 1 a 20 no período
+    periodoInput.addEventListener('input', function() {
+        let val = this.value.replace(/[^0-9]/g, '');
+        if (val) {
+            let num = parseInt(val, 10);
+            if (num > 20) num = 20;
+            if (num < 1) num = 1;
+            this.value = num;
+        } else {
+            this.value = '';
+        }
+    });
 
-            // Formação
-            const formacao = form.querySelector('[name="formacao"]');
-            if (!formacao.value.trim()) {
-                valido = false; msg += 'Formação obrigatória.\n';
-            }
+    // Restringe idade mínima e máxima no campo data
+    const hoje = new Date();
+    const minDate = new Date(hoje.getFullYear() - 70, hoje.getMonth(), hoje.getDate()).toISOString().split('T')[0];
+    const maxDate = new Date(hoje.getFullYear() - 17, hoje.getMonth(), hoje.getDate()).toISOString().split('T')[0];
+    dataInput.setAttribute('min', minDate);
+    dataInput.setAttribute('max', maxDate);
 
-            // Validação dinâmica do campo período
-            const periodoInput = document.querySelector('#cadastroModal input[name="periodo"]');
-            if (periodoInput) {
-                periodoInput.addEventListener('input', function() {
-                    let val = this.value.replace(/[^0-9]/g, '');
-                    if (val.length > 2) val = val.slice(0, 2); // impede mais de 2 dígitos
-                    if (val !== '') {
-                        let num = parseInt(val, 10);
-                        if (num < 1) num = 1;
-                        if (num > 20) num = 20;
-                        this.value = num;
-                    } else {
-                        this.value = '';
-                    }
-                });
-                // Impede colar valores inválidos
-                periodoInput.addEventListener('paste', function(e) {
-                    e.preventDefault();
-                });
-            }
+    function toggleFieldError(input, condition, message) {
+        const feedback = input.nextElementSibling;
+        if (condition) {
+            input.classList.add('is-invalid');
+            if (feedback) feedback.textContent = message;
+        } else {
+            input.classList.remove('is-invalid');
+            if (feedback) feedback.textContent = '';
+        }
+    }
 
-            // Período
-            const periodo = form.querySelector('[name="periodo"]');
-            if (
-                !periodo.value.trim() ||
-                isNaN(periodo.value) ||
-                Number(periodo.value) < 1 ||
-                Number(periodo.value) > 20 ||
-                !Number.isInteger(Number(periodo.value))
-            ) {
-                valido = false; msg += 'Período obrigatório e deve ser um número inteiro entre 1 e 20.\n';
-            }
+    form.addEventListener('submit', function(e) {
+        let valido = true;
 
-            // Hard skills
-            const hardInputs = form.querySelectorAll('#hardSkillsFields input');
-            hardInputs.forEach(input => {
-                if (input.value === '' || isNaN(input.value) || input.value < 0 || input.value > 10) {
-                    valido = false; msg += `Preencha corretamente a hard skill "${input.previousElementSibling.innerText}" (0 a 10).\n`;
-                }
-            });
+        // Validação nome
+        if (!nomeInput.value.trim()) {
+            toggleFieldError(nomeInput, true, "Nome obrigatório.");
+            valido = false;
+        } else if (!/^[A-Za-zÀ-ú\s]+$/.test(nomeInput.value)) {
+            toggleFieldError(nomeInput, true, "Nome só pode conter letras.");
+            valido = false;
+        } else {
+            toggleFieldError(nomeInput, false);
+        }
 
-            // Soft skills
-            const softInputs = form.querySelectorAll('.skill-input');
-            softInputs.forEach(input => {
-                if (input.value === '' || isNaN(input.value) || input.value < 0 || input.value > 10) {
-                    valido = false; msg += `Preencha corretamente a soft skill "${input.previousElementSibling.innerText}" (0 a 10).\n`;
-                }
-            });
+        // Validação data de nascimento
+        const dataVal = new Date(dataInput.value);
+        if (!dataInput.value || dataVal < new Date(minDate) || dataVal > new Date(maxDate)) {
+            toggleFieldError(dataInput, true, "Data de nascimento inválida.");
+            valido = false;
+        } else {
+            toggleFieldError(dataInput, false);
+        }
 
-            if (!valido) {
-                showToast(msg, 'danger', 4000, '<i class="bi bi-x-circle-fill me-2"></i>');
-                e.preventDefault();
+        // Endereço
+        if (!enderecoInput.value.trim()) {
+            toggleFieldError(enderecoInput, true, "Endereço obrigatório.");
+            valido = false;
+        } else {
+            toggleFieldError(enderecoInput, false);
+        }
+
+        // Contato
+        const contatoLimpo = contatoInput.value.replace(/\D/g, '');
+        if (contatoLimpo.length !== 11) {
+            toggleFieldError(contatoInput, true, "Contato deve ter 11 dígitos no formato (00) 00000-0000.");
+            valido = false;
+        } else {
+            toggleFieldError(contatoInput, false);
+        }
+
+        // Email
+        if (!emailInput.value.trim() || !emailInput.value.includes('@') || !emailInput.value.includes('.')) {
+            toggleFieldError(emailInput, true, "Email inválido.");
+            valido = false;
+        } else {
+            toggleFieldError(emailInput, false);
+        }
+
+        // Formação
+        if (!formacaoInput.value.trim()) {
+            toggleFieldError(formacaoInput, true, "Formação obrigatória.");
+            valido = false;
+        } else {
+            toggleFieldError(formacaoInput, false);
+        }
+
+        // Período
+        const periodoVal = parseInt(periodoInput.value);
+        if (!periodoVal || periodoVal < 1 || periodoVal > 20) {
+            toggleFieldError(periodoInput, true, "Período deve ser entre 1 e 20.");
+            valido = false;
+        } else {
+            toggleFieldError(periodoInput, false);
+        }
+
+        // Hard skills e soft skills (se tiver)
+        const hardInputs = form.querySelectorAll('#hardSkillsFields input');
+        hardInputs.forEach(input => {
+            if (input.value === '' || isNaN(input.value) || input.value < 0 || input.value > 10) {
+                toggleFieldError(input, true, "Nota deve ser de 0 a 10.");
+                valido = false;
+            } else {
+                toggleFieldError(input, false);
             }
         });
-    }
-});
 
+        const softInputs = form.querySelectorAll('.skill-input');
+        softInputs.forEach(input => {
+            if (input.value === '' || isNaN(input.value) || input.value < 0 || input.value > 10) {
+                toggleFieldError(input, true, "Nota deve ser de 0 a 10.");
+                valido = false;
+            } else {
+                toggleFieldError(input, false);
+            }
+        });
+
+        if (!valido) {
+            e.preventDefault();
+        }
+    });
+});
 </script>
 
 <!-- Bootstrap Icons CDN para ícones -->
