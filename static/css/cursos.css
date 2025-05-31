@@ -72,6 +72,15 @@ canvas {
     background-color: #154256;
 }
 
+/* ==== Estilo do título para evitar sobreposição ==== */
+.page-title {
+    margin: 0;
+    width: 100%;
+    text-align: center;
+    padding-left: 3rem;
+    padding-right: 3rem;
+}
+
 
 @media (max-width: 576px) {
     .col-md-4 {
@@ -89,6 +98,10 @@ canvas {
         height: 30px;
     }
 
+    .page-title {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
 }
 
 /* Tornando o site responsivo */
@@ -104,5 +117,10 @@ canvas {
     .back-circle {
         width: 35px;
         height: 35px;
+    }
+
+    .page-title {
+        padding-left: 2rem;
+        padding-right: 2rem;
     }
 }
