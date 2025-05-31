@@ -36,18 +36,18 @@
                     <path fill-rule="evenodd" d="M15 8a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 7.5H14.5a.5.5 0 0 1 .5.5z"/>
                 </svg>
             </a>
-            <h1 class="m-0 w-100 text-center">Instituições de Ensino</h1>
+            <h1 class="m-0 w-100 text-center title-responsive">Instituições de Ensino</h1>
     </div>
 
-    <div class="text-center"><p>Instituições de ensino que oferecem seus alunos!</p></div>
+    <div class="text-center"><p>Instituições de ensino que oferecem seus alunos!</p></div><br>
 
     <div class="row g-4">
         {% for inst in instituicoes %}
             <div class="col-md-4 d-flex">
                 <div class="card shadow-sm w-100 h-100">
-                    <p><strong>{{ inst.nome_instituicao }}</strong></p>
+                    <h5 class="card-title">{{ inst.nome_instituicao }}</h5>
                     <p><strong>Modalidades:</strong> {{ inst.modalidades }}</p>
-                    <p><strong>Reitor:</strong> {{ inst.reitor }}</p>
+                    <p><strong>Reitor:</strong> {{ inst.reitor }}</p><br>
 
                     <canvas id="grafico-nota-{{ loop.index }}" height="150"></canvas>
                     <canvas id="grafico-alunos-{{ loop.index }}" height="150"></canvas>

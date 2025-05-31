@@ -796,6 +796,11 @@ def cadastrar_aluno():
         flash("Período deve ser um número entre 1 e 20.", "danger")
         return redirect(url_for('alunos_instituicao'))
 
+    # Validação do contato (exemplo simples, pode ser melhorado)
+    if not contato_jovem.isdigit() or len(contato_jovem) < 8:
+        flash("Contato deve conter apenas números e ter pelo menos 8 dígitos.", "danger")
+        return redirect(url_for('alunos_instituicao'))
+
     # Validação das hard skills
     hard_skills_dict = {}
     for label in HARD_SKILLS_POR_CURSO.get(curso, []):
@@ -968,6 +973,11 @@ def detalhes_aluno_instituicao(id_aluno):
         # Validação do e-mail
         if '@' not in email or '.' not in email:
             flash("E-mail inválido!", "danger")
+            return redirect(request.url)
+
+        # Validação do contato
+        if not contato_jovem.isdigit() or len(contato_jovem) < 8:
+            flash("Contato deve conter apenas números e ter pelo menos 8 dígitos.", "danger")
             return redirect(request.url)
 
         # Validação do período

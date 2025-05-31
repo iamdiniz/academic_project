@@ -1,29 +1,16 @@
 /* ======== Card das Instituições ======== */
 .card {
-    border-radius: 10px;
     font-size: 0.9rem;
     padding: 1rem;
     display: flex;
     flex-direction: column;
+    border-radius: 10px;
 }
 
 /* Títulos dentro dos cards e modais */
 .card h5,
 .modal-title {
     font-size: 1.1rem;
-}
-
-/* Header de card, caso usado futuramente */
-.card-header {
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-    text-align: center;
-}
-
-/* Centralização de imagens, caso haja */
-img {
-    display: block;
-    margin: 0 auto;
 }
 
 /* ======== Botão de Voltar (Back Circle) ======== */
@@ -49,6 +36,19 @@ img {
     background-color: #154256;
 }
 
+/* ===== Títulos e Textos ===== */
+.title-responsive {
+    margin: 0;
+    width: 100%;
+    text-align: center;
+    padding-left: 3rem;
+    padding-right: 3rem;
+}
+
+ h5,
+ p {
+    margin-bottom: 0px; 
+}
 /* ======== Responsividade ======== */
 
 /* Telas médias (Tablet) */
@@ -56,6 +56,11 @@ img {
     .back-circle {
         width: 35px;
         height: 35px;
+    }
+
+    .title-responsive {
+        padding-left: 2rem;
+        padding-right: 2rem;
     }
 }
 
@@ -69,6 +74,11 @@ img {
     h1 {
         font-size: 1.8rem;
     }
+
+    .title-responsive {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;   
+ }
 }
 
 /* ======== Gráficos ======== */
