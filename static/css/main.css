@@ -1,3 +1,4 @@
+/* ===== Layout Geral ===== */
 body {
     background: #f8f9fa;
     margin: 0;
@@ -10,7 +11,7 @@ main {
     min-height: 100vh;
 }
 
-/* Navbar */
+/* ===== Navbar ===== */
 .custom-navbar {
     background-color: #1B3B4D;
 }
@@ -24,11 +25,11 @@ main {
     color: #d1ecf1;
 }
 
-.dropdown-menu{
+.dropdown-menu {
     color: #d1ecf1;
 }
 
-.dropdown-item:hover{
+.dropdown-item:hover {
     background-color: #1B3B4D;
     color: #ffffff;
 }
@@ -49,10 +50,10 @@ main {
 }
 
 .custom-navbar .navbar-nav.justify-content-center .nav-item {
-    margin: 0 20px; 
+    margin: 0 20px;
 }
 
-/* Navbar - Link ativo com fundo */
+/* ===== Navbar - Link ativo ===== */
 .custom-navbar .nav-link.active {
     background-color: #495057;
     border-radius: 8px;
@@ -63,7 +64,7 @@ main {
     color: #d1ecf1;
 }
 
-/* Sidebar */
+/* ===== Sidebar ===== */
 .sidebar {
     position: fixed;
     top: 0;
@@ -77,7 +78,7 @@ main {
     justify-content: center;
     gap: 20px;
     z-index: 1040;
-    box-shadow: 2px 0 8px rgba(0,0,0,0.07);
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.07);
 }
 
 .sidebar .nav-link {
@@ -121,17 +122,16 @@ main {
     opacity: 1;
 }
 
-/* Main Container */
+/* ===== Main Container sem Navbar ===== */
 main.no-navbar {
     margin-left: 0 !important;
     padding-top: 0 !important;
 }
 
-/* Responsividade */
-
-/* Para tablets e celulares */
+/* ===== Responsividade ====*/
+/* ===== Tablets e celulares médios ===== */
 @media (max-width: 991.98px) {
-    /* Navbar colapsada */
+    /* Navbar colapsada em coluna */
     .custom-navbar .navbar-collapse .row {
         flex-direction: column;
         align-items: stretch;
@@ -146,9 +146,15 @@ main.no-navbar {
     .custom-navbar .text-end {
         text-align: center !important;
     }
+
+    .navbar-brand {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+    }
 }
 
-/* Ajustes Sidebar e Main em telas menores */
+/* ===== Telas menores (tablets pequenos e celulares) ===== */
 @media (max-width: 768px) {
     .sidebar {
         width: 56px;
@@ -169,9 +175,15 @@ main.no-navbar {
         font-size: 0.9rem;
         left: 50px;
     }
+
+    .navbar-brand {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+    }
 }
 
-/* Para celulares bem pequenos */
+/* ===== Smartphones pequenos (ex.: iPhone SE) ===== */
 @media (max-width: 576px) {
     .sidebar {
         width: 50px;
@@ -195,5 +207,12 @@ main.no-navbar {
 
     .custom-navbar .navbar-brand {
         font-size: 1.2rem;
+    }
+
+    .navbar-brand {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 1.1rem;
     }
 }
