@@ -15,31 +15,46 @@
                 <path fill-rule="evenodd" d="M15 8a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 7.5H14.5a.5.5 0 0 1 .5.5z"/>
             </svg>
         </a>
-        <h1 class="m-0 w-100 text-center">Detalhes do Aluno</h1>
-  </div>
+        <h1 class="m-0 w-100 text-center title-responsive">Detalhes do Aluno</h1>
+    </div>
 
-  <div class="text-center"><p>Mantenha as habilidades do seu aluno sempre atualizadas e visíveis para o mercado!</p></div>
+    <div class="text-center"><p>Mantenha as habilidades do seu aluno sempre atualizadas e visíveis para o mercado!</p></div>
 
     <form method="POST" onsubmit="return validateSkillsForm();" novalidate>
         <div class="mb-3">
             <label for="nome_jovem" class="form-label">Nome</label>
-            <input type="text" class="form-control" id="nome_jovem" name="nome_jovem" value="{{ aluno.nome_jovem }}" required>
+            <input type="text" class="form-control" id="nome_jovem" name="nome_jovem" value="{{ aluno.nome_jovem }}" required maxlength="30" pattern="[A-Za-zÀ-ÖØ-öø-ÿ\s]+" title="Apenas letras e espaços são permitidos para o nome.">
+            <div class="invalid-feedback">
+                O nome deve ter no máximo 30 caracteres e conter apenas letras e espaços.
+            </div>
         </div>
         <div class="mb-3">
             <label for="data_nascimento" class="form-label">Data de Nascimento</label>
             <input type="date" class="form-control" id="data_nascimento" name="data_nascimento" value="{{ aluno.data_nascimento }}" required>
+            <div class="invalid-feedback">
+                A data de nascimento é obrigatória e o aluno deve ter entre 17 e 70 anos.
+            </div>
         </div>
         <div class="mb-3">
             <label for="contato_jovem" class="form-label">Contato</label>
-            <input type="text" class="form-control" id="contato_jovem" name="contato_jovem" value="{{ aluno.contato_jovem }}">
+            <input type="text" class="form-control" id="contato_jovem" name="contato_jovem" value="{{ aluno.contato_jovem }}" maxlength="15" inputmode="numeric" pattern="\(\d{2}\) \d{5}-\d{4}" placeholder="(00) 00000-0000">
+            <div class="invalid-feedback">
+                O contato deve ter o formato (00) 00000-0000.
+            </div>
         </div>
         <div class="mb-3">
             <label for="email" class="form-label">E-mail</label>
-            <input type="email" class="form-control" id="email" name="email" value="{{ aluno.email }}" required>
+            <input type="email" class="form-control" id="email" name="email" value="{{ aluno.email }}" required maxlength="50">
+            <div class="invalid-feedback">
+                O e-mail é obrigatório e deve ter um formato válido, com no máximo 50 caracteres.
+            </div>
         </div>
         <div class="mb-3">
             <label for="endereco_jovem" class="form-label">Endereço</label>
-            <input type="text" class="form-control" id="endereco_jovem" name="endereco_jovem" value="{{ aluno.endereco_jovem }}">
+            <input type="text" class="form-control" id="endereco_jovem" name="endereco_jovem" value="{{ aluno.endereco_jovem }}" maxlength="80">
+            <div class="invalid-feedback">
+                O endereço deve ter no máximo 80 caracteres.
+            </div>
         </div>
         <div class="mb-3">
             <label>Curso</label>
@@ -48,14 +63,23 @@
                     <option value="{{ curso }}" {% if aluno.curso == curso %}selected{% endif %}>{{ curso }}</option>
                 {% endfor %}
             </select>
+            <div class="invalid-feedback">
+                O curso é obrigatório.
+            </div>
         </div>
         <div class="mb-3">
             <label for="formacao" class="form-label">Formação</label>
-            <input type="text" class="form-control" id="formacao" name="formacao" value="{{ aluno.formacao }}">
+            <input type="text" class="form-control" id="formacao" name="formacao" value="{{ aluno.formacao }}" pattern="[A-Za-zÀ-ÖØ-öø-ÿ\s]+" title="Apenas letras e espaços são permitidos para a formação.">
+            <div class="invalid-feedback">
+                A formação é obrigatória e deve conter apenas letras e espaços.
+            </div>
         </div>
         <div class="mb-3">
             <label for="periodo" class="form-label">Período</label>
-            <input type="number" class="form-control" id="periodo" name="periodo" value="{{ aluno.periodo }}">
+            <input type="number" class="form-control" id="periodo" name="periodo" value="{{ aluno.periodo }}" min="1" max="20">
+            <div class="invalid-feedback">
+                O período é obrigatório e deve ser um número inteiro entre 1 e 20.
+            </div>
         </div>
 
         <h4 class="mt-4">Hard Skills</h4>
@@ -76,13 +100,11 @@
     </form>
 </div>
 
-<!-- Toasts de Notificação -->
 <div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
   <div id="toastNotificacao" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
     <div class="d-flex">
       <div class="toast-body" id="toastNotificacaoBody">
-        <!-- Mensagem via JS -->
-      </div>
+        </div>
       <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
     </div>
   </div>
@@ -132,33 +154,7 @@ function renderHardSkillsFields() {
 cursoSelect.addEventListener('change', renderHardSkillsFields);
 document.addEventListener('DOMContentLoaded', renderHardSkillsFields);
 
-// Validação para não permitir campos vazios
-function validateSkillsForm() {
-    let valid = true;
-    document.querySelectorAll('.hard-skill-input, .soft-skill-input').forEach(input => {
-        if (input.value === '' || isNaN(input.value)) {
-            input.classList.add('is-invalid');
-            valid = false;
-        } else {
-            input.classList.remove('is-invalid');
-        }
-    });
-    if (!valid) {
-        alert('Preencha todos os campos de skills!');
-    }
-    return valid;
-}
-
-// Impede digitação de valores inválidos nos campos de skills
-document.addEventListener('input', function(e) {
-    if (e.target.classList.contains('hard-skill-input') || e.target.classList.contains('soft-skill-input')) {
-        let value = e.target.value.replace(/[^0-9]/g, '');
-        if (value.length > 2) value = value.slice(0, 2);
-        if (parseInt(value) > 10) value = '10';
-        e.target.value = value;
-    }
-});
-
+// Função showToast (não alterada, mas incluída para completude)
 function showToast(message, type='danger', timeout=4000, icon='') {
     const toast = document.getElementById('toastNotificacao');
     const toastBody = document.getElementById('toastNotificacaoBody');
@@ -168,123 +164,9 @@ function showToast(message, type='danger', timeout=4000, icon='') {
     bsToast.show();
 }
 
-function validateSkillsForm() {
-    let valid = true;
-    let msg = '';
-
-    // Nome
-    const nome = document.getElementById('nome_jovem');
-    if (!nome.value.trim()) {
-        valid = false;
-        msg += 'O campo Nome é obrigatório.\n';
-        nome.classList.add('is-invalid');
-        nome.focus();
-    } else {
-        nome.classList.remove('is-invalid');
-    }
-
-    // Data de nascimento
-    const data = document.getElementById('data_nascimento');
-    if (!data.value.trim()) {
-        valid = false;
-        msg += 'O campo Data de Nascimento é obrigatório.\n';
-        data.classList.add('is-invalid');
-        if (valid) data.focus();
-    } else {
-        data.classList.remove('is-invalid');
-    }
-
-    // Contato
-    const contato = document.getElementById('contato_jovem');
-    if (!contato.value.trim() || isNaN(contato.value) || contato.value.length < 8) {
-        valid = false;
-        msg += 'O campo Contato é obrigatório, apenas números e pelo menos 8 dígitos.\n';
-        contato.classList.add('is-invalid');
-        if (valid) contato.focus();
-    } else {
-        contato.classList.remove('is-invalid');
-    }
-
-    // Email
-    const email = document.getElementById('email');
-    if (!email.value.trim() || !email.value.includes('@') || !email.value.includes('.')) {
-        valid = false;
-        msg += 'O campo E-mail é obrigatório e deve ser válido.\n';
-        email.classList.add('is-invalid');
-        if (valid) email.focus();
-    } else {
-        email.classList.remove('is-invalid');
-    }
-
-    // Endereço
-    const endereco = document.getElementById('endereco_jovem');
-    if (!endereco.value.trim()) {
-        valid = false;
-        msg += 'O campo Endereço é obrigatório.\n';
-        endereco.classList.add('is-invalid');
-        if (valid) endereco.focus();
-    } else {
-        endereco.classList.remove('is-invalid');
-    }
-
-    // Formação
-    const formacao = document.getElementById('formacao');
-    if (!formacao.value.trim()) {
-        valid = false;
-        msg += 'O campo Formação é obrigatório.\n';
-        formacao.classList.add('is-invalid');
-        if (valid) formacao.focus();
-    } else {
-        formacao.classList.remove('is-invalid');
-    }
-
-    // Período
-    const periodo = document.getElementById('periodo');
-    if (
-        !periodo.value.trim() ||
-        isNaN(periodo.value) ||
-        Number(periodo.value) < 1 ||
-        Number(periodo.value) > 20 ||
-        !Number.isInteger(Number(periodo.value))
-    ) {
-        valid = false;
-        msg += 'O campo Período é obrigatório e deve ser um número inteiro entre 1 e 20.\n';
-        periodo.classList.add('is-invalid');
-        if (valid) periodo.focus();
-    } else {
-        periodo.classList.remove('is-invalid');
-    }
-
-    // Hard skills
-    document.querySelectorAll('.hard-skill-input').forEach(input => {
-        if (input.value === '' || isNaN(input.value) || input.value < 0 || input.value > 10) {
-            input.classList.add('is-invalid');
-            valid = false;
-            msg += `Preencha corretamente a hard skill "${input.previousElementSibling.innerText}" (0 a 10).\n`;
-        } else {
-            input.classList.remove('is-invalid');
-        }
-    });
-
-    // Soft skills
-    document.querySelectorAll('.soft-skill-input').forEach(input => {
-        if (input.value === '' || isNaN(input.value) || input.value < 0 || input.value > 10) {
-            input.classList.add('is-invalid');
-            valid = false;
-            msg += `Preencha corretamente a soft skill "${input.previousElementSibling.innerText}" (0 a 10).\n`;
-        } else {
-            input.classList.remove('is-invalid');
-        }
-    });
-
-    if (!valid) {
-        showToast(msg, 'danger', 4000, '<i class="bi bi-x-circle-fill me-2"></i>');
-    }
-    return valid;
-}
-
-// Impede digitação de valores inválidos nos campos de skills e período
+// Event listener para aplicar máscara de telefone e outras validações de input em tempo real
 document.addEventListener('input', function(e) {
+    // Validação para hard e soft skills (0-10) e período (1-20)
     if (e.target.classList.contains('hard-skill-input') || e.target.classList.contains('soft-skill-input')) {
         let value = e.target.value.replace(/[^0-9]/g, '');
         if (value.length > 2) value = value.slice(0, 2);
@@ -303,6 +185,177 @@ document.addEventListener('input', function(e) {
             e.target.value = '';
         }
     }
+
+    // Máscara para telefone
+    if (e.target.id === 'contato_jovem') {
+        let value = e.target.value.replace(/\D/g, ''); // Remove tudo que não é dígito
+        if (value.length > 11) {
+            value = value.slice(0, 11);
+        }
+        if (value.length > 10) {
+            value = value.replace(/^(\d\d)(\d{5})(\d{4}).*/, '($1) $2-$3');
+        } else if (value.length > 6) {
+            value = value.replace(/^(\d\d)(\d{4})(\d{0,4}).*/, '($1) $2-$3');
+        } else if (value.length > 2) {
+            value = value.replace(/^(\d\d)(\d{0,5})/, '($1) $2');
+        } else {
+            value = value.replace(/^(\d*)/, '($1');
+        }
+        e.target.value = value;
+    }
+
+    // Prevenção de números no nome e formação
+    if (e.target.id === 'nome_jovem' || e.target.id === 'formacao') {
+        e.target.value = e.target.value.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ\s]/g, '');
+    }
 });
+
+function validateSkillsForm() {
+    let valid = true;
+    let msg = ''; // Acumula mensagens de erro para o toast
+
+    // Função auxiliar para adicionar classe de validação e mensagem
+    function invalidateField(element, message) {
+        element.classList.add('is-invalid');
+        // Se a mensagem já não estiver no total, adiciona
+        if (!msg.includes(message)) {
+            msg += message + '\n';
+        }
+        if (valid) { // Apenas foca no primeiro campo inválido
+            element.focus();
+        }
+        valid = false;
+    }
+
+    function validateField(element) {
+        element.classList.remove('is-invalid');
+    }
+
+    // 1. Validação de Nome (Tamanho 30, apenas letras e espaços)
+    const nome = document.getElementById('nome_jovem');
+    const nomePattern = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/;
+    if (!nome.value.trim()) {
+        invalidateField(nome, 'O campo Nome é obrigatório.');
+    } else if (nome.value.length > 30) {
+        invalidateField(nome, 'O nome deve ter no máximo 30 caracteres.');
+    } else if (!nomePattern.test(nome.value)) {
+        invalidateField(nome, 'O nome deve conter apenas letras e espaços.');
+    } else {
+        validateField(nome);
+    }
+
+    // 2. Validação de Data de Nascimento (Idade entre 17 e 70)
+    const dataNascimentoInput = document.getElementById('data_nascimento');
+    if (!dataNascimentoInput.value.trim()) {
+        invalidateField(dataNascimentoInput, 'A data de nascimento é obrigatória.');
+    } else {
+        const dataNascimentoStr = dataNascimentoInput.value; // Ex: "2000-01-15"
+        const partesData = dataNascimentoStr.split('-');
+        const anoNasc = parseInt(partesData[0]);
+        const mesNasc = parseInt(partesData[1]) - 1; // Mês é 0-indexed
+        const diaNasc = parseInt(partesData[2]);
+
+        const dataNascimentoObj = new Date(anoNasc, mesNasc, diaNasc); // Cria a data no fuso horário local
+
+        const hoje = new Date();
+        const anoAtual = hoje.getFullYear();
+        const mesAtual = hoje.getMonth();
+        const diaAtual = hoje.getDate();
+
+        let idade = anoAtual - anoNasc;
+
+        // Ajusta a idade se o aniversário ainda não ocorreu este ano
+        if (mesAtual < mesNasc || (mesAtual === mesNasc && diaAtual < diaNasc)) {
+            idade--;
+        }
+
+        if (isNaN(dataNascimentoObj.getTime()) || idade < 17 || idade > 70) {
+            invalidateField(dataNascimentoInput, 'O aluno deve ter entre 17 e 70 anos.');
+        } else {
+            validateField(dataNascimentoInput);
+        }
+    }
+
+    // 3. Validação de Contato (Máscara (00) 00000-0000, 11 dígitos numéricos)
+    const contato = document.getElementById('contato_jovem');
+    const contatoPattern = /^\(\d{2}\) \d{5}-\d{4}$/; // Expressão regular para a máscara
+    if (!contato.value.trim()) {
+        invalidateField(contato, 'O campo Contato é obrigatório.');
+    } else if (!contatoPattern.test(contato.value)) {
+        invalidateField(contato, 'O contato deve ter o formato (00) 00000-0000.');
+    } else {
+        validateField(contato);
+    }
+
+    // 4. Validação de E-mail (Tamanho 50)
+    const email = document.getElementById('email');
+    if (!email.value.trim() || !email.value.includes('@') || !email.value.includes('.')) {
+        invalidateField(email, 'O campo E-mail é obrigatório e deve ser válido.');
+    } else if (email.value.length > 50) {
+        invalidateField(email, 'O e-mail deve ter no máximo 50 caracteres.');
+    } else {
+        validateField(email);
+    }
+
+    // 5. Validação de Endereço (Tamanho 80)
+    const endereco = document.getElementById('endereco_jovem');
+    if (!endereco.value.trim()) {
+        invalidateField(endereco, 'O campo Endereço é obrigatório.');
+    } else if (endereco.value.length > 80) {
+        invalidateField(endereco, 'O endereço deve ter no máximo 80 caracteres.');
+    } else {
+        validateField(endereco);
+    }
+
+    // 6. Validação de Formação (Apenas letras e espaços)
+    const formacao = document.getElementById('formacao');
+    const formacaoPattern = /^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/;
+    if (!formacao.value.trim()) {
+        invalidateField(formacao, 'O campo Formação é obrigatório.');
+    } else if (!formacaoPattern.test(formacao.value)) {
+        invalidateField(formacao, 'A formação deve conter apenas letras e espaços.');
+    } else {
+        validateField(formacao);
+    }
+
+    // 7. Validação de Período (Número inteiro entre 1 e 20)
+    const periodo = document.getElementById('periodo');
+    const periodoValue = Number(periodo.value);
+    if (
+        !periodo.value.trim() ||
+        isNaN(periodoValue) ||
+        !Number.isInteger(periodoValue) ||
+        periodoValue < 1 ||
+        periodoValue > 20
+    ) {
+        invalidateField(periodo, 'O campo Período é obrigatório e deve ser um número inteiro entre 1 e 20.');
+    } else {
+        validateField(periodo);
+    }
+
+    // 8. Validação Hard Skills (0 a 10)
+    document.querySelectorAll('.hard-skill-input').forEach(input => {
+        if (input.value === '' || isNaN(input.value) || input.value < 0 || input.value > 10) {
+            invalidateField(input, `Preencha corretamente a hard skill "${input.previousElementSibling.innerText}" (0 a 10).`);
+        } else {
+            validateField(input);
+        }
+    });
+
+    // 9. Validação Soft Skills (0 a 10)
+    document.querySelectorAll('.soft-skill-input').forEach(input => {
+        if (input.value === '' || isNaN(input.value) || input.value < 0 || input.value > 10) {
+            invalidateField(input, `Preencha corretamente a soft skill "${input.previousElementSibling.innerText}" (0 a 10).`);
+        } else {
+            validateField(input);
+        }
+    });
+
+    if (!valid) {
+        showToast(msg, 'danger', 7000, '<i class="bi bi-x-circle-fill me-2"></i>'); // Aumentei o tempo do toast para múltiplas mensagens
+    }
+    return valid;
+}
 </script>
+
 {% endblock %}
