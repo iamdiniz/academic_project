@@ -8,8 +8,8 @@
 {% endblock %}
 
 {% block body %}
-<div class="container-principal" role="main" aria-label="Tela de cadastro do DashTalent">
-    <section class="lado-esquerdo" aria-label="Valores e missão do DashTalent">
+<div class="container-cadastro mt-4" role="main" aria-label="Tela de cadastro do Educ+Invest">
+    <section class="left-side" aria-label="Valores e missão do DashTalent">
         <div class="feature">
             <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
                 <circle cx="32" cy="32" r="30" fill="#ffd166"/>
@@ -55,12 +55,12 @@
         </div>
     </section>
 
-    <section class="lado-direito" aria-label="Formulário de cadastro">
-
+    <section class="right-side" aria-label="Formulário de cadastro">
         <form method="POST" class="form-box" onsubmit="return validarFormulario()" novalidate>
         <a href="{{url_for('carousel')}}">
             <h2 class="text-center" >DashTalent</h2>
         </a>
+        <p class="text-center">Conectando talentos, instituições e empresas para construir futuros de sucesso.</p>
         <br>
         <div class="welcome-text" tabindex="0">Bem-vindo! Faça seu cadastro.</div>
 
