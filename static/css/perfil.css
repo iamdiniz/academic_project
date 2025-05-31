@@ -19,6 +19,15 @@
     background-color: #154256;
 }
 
+/* ===== TÍTULO RESPONSIVO ===== */
+.title-responsive {
+    margin: 0;
+    width: 100%;
+    text-align: center;
+    padding-left: 3rem;
+    padding-right: 3rem;
+}
+
 /* Responsividade */
 
 /* Telas médias (tablet) */
@@ -26,6 +35,11 @@
     .back-circle {
         width: 35px;
         height: 35px;
+    }
+
+    .title-responsive {
+        padding-left: 2rem;
+        padding-right: 2rem;
     }
 }
 
@@ -35,12 +49,19 @@
         width: 30px;
         height: 30px;
     }
-}
+    .title-responsive {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
 
-@media (max-width: 576px) {
     form .form-control,
     form .form-select,
     form textarea {
         width: 100%;
+    }
+
+     .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
     }
 }
