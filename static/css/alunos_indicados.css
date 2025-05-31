@@ -110,10 +110,11 @@ h5,
 
 /* ===== TÍTULO RESPONSIVO ===== */
 .title-responsive {
-    font-size: 2rem;
-    padding-left: 2.5rem;
-    padding-right: 2.5rem;
-    line-height: 1.2;
+    margin: 0;
+    width: 100%;
+    text-align: center;
+    padding-left: 3rem;
+    padding-right: 3rem;
 }
 
 /* ===== RESPONSIVIDADE ===== */
@@ -129,7 +130,6 @@ h5,
         margin: 1rem;
     }
     .title-responsive {
-        font-size: 1.5rem;
         padding-left: 2rem;
         padding-right: 2rem;
     }
@@ -162,9 +162,8 @@ h5,
         margin-bottom: 5px;
     }
     .title-responsive {
-        font-size: 1.2rem;
-        padding-left: 2.5rem;
-        padding-right: 2.5rem;
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
     }
     .card .mt-3 {
         flex-direction: column;
