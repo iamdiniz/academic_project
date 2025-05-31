@@ -19,6 +19,20 @@
     background-color: #154256;
 }
 
+/* ===== Títulos e Textos ===== */
+.title-responsive {
+    margin: 0;
+    width: 100%;
+    text-align: center;
+    padding-left: 3rem;
+    padding-right: 3rem;
+}
+
+ h5,
+ p {
+    margin-bottom: 0px; 
+}
+
 /* Telas médias (tablet) */
 @media (max-width: 768px) {
     .back-circle {
@@ -28,6 +42,11 @@
 
     h1 {
         font-size: 1.8rem;
+    }
+
+    .title-responsive {
+        padding-left: 2rem;
+        padding-right: 2rem;
     }
 }
 
@@ -41,16 +60,16 @@
     h1 {
         font-size: 1.5rem;
     }
-}
 
-/* Espaçamento para títulos ou seções, opcional */
-h1, h3 {
-    word-break: break-word;
+    .title-responsive {
+        padding-left: 1.5rem;
+        padding-right: 2rem;   
+ }
 }
 
 /* Lista interna (ex.: cursos cadastrados) */
 ul {
-    padding-left: 1.2rem;
+    padding-left: 2rem;
 }
 
 /* Card */
