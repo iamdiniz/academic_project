@@ -8,6 +8,16 @@
 {% endblock %}
 
 {% block body %}
+<!-- Toasts de Notificação -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
+  <div id="toastNotificacao" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body" id="toastNotificacaoBody"></div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
+    </div>
+  </div>
+</div>
+
 <div class="container-cadastro mt-4" role="main" aria-label="Tela de cadastro do Educ+Invest">
     <section class="left-side" aria-label="Valores e missão do DashTalent">
         <div class="feature">
@@ -264,7 +274,7 @@ document.querySelector('.form-box').addEventListener('submit', function(e) {
     if (tipo === 'instituicao') {
         const checkboxes = document.querySelectorAll('input[name="cursos_selecionados"]:checked');
         if (checkboxes.length === 0) {
-            alert('Selecione pelo menos um curso da instituição.');
+            showToast('Selecione pelo menos um curso da instituição.', 'danger', 3500, '<i class="bi bi-exclamation-triangle-fill me-2"></i>');
             e.preventDefault();
         }
     }
@@ -451,14 +461,14 @@ function validarCamposInstituicao() {
     let valido = true;
 
     valido &= validarCampo(instituicaoNome, val => /^[A-Za-zÀ-ÿ\s]{1,30}$/.test(val), 'Nome inválido. Apenas letras até 30 caracteres.', 'erro-instituicao_nome'); 
-    valido &= validarCampo(enderecoInstituicao, val => val.length <= 80 && val.length > 15, 'Endereço obrigatório e máximo 80 caracteres.', 'erro-endereco_instituicao'); 
+    valido &= validarCampo(enderecoInstituicao, val => val.length <= 80 && val.length > 5, 'Informe um endereço com no mínimo 5 caracteres.', 'erro-endereco_instituicao'); 
     valido &= validarCampo(cnpj, val => /^\d{14}$/.test(val), 'CNPJ deve conter exatamente 14 números.', 'erro-cnpj'); 
     valido &= validarCampo(infraestrutura, val => val.length >= 20 && val.length <= 150, 'Descreva a infraestrutura entre 20 e 150 caracteres.', 'erro-infraestrutura'); 
     valido &= validarCampo(notaMec, val => /^[1-5]$/.test(val), 'Nota deve ser entre 1 e 5.', 'erro-nota_mec_input'); 
     valido &= validarCampo(modalidades, val => val !== '', 'Selecione uma modalidade.', 'erro-modalidades');
 
     if (cursosSelecionados.length === 0) {
-        alert("Selecione pelo menos um curso.");
+        showToast("Selecione pelo menos um curso.", "danger", 3500, '<i class="bi bi-exclamation-triangle-fill me-2"></i>');
         valido = false;
     }
 

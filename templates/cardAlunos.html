@@ -249,4 +249,25 @@
         {% endfor %}
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function updateSelectedSkillsText() {
+        const checked = document.querySelectorAll('.skill-checkbox:checked');
+        const selected = Array.from(checked).map(cb => cb.parentElement.querySelectorAll('span')[1].innerText);
+        let displayText = '';
+        if (selected.length === 0) {
+            displayText = 'Selecione habilidades...';
+        } else if (selected.length <= 2) {
+            displayText = selected.join(', ');
+        } else {
+            displayText = selected.slice(0, 2).join(', ') + ` +${selected.length - 2}`;
+        }
+        document.getElementById('selectedSkillsText').innerText = displayText;
+    }
+    document.querySelectorAll('.skill-checkbox').forEach(cb => {
+        cb.addEventListener('change', updateSelectedSkillsText);
+    });
+    updateSelectedSkillsText();
+});
+</script>
 {% endblock %}

@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from unidecode import unidecode  # Biblioteca para remover acentos e caracteres especiais
 from urllib.parse import unquote
 from math import ceil
+from datetime import datetime
 import json
 
 app = Flask(__name__)
@@ -966,6 +967,11 @@ def detalhes_aluno_instituicao(id_aluno):
         formacao = request.form.get('formacao', '').strip()
         periodo = request.form.get('periodo', '').strip()
 
+        # Verifica se já existe outro aluno com este e-mail
+        email_existente = Aluno.query.filter(Aluno.email == email, Aluno.id_aluno != aluno.id_aluno).first()
+        if email_existente:
+            flash("Já existe um aluno cadastrado com este e-mail.", "danger")
+
         if not nome_jovem or not data_nascimento or not contato_jovem or not email or not endereco_jovem or not formacao or not periodo:
             flash("Preencha todos os campos obrigatórios!", "danger")
             return redirect(request.url)
@@ -1030,7 +1036,13 @@ def detalhes_aluno_instituicao(id_aluno):
             db.session.add(skills)
         skills.hard_skills_json = json.dumps(new_hard_dict)
         skills.soft_skills_json = json.dumps(new_soft_dict)
-        db.session.commit()
+        
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            flash("Já existe um aluno cadastrado com este e-mail.", "danger")
+            return redirect(request.url)
 
         # Salvar histórico das skills após atualizar para todos os chefes que acompanham este aluno
         try:
@@ -1047,6 +1059,7 @@ def detalhes_aluno_instituicao(id_aluno):
         except Exception as e:
             db.session.rollback()
             flash("Erro ao salvar histórico das skills.", "danger")
+
 
         flash("Informações do aluno atualizadas com sucesso!", "success")
         return redirect(url_for('alunos_instituicao'))
@@ -1072,6 +1085,12 @@ def perfil():
         # Atualizar informações do chefe
         if tipo_usuario == 'chefe':
             chefe = Chefe.query.get_or_404(current_user.id_chefe)
+            novo_email = request.form['email']
+            # Verifica se já existe outro chefe com este e-mail
+            email_existente = Chefe.query.filter(Chefe.email == novo_email, Chefe.id_chefe != chefe.id_chefe).first()
+            if email_existente:
+                flash("Já existe um chefe cadastrado com este e-mail.", "danger")
+                return redirect(url_for('perfil'))
             chefe.nome = request.form['nome']
             cargo = request.form['cargo']
             if cargo not in ['CEO', 'Gerente', 'Coordenador']:
@@ -1079,14 +1098,28 @@ def perfil():
                 return redirect(url_for('perfil'))
             chefe.cargo = cargo
             chefe.nome_empresa = request.form.get('nome_empresa')
-            chefe.email = request.form['email']
+            chefe.email = novo_email
             if request.form['senha']:
                 chefe.senha = generate_password_hash(request.form['senha'])
-            db.session.commit()
-            flash("Perfil atualizado com sucesso!", "success")
+            try:
+                db.session.commit()
+                flash("Perfil atualizado com sucesso!", "success")
+            except IntegrityError:
+                db.session.rollback()
+                flash("Já existe um chefe cadastrado com este e-mail.", "danger")
+                return redirect(url_for('perfil'))
         # Atualizar informações da instituição
         elif tipo_usuario == 'instituicao':
             instituicao = InstituicaodeEnsino.query.get_or_404(current_user.id_instituicao)
+            novo_email = request.form['email']
+            # Verifica se já existe outra instituição com este e-mail
+            email_existente = InstituicaodeEnsino.query.filter(
+                InstituicaodeEnsino.email == novo_email,
+                InstituicaodeEnsino.id_instituicao != instituicao.id_instituicao
+            ).first()
+            if email_existente:
+                flash("Já existe uma instituição cadastrada com este e-mail.", "danger")
+                return redirect(url_for('perfil'))
             instituicao.nome_instituicao = request.form['nome_instituicao']
             instituicao.endereco_instituicao = request.form['endereco_instituicao']
             instituicao.reitor = request.form['reitor']
@@ -1106,11 +1139,16 @@ def perfil():
                 return redirect(url_for('perfil'))
             instituicao.modalidades = modalidades
 
-            instituicao.email = request.form['email']
+            instituicao.email = novo_email
             if request.form['senha']:
                 instituicao.senha = generate_password_hash(request.form['senha'])
-            db.session.commit()
-            flash("Perfil atualizado com sucesso!", "success")
+            try:
+                db.session.commit()
+                flash("Perfil atualizado com sucesso!", "success")
+            except IntegrityError:
+                db.session.rollback()
+                flash("Já existe uma instituição cadastrada com este e-mail.", "danger")
+                return redirect(url_for('perfil'))
 
     # Exibir informações do perfil
     if tipo_usuario == 'chefe':
@@ -1118,7 +1156,6 @@ def perfil():
         cursos_da_instituicao = []
     elif tipo_usuario == 'instituicao':
         usuario = InstituicaodeEnsino.query.get_or_404(current_user.id_instituicao)
-        # Pegue os cursos reais da tabela cursos
         cursos_da_instituicao = Curso.query.filter_by(id_instituicao=current_user.id_instituicao).all()
     else:
         flash("Tipo de usuário inválido.", "danger")

@@ -188,6 +188,16 @@
     {% endif %}
     
     <!-- Modal de Cadastro -->
+     <!-- Toasts de Notificação -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
+  <div id="toastNotificacao" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body" id="toastNotificacaoBody"></div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
+    </div>
+  </div>
+</div>
+
     <div class="modal fade" id="cadastroModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content bg-dark text-white p-4 rounded-4">
@@ -231,7 +241,7 @@
                         </div>
                         <div class="col-md-6">
                             <label>Contato</label>
-                            <input name="contato_jovem" class="form-control" placeholder="81982763814" required>
+                            <input name="contato_jovem" class="form-control" placeholder="00000000000" required maxlength="11" inputmode="numeric" pattern="\d{11}" id="contato_jovem">
                         <div class="invalid-feedback"></div>
                         </div>
                         <div class="col-md-6">
@@ -412,7 +422,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const nomeInput = form.querySelector('[name="nome_jovem"]');
     const dataInput = form.querySelector('[name="data_nascimento"]');
     const enderecoInput = form.querySelector('[name="endereco_jovem"]');
-    const contatoInput = form.querySelector('[name="contato_jovem"]');
     const emailInput = form.querySelector('[name="email"]');
     const formacaoInput = form.querySelector('[name="formacao"]');
     const periodoInput = form.querySelector('[name="periodo"]');
@@ -427,18 +436,6 @@ document.addEventListener('DOMContentLoaded', function() {
     nomeInput.addEventListener('input', function() {
         this.value = this.value.replace(/[^A-Za-zÀ-ú\s]/g, '').slice(0, 30);
         toggleFieldError(this, this.value.trim() === '', "Nome obrigatório.");
-    });
-
-    // Validação contato: apenas números, máx 11, autoformata
-    contatoInput.addEventListener('input', function () {
-        let cleaned = this.value.replace(/\D/g, '').slice(0, 11); 
-
-        // Aplica a máscara
-        if (cleaned.length <= 10) {
-            this.value = cleaned.replace(/^(\d{2})(\d{4})(\d{0,4})$/, '($1) $2-$3');
-        } else {
-            this.value = cleaned.replace(/^(\d{2})(\d{5})(\d{0,4})$/, '($1) $2-$3');
-        }
     });
 
     // Restringe número de 1 a 20 no período
@@ -560,8 +557,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (!valido) {
             e.preventDefault();
+            window.showToast("Por favor, corrija os campos destacados em vermelho.", "danger", 3500, '<i class="bi bi-x-circle-fill me-2"></i>');
         }
     });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const contatoInput = document.getElementById('contato_jovem');
+    if (contatoInput) {
+        contatoInput.addEventListener('input', function() {
+            // Remove tudo que não for número
+            this.value = this.value.replace(/\D/g, '').slice(0, 11);
+        });
+        contatoInput.addEventListener('keydown', function(e) {
+            // Permite teclas de controle
+            if (
+                e.key === "Backspace" || e.key === "Tab" || e.key === "Delete" ||
+                e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === "Home" || e.key === "End"
+            ) {
+                return;
+            }
+            // Permite apenas números
+            if (!/^[0-9]$/.test(e.key)) {
+                e.preventDefault();
+            }
+        });
+    }
 });
 </script>
 

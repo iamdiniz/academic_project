@@ -37,9 +37,9 @@
         </div>
         <div class="mb-3">
             <label for="contato_jovem" class="form-label">Contato</label>
-            <input type="text" class="form-control" id="contato_jovem" name="contato_jovem" value="{{ aluno.contato_jovem }}" maxlength="15" inputmode="numeric" pattern="\(\d{2}\) \d{5}-\d{4}" placeholder="(00) 00000-0000">
+            <input type="text" class="form-control" id="contato_jovem" name="contato_jovem" value="{{ aluno.contato_jovem }}" maxlength="15" inputmode="numeric" placeholder="00000000000">
             <div class="invalid-feedback">
-                O contato deve ter o formato (00) 00000-0000.
+                O contato 11 dígitos numéricos
             </div>
         </div>
         <div class="mb-3">
@@ -186,24 +186,6 @@ document.addEventListener('input', function(e) {
         }
     }
 
-    // Máscara para telefone
-    if (e.target.id === 'contato_jovem') {
-        let value = e.target.value.replace(/\D/g, ''); // Remove tudo que não é dígito
-        if (value.length > 11) {
-            value = value.slice(0, 11);
-        }
-        if (value.length > 10) {
-            value = value.replace(/^(\d\d)(\d{5})(\d{4}).*/, '($1) $2-$3');
-        } else if (value.length > 6) {
-            value = value.replace(/^(\d\d)(\d{4})(\d{0,4}).*/, '($1) $2-$3');
-        } else if (value.length > 2) {
-            value = value.replace(/^(\d\d)(\d{0,5})/, '($1) $2');
-        } else {
-            value = value.replace(/^(\d*)/, '($1');
-        }
-        e.target.value = value;
-    }
-
     // Prevenção de números no nome e formação
     if (e.target.id === 'nome_jovem' || e.target.id === 'formacao') {
         e.target.value = e.target.value.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ\s]/g, '');
@@ -278,11 +260,8 @@ function validateSkillsForm() {
 
     // 3. Validação de Contato (Máscara (00) 00000-0000, 11 dígitos numéricos)
     const contato = document.getElementById('contato_jovem');
-    const contatoPattern = /^\(\d{2}\) \d{5}-\d{4}$/; // Expressão regular para a máscara
     if (!contato.value.trim()) {
         invalidateField(contato, 'O campo Contato é obrigatório.');
-    } else if (!contatoPattern.test(contato.value)) {
-        invalidateField(contato, 'O contato deve ter o formato (00) 00000-0000.');
     } else {
         validateField(contato);
     }

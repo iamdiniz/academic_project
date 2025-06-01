@@ -8,6 +8,16 @@
 {% endblock %}
 
 {% block body %}
+<!-- Toasts de Notificação -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
+  <div id="toastNotificacao" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body" id="toastNotificacaoBody"></div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
+    </div>
+  </div>
+</div>
+
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4 position-relative">
             <a href="{{ url_for('home') }}" class="back-circle position-absolute start-0">
@@ -109,6 +119,23 @@ document.querySelector('form').addEventListener('submit', function(e) {
         e.preventDefault();
     }
     {% endif %}
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          // Exibe o toast para cada mensagem flash
+          var toastEl = document.getElementById('toastNotificacao');
+          var toastBody = document.getElementById('toastNotificacaoBody');
+          toastBody.textContent = {{ message|tojson }};
+          toastEl.classList.remove('text-bg-success', 'text-bg-danger');
+          toastEl.classList.add('text-bg-{{ 'success' if category == 'success' else 'danger' }}');
+          var toast = new bootstrap.Toast(toastEl, { delay: 4000 });
+          toast.show();
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
 });
 </script>
 
