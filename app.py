@@ -9,6 +9,7 @@ from urllib.parse import unquote
 from math import ceil
 from datetime import datetime
 import json
+import pytz
 
 app = Flask(__name__)
 app.secret_key = 'minha-chave-teste'
@@ -169,7 +170,7 @@ class SkillsHistorico(db.Model):
     __tablename__ = 'skills_historico'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     id_aluno = db.Column(db.Integer, db.ForeignKey('alunos.id_aluno'), nullable=False)
-    id_chefe = db.Column(db.Integer, db.ForeignKey('chefe.id_chefe'), nullable=False)  # NOVO
+    id_chefe = db.Column(db.Integer, db.ForeignKey('chefe.id_chefe'), nullable=False)
     data = db.Column(db.DateTime, server_default=db.func.now())
     hard_skills_json = db.Column(db.Text)
     soft_skills_json = db.Column(db.Text)
@@ -1047,12 +1048,15 @@ def detalhes_aluno_instituicao(id_aluno):
         # Salvar histórico das skills após atualizar para todos os chefes que acompanham este aluno
         try:
             acompanhamentos = Acompanhamento.query.filter_by(id_aluno=aluno.id_aluno).all()
+            fuso_brasil = pytz.timezone('America/Recife')
+            data_atualizacao = datetime.now(fuso_brasil)
             for ac in acompanhamentos:
                 novo_historico = SkillsHistorico(
                     id_aluno=aluno.id_aluno,
                     id_chefe=ac.id_chefe,
                     hard_skills_json=json.dumps(new_hard_dict),
-                    soft_skills_json=json.dumps(new_soft_dict)
+                    soft_skills_json=json.dumps(new_soft_dict),
+                    data=data_atualizacao 
                 )
                 db.session.add(novo_historico)
             db.session.commit()
@@ -1260,6 +1264,8 @@ def remover_acompanhamento(id_aluno):
         flash("Acompanhamento não encontrado.", "danger")
     return redirect(url_for('acompanhar'))
 
+import pytz
+
 @app.route('/status_aluno/<int:id_aluno>')
 @login_required
 @bloquear_instituicao
@@ -1268,11 +1274,18 @@ def status_aluno(id_aluno):
     historicos = SkillsHistorico.query.filter_by(id_aluno=id_aluno, id_chefe=chefe_id).order_by(SkillsHistorico.data.desc()).all()
     aluno = Aluno.query.get_or_404(id_aluno)
     historicos_dict = []
+    fuso_brasil = pytz.timezone('America/Recife')
     for hist in historicos:
+        # Converte para o fuso de Recife se não tiver tzinfo
+        data_brasil = hist.data
+        if data_brasil and data_brasil.tzinfo is None:
+            data_brasil = pytz.utc.localize(data_brasil).astimezone(fuso_brasil)
+        elif data_brasil:
+            data_brasil = data_brasil.astimezone(fuso_brasil)
         hard = json.loads(hist.hard_skills_json) if hist.hard_skills_json else {}
         soft = json.loads(hist.soft_skills_json) if hist.soft_skills_json else {}
         historicos_dict.append({
-            'data': hist.data,
+            'data': data_brasil,
             'hard_skills': hard,
             'soft_skills': soft
         })
@@ -1288,7 +1301,6 @@ def status_aluno(id_aluno):
                 'anterior': anterior
             })
     elif len(historicos_dict) == 1:
-        # Só existe um snapshot, exibe como "atual" sem comparação
         historico_pares.append({
             'data': historicos_dict[0]['data'],
             'atual': historicos_dict[0],
