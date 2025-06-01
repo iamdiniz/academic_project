@@ -1,9 +1,12 @@
 #!/bin/sh
 
-# Espera até que o banco esteja pronto
-echo "Aguardando o banco de dados estar pronto..."
+# Usa variáveis de ambiente ou parâmetros
+HOST=${DB_HOST:-$1}
+PORT=${DB_PORT:-3306}
 
-while ! nc -z "$1" 3306; do
+echo "Aguardando o banco de dados estar pronto em $HOST:$PORT..."
+
+while ! nc -z "$HOST" "$PORT"; do
   sleep 1
 done
 

@@ -10,10 +10,19 @@ from math import ceil
 from datetime import datetime
 import json
 import pytz
+import os
 
 app = Flask(__name__)
 app.secret_key = 'minha-chave-teste'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:educ123@db:3306/educ_invest?charset=utf8mb4'
+
+user = os.getenv('DB_USER', 'root')
+password = os.getenv('DB_PASS', 'educ123')
+host = os.getenv('DB_HOST', 'db')
+port = os.getenv('DB_PORT', '3306')
+dbname = os.getenv('DB_NAME', 'educ_invest')
+
+app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{user}:{password}@{host}:{port}/{dbname}?charset=utf8mb4'
+
 db = SQLAlchemy(app)
 
 # Configuração do flask-login

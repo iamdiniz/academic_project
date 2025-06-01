@@ -16,4 +16,5 @@ RUN dos2unix /wait-for-db.sh && chmod +x /wait-for-db.sh
 
 EXPOSE 5000
 
-CMD ["/wait-for-db.sh"]
+# Executa o wait-for-db.sh passando os comandos finais
+CMD ["/wait-for-db.sh", "python", "app.py"]
