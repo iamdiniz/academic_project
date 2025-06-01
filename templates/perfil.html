@@ -32,7 +32,10 @@
         {% if session.get('tipo_usuario') == 'chefe' %}
             <div class="mb-3">
                 <label for="nome" class="form-label">Nome</label>
-                <input type="text" class="form-control" id="nome" name="nome" value="{{ usuario.nome }}" required>
+                <input type="text" class="form-control" id="nome" name="nome" value="{{ usuario.nome }}" required minlength="2" maxlength="30" pattern="[A-Za-zÀ-ÖØ-öø-ÿ\s]+" title="O nome deve ter entre 2 e 30 letras e não pode conter números.">
+                <div class="invalid-feedback">
+                    O nome deve ter entre 2 e 30 letras e não pode conter números.
+                </div>
             </div>
             <div class="mb-3">
                 <label for="cargo" class="form-label">Cargo</label>
@@ -62,7 +65,7 @@
             </div>
             <div class="mb-3">
                 <label for="reitor" class="form-label">Reitor</label>
-                <input type="text" class="form-control" id="reitor" name="reitor" value="{{ usuario.reitor }}" required>
+                <input type="text" class="form-control" id="reitor" name="reitor" value="{{ usuario.reitor }}" required minlength="2" maxlength="30" pattern="[A-Za-zÀ-ÖØ-öø-ÿ\s]+" title="Reitor deve ter entre 2 e 30 letras e não pode conter números.">
             </div>
             <div class="mb-3">
                 <label for="infraestrutura" class="form-label">Infraestrutura</label>
@@ -136,6 +139,20 @@ document.addEventListener('DOMContentLoaded', function() {
         {% endfor %}
       {% endif %}
     {% endwith %}
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Bootstrap validation
+    const forms = document.querySelectorAll('form');
+    Array.from(forms).forEach(function(form) {
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
 });
 </script>
 

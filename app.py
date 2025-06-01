@@ -8,6 +8,7 @@ from unidecode import unidecode  # Biblioteca para remover acentos e caracteres 
 from urllib.parse import unquote
 from math import ceil
 from datetime import datetime
+import re
 import json
 import pytz
 import os
@@ -1107,8 +1108,14 @@ def perfil():
         # Atualizar informações do chefe
         if tipo_usuario == 'chefe':
             chefe = Chefe.query.get_or_404(current_user.id_chefe)
-            novo_email = request.form['email']
+
+            nome = request.form['nome'].strip()
+            if not re.match(r'^[A-Za-zÀ-ÖØ-öø-ÿ\s]{2,30}$', nome):
+                flash("O nome deve ter entre 2 e 30 letras e não pode conter números.", "danger")
+                return redirect(url_for('perfil'))
+
             # Verifica se já existe outro chefe com este e-mail
+            novo_email = request.form['email']
             email_existente = Chefe.query.filter(Chefe.email == novo_email, Chefe.id_chefe != chefe.id_chefe).first()
             if email_existente:
                 flash("Já existe um chefe cadastrado com este e-mail.", "danger")
@@ -1133,6 +1140,16 @@ def perfil():
         # Atualizar informações da instituição
         elif tipo_usuario == 'instituicao':
             instituicao = InstituicaodeEnsino.query.get_or_404(current_user.id_instituicao)
+            nome_instituicao = request.form['nome_instituicao'].strip()
+            reitor = request.form['reitor'].strip()
+
+            if not re.match(r'^[A-Za-zÀ-ÖØ-öø-ÿ\s]{2,50}$', nome_instituicao):
+                flash("O nome da instituição deve ter entre 2 e 50 letras e não pode conter números.", "danger")
+                return redirect(url_for('perfil'))
+            if not re.match(r'^[A-Za-zÀ-ÖØ-öø-ÿ\s]{2,30}$', reitor):
+                flash("O nome do reitor deve ter entre 2 e 30 letras e não pode conter números.", "danger")
+                return redirect(url_for('perfil'))
+
             novo_email = request.form['email']
             # Verifica se já existe outra instituição com este e-mail
             email_existente = InstituicaodeEnsino.query.filter(
