@@ -21,8 +21,12 @@ host = os.getenv('DB_HOST', 'db')
 port = os.getenv('DB_PORT', '3306')
 dbname = os.getenv('DB_NAME', 'educ_invest')
 
-app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{user}:{password}@{host}:{port}/{dbname}?charset=utf8mb4'
+# Utiliza a variável DATABASE_URL do Railway
+database_url = os.getenv("DATABASE_URL")
+if database_url.startswith("mysql://"):
+    database_url = database_url.replace("mysql://", "mysql+pymysql://", 1)
 
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 db = SQLAlchemy(app)
 
 # Configuração do flask-login
