@@ -21,8 +21,13 @@ host = os.getenv('DB_HOST', 'db')
 port = os.getenv('DB_PORT', '3306')
 dbname = os.getenv('DB_NAME', 'educ_invest')
 
-# Utiliza a variável DATABASE_URL do Railway
+# Busca variável de ambiente
 database_url = os.getenv("DATABASE_URL")
+
+if not database_url:
+    raise RuntimeError("A variável DATABASE_URL não está definida no ambiente!")
+
+# Adapta para SQLAlchemy
 if database_url.startswith("mysql://"):
     database_url = database_url.replace("mysql://", "mysql+pymysql://", 1)
 
