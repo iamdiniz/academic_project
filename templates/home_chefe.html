@@ -4,13 +4,13 @@
 {% block title %}Home - Chefe{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
-    <h1 class="text-center mb-3">Bem-vindo, {{ current_user.nome_empresa }}!</h1>
-    <p class="text-center mb-5">Gerencie suas seleções e encontre os melhores talentos.</p>
+<div class="home-container mt-4">
+    <h1 class="home-title text-center mb-3">Bem-vindo, {{ current_user.nome_empresa }}!</h1>
+    <p class="home-subtitle text-center mb-5">Gerencie suas seleções e encontre os melhores talentos.</p>
 
-    <div class="row g-4 justify-content-center">
+    <div class="row-ie-chefe g-4 justify-content-center">
         <div class="col-md-4">
-            <div class="card shadow-lg p-4 text-center h-100">
+            <div class="card-ie-chefe shadow-lg p-4 text-center h-100">
                 <h3>Minhas Seleções</h3>
                 <p>Gerencie suas seleções e acompanhe os candidatos.</p>
                 <a href="{{ url_for('minhas_selecoes') }}" class="btn btn-primary btn-lg">
@@ -20,7 +20,7 @@
         </div>
 
         <div class="col-md-4">
-            <div class="card shadow-lg p-4 text-center h-100">
+            <div class="card-ie-chefe shadow-lg p-4 text-center h-100">
                 <h3>Instituições de Ensino</h3>
                 <p>Consulte as instituições parceiras e explore os cursos disponíveis.</p>
                 <a href="{{ url_for('instituicao_ensino') }}" class="btn btn-success btn-lg">
@@ -30,7 +30,7 @@
         </div>
 
         <div class="col-md-4">
-            <div class="card shadow-lg p-4 text-center h-100">
+            <div class="card-ie-chefe shadow-lg p-4 text-center h-100">
                 <h3>Acompanhar Alunos</h3>
                 <p>Monitore o desenvolvimento dos alunos e descubra novos talentos.</p>
                 <a href="{{ url_for('acompanhar') }}" class="btn btn-warning btn-lg">

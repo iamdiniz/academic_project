@@ -9,16 +9,17 @@
 
 {% block body %}
 <!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark custom-navbar">
-  <div class="container-fluid">
-    <a class="navbar-brand fw-bold" href="#">DashTalent</a>
+<nav class="navbar-carousel navbar-expand-lg navbar-dark custom-navbar-carousel">
+  <div class="container-fluid d-flex flex-wrap justify-content-between align-items-center">
+    <a class="navbar-brand-carousel text-white fw-bold order-1 me-auto" style="text-decoration: none;">DashTalent</a>
 
-    <div class="d-flex ms-auto">
+    <div class="d-flex order-2">
       <a href="/login" class="btn btn-outline-light me-2">Login</a>
       <a href="/cadastro" class="btn btn-primary">Cadastro</a>
     </div>
   </div>
 </nav>
+
 <!-- Carrossel -->
 <div class="container mt-3">
     <div id="carouselExampleCaptions" class="carousel slide carousel-fade" data-bs-ride="carousel">
