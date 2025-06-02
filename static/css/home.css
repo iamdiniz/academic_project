@@ -1,61 +1,45 @@
-/* Container principal */
 .home-container {
-    padding: 3rem 1rem;
+    padding-top: 5rem;
     text-align: center;
     color: #1B3B4D;
-    min-height:50vh;
+    background-color: #f4f6f9;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
-    overflow-x: hidden;
 }
 
-/* Wrapper interno que limita a largura */
-.home-content {
-    width: 100%;
-    max-width: 1200px;
-}
-
-/* Título */
 .home-title {
     font-size: 2.8rem;
     font-weight: bold;
     margin-bottom: 1rem;
 }
 
-/* Subtítulo */
 .home-subtitle {
     font-size: 1.3rem;
     color: #6c757d;
-    margin-bottom: 2rem;
 }
 
-/* Cards - organização interna */
-.card-ie-chefe {
+.lottie-container {
+    max-width: 400px;
+    margin: 2rem auto 0;
+}
+
+/* Cards */
+.card {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     height: 100%;
-    border-radius: 0.75rem;
-    transition: transform 0.2s ease;
-    min-height: 100%;
 }
 
-.card-ie-chefe:hover {
-    transform: translateY(-5px);
-}
-
-.card-ie-chefe a.btn {
+.card a.btn {
     margin-top: auto;
 }
 
-.row-ie-chefe {
-    margin-right: 0;
-    margin-left: 0;
-}
 
 /* Responsividade */
+/* Telas médias (tablet) */
 @media (max-width: 991.98px) {
     .home-title {
         font-size: 2.4rem;
@@ -64,8 +48,13 @@
     .home-subtitle {
         font-size: 1.1rem;
     }
+
+    .lottie-container {
+        max-width: 320px;
+    }
 }
 
+/* Telas pequenas (celular) */
 @media (max-width: 768px) {
     .home-title {
         font-size: 2rem;
@@ -74,8 +63,13 @@
     .home-subtitle {
         font-size: 1rem;
     }
+
+    .lottie-container {
+        max-width: 280px;
+    }
 }
 
+/* Celulares muito pequenos */
 @media (max-width: 576px) {
     .home-title {
         font-size: 1.8rem;
@@ -83,5 +77,9 @@
 
     .home-subtitle {
         font-size: 0.95rem;
+    }
+
+    .lottie-container {
+        max-width: 240px;
     }
 }

@@ -4,27 +4,27 @@
 {% block title %}Home - Instituição de Ensino{% endblock %}
 
 {% block body %}
-<div class="home-container mt-4">
-    <h1 class="home-title text-center mb-3">Bem-vindo, {{ current_user.nome_instituicao }}!</h1>
-    <p class="home-subtitle text-center mb-5">"Transformando vidas através da educação. Gerencie seus alunos e inspire o futuro."</p>
+<div class="container mt-4">
+    <h1 class="text-center mb-3">Bem-vindo, {{ current_user.nome_instituicao }}!</h1>
+    <p class="text-center mb-5">"Transformando vidas através da educação. Gerencie seus alunos e inspire o futuro."</p>
 
     <div class="row g-4 justify-content-center">
         <div class="col-md-4">
-            <div class="card-ie-chefe shadow-lg p-4 text-center h-100">
+            <div class="card shadow-lg p-4 text-center h-100">
                 <h3>Gerenciar Alunos</h3>
                 <p>Visualize, filtre e gerencie os alunos cadastrados na sua instituição.</p>
                 <a href="{{ url_for('alunos_instituicao') }}" class="btn btn-primary btn-lg">Gerenciar Alunos</a>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card-ie-chefe shadow-lg p-4 text-center h-100">
+            <div class="card shadow-lg p-4 text-center h-100">
                 <h3>Cursos</h3>
                 <p>Gerencie os cursos oferecidos pela sua instituição.</p>
                 <a href="{{ url_for('cursos') }}" class="btn btn-success btn-lg">Ver Cursos</a>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card-ie-chefe shadow-lg p-4 text-center h-100">
+            <div class="card shadow-lg p-4 text-center h-100">
                 <h3>Alunos indicados</h3>
                 <p>Observe seus alunos que ganharam indicação!</p>
                 <a href="{{ url_for('alunos_indicados') }}" class="btn btn-success btn-lg">Alunos indicados</a>
