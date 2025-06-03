@@ -76,31 +76,39 @@
                 }
             });
         </script>
-        <div class="col-md-5">
-            <label class="form-label mb-2">Habilidades em destaque</label>
+        <div class="col-md-2">
+            <label class="form-label mb-2">Hard Skills</label>
             <div class="dropdown">
-                <button class="form-control text-start dropdown-toggle" type="button" id="dropdownSkills" data-bs-toggle="dropdown" aria-expanded="false">
-                    <span id="selectedSkillsText">Selecione habilidades...</span>
+                <button class="btn btn-outline-primary btn-sm dropdown-toggle w-100" type="button" id="dropdownHardSkills" data-bs-toggle="dropdown" aria-expanded="false">
+                    <span id="selectedHardSkillsText">Selecionar...</span>
                 </button>
-                <ul class="dropdown-menu w-100" aria-labelledby="dropdownSkills" style="min-width: 250px; max-width: 350px; max-height: 300px; overflow-y: auto;">
+                <ul class="dropdown-menu w-100" aria-labelledby="dropdownHardSkills" style="min-width: 150px; max-height: 200px; overflow-y: auto;">
                     {% if HARD_SKILLS_POR_CURSO and curso in HARD_SKILLS_POR_CURSO %}
                         {% for label in HARD_SKILLS_POR_CURSO[curso] %}
                         <li>
                             <label class="dropdown-item d-flex align-items-center">
-                                <input type="checkbox" class="form-check-input me-2 skill-checkbox" name="habilidade" value="hard:{{ label }}"
+                                <input type="checkbox" class="form-check-input me-2 hard-skill-checkbox" name="habilidade" value="hard:{{ label }}"
                                     {% if 'hard:' ~ label in request.args.getlist('habilidade') %}checked{% endif %}>
-                                <span class="checkmark me-2">&#10003;</span>
                                 <span>{{ label }}</span>
                             </label>
                         </li>
                         {% endfor %}
                     {% endif %}
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label mb-2">Soft Skills</label>
+            <div class="dropdown">
+                <button class="btn btn-outline-danger btn-sm dropdown-toggle w-100" type="button" id="dropdownSoftSkills" data-bs-toggle="dropdown" aria-expanded="false">
+                    <span id="selectedSoftSkillsText">Selecionar...</span>
+                </button>
+                <ul class="dropdown-menu w-100" aria-labelledby="dropdownSoftSkills" style="min-width: 150px; max-height: 200px; overflow-y: auto;">
                     {% for label in SOFT_SKILLS %}
                     <li>
                         <label class="dropdown-item d-flex align-items-center">
-                            <input type="checkbox" class="form-check-input me-2 skill-checkbox" name="habilidade" value="soft:{{ label }}"
+                            <input type="checkbox" class="form-check-input me-2 soft-skill-checkbox" name="habilidade" value="soft:{{ label }}"
                                 {% if 'soft:' ~ label in request.args.getlist('habilidade') %}checked{% endif %}>
-                            <span class="checkmark me-2">&#10003;</span>
                             <span>{{ label }}</span>
                         </label>
                     </li>
