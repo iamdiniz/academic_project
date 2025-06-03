@@ -46,9 +46,12 @@
     </div>
 
     <!-- Formulário de Filtro -->
-    <form method="get" class="row g-3 mb-4" action="{{ url_for('ver_alunos_por_curso') }}">
+    <form method="get" class="row g-3 mb-4 align-items-end" action="{{ url_for('ver_alunos_por_curso') }}">
         <input type="hidden" name="inst_id" value="{{ request.args.get('inst_id', '') }}">
         <input type="hidden" name="curso" value="{{ curso }}">
+        <div class="col-12 mb-1">
+            <strong>Filtre as habilidades e o periodo</strong>
+        </div>
         <div class="col-md-3">
             <label for="periodo" class="form-label">Período (1 a 20)</label>
             <input type="number" min="1" max="20" class="form-control" id="periodo" name="periodo" value="{{ request.args.get('periodo', '') }}">
@@ -78,7 +81,7 @@
         </script>
         <div class="col-md-2">
             <label class="form-label mb-2">Hard Skills</label>
-            <div class="dropdown">
+            <div class="dropdown w-100">
                 <button class="btn btn-outline-primary btn-sm dropdown-toggle w-100" type="button" id="dropdownHardSkills" data-bs-toggle="dropdown" aria-expanded="false">
                     <span id="selectedHardSkillsText">Selecionar...</span>
                 </button>
@@ -99,7 +102,7 @@
         </div>
         <div class="col-md-2">
             <label class="form-label mb-2">Soft Skills</label>
-            <div class="dropdown">
+            <div class="dropdown w-100">
                 <button class="btn btn-outline-danger btn-sm dropdown-toggle w-100" type="button" id="dropdownSoftSkills" data-bs-toggle="dropdown" aria-expanded="false">
                     <span id="selectedSoftSkillsText">Selecionar...</span>
                 </button>
