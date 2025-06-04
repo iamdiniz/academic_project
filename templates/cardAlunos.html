@@ -138,11 +138,14 @@
     </script>
 
     <div class="row g-4">
+        {% if request.args.getlist('habilidade') %}
+            <h5 class="mt-4">Os melhores alunos com as habilidades selecionadas em destaque:</h5>
+        {% endif %}
         {% for aluno in alunos %}
             <div class="col-md-4">
                 <div class="card shadow-sm h-100">
                     <div class="card-body">
-                        <h5 class="card-title">{{ aluno.nome }}</h5>
+                        <h5 class="card-title">{{ aluno.nome }} {% if loop.index == 1 %} <span class="badge float-end">⭐</span>{% endif %} <span class="badge bg-secondary float-end">{% if loop.index > 1 %}{{ loop.index }}{% endif %}</span></h5>
                         <p><strong>Curso:</strong> {{ aluno.curso }}</p>
                         <p><strong>Periodo:</strong> {{ aluno.periodo }}</p>
                         <p><strong>Data de Nascimento:</strong> {{ aluno.data_nascimento }}</p><br>
