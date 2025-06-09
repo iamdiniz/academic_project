@@ -147,10 +147,8 @@ main.no-navbar {
         text-align: center !important;
     }
 
-    .navbar-brand {
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
+    .custom-navbar .col-4:first-child {
+        text-align: center !important;
     }
 }
 
@@ -176,10 +174,8 @@ main.no-navbar {
         left: 50px;
     }
 
-    .navbar-brand {
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
+    .custom-navbar .col-4:first-child {
+        text-align: center !important;
     }
 }
 
@@ -209,10 +205,7 @@ main.no-navbar {
         font-size: 1.2rem;
     }
 
-    .navbar-brand {
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-        font-size: 1.1rem;
+    .custom-navbar .col-4:first-child {
+        text-align: center !important;
     }
 }
