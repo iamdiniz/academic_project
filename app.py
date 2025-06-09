@@ -678,66 +678,6 @@ def indicar_aluno(id_aluno):
 
     return jsonify({'message': 'Aluno indicado com sucesso!'}), 200
 
-@app.route('/cardAlunos')
-@bloquear_instituicao
-@login_required
-def cardAlunos():
-    alunos = Aluno.query.all()
-    alunos_com_skills = []
-
-    for aluno in alunos:
-        skills = aluno.skills
-        hard_labels = []
-        soft_labels = []
-        hard_skills = []
-        soft_skills = []
-        if skills:
-            import json
-            hard_dict = json.loads(skills.hard_skills_json) if skills.hard_skills_json else {}
-            soft_dict = json.loads(skills.soft_skills_json) if skills.soft_skills_json else {}
-
-            hard_labels = list(hard_dict.keys())
-            soft_labels = list(soft_dict.keys())
-            # Unifica labels: hard + soft (sem repetir)
-            labels = hard_labels + [s for s in soft_labels if s not in hard_labels]
-            hard_skills = [hard_dict.get(label, 0) for label in labels]
-            soft_skills = [soft_dict.get(label, 0) for label in labels]
-        else:
-            labels = []
-            hard_skills = []
-            soft_skills = []
-
-        alunos_com_skills.append({
-            "id_aluno": aluno.id_aluno,
-            "nome": aluno.nome_jovem,
-            "data_nascimento": aluno.data_nascimento.strftime('%d/%m/%Y') if aluno.data_nascimento else 'N/A',
-            "curso": aluno.curso,
-            "periodo": aluno.periodo,
-            "contato_jovem": aluno.contato_jovem,
-            "email": aluno.email,
-            "hard_labels": hard_labels,
-            "soft_labels": soft_labels,
-            "labels": labels,
-            "hard_skills": hard_skills,
-            "soft_skills": soft_skills
-        })
-
-    # Paginação
-    page = request.args.get('page', 1, type=int)
-    per_page = 12
-    total = len(alunos_com_skills)
-    total_pages = ceil(total / per_page)
-    start = (page - 1) * per_page
-    end = start + per_page
-    alunos_paginados = alunos_com_skills[start:end]
-
-    return render_template(
-        'cardAlunos.html',
-        alunos=alunos_paginados,
-        page=page,
-        total_pages=total_pages
-    )
-
 @app.route('/carousel')
 def carousel():
     return render_template('carousel.html')

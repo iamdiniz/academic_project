@@ -182,7 +182,7 @@ document.getElementById('indicarAlunoBtn').addEventListener('click', function ()
       .then(data => {
           if (data.error) {
               // Já indicado ou erro
-              showToast(data.error, 'danger', 3000, '<i class="bi bi-x-circle-fill me-2"></i>');
+              showToast(data.error, 'warning', 3000, '<i class="bi bi-x-circle-fill me-2"></i>');
           } else {
               // Sucesso
               showToast('Aluno indicado com sucesso!', 'success', 2000, '<i class="bi bi-check-circle-fill me-2"></i>');
@@ -203,7 +203,7 @@ document.getElementById('acompanharAlunoBtn').onclick = function() {
         if (data.message) {
             showToast(data.message, 'success', 2000, '<i class="bi bi-check-circle-fill me-2"></i>');
         } else if (data.error) {
-            showToast(data.error, 'danger', 3000, '<i class="bi bi-x-circle-fill me-2"></i>');
+            showToast(data.error, 'warning', 3000, '<i class="bi bi-x-circle-fill me-2"></i>');
         } else {
             showToast('Ocorreu um erro ao tentar acompanhar o aluno.', 'danger', 3000, '<i class="bi bi-exclamation-triangle-fill me-2"></i>');
         }
