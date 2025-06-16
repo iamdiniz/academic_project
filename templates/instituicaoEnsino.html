@@ -12,23 +12,6 @@
 {% endblock %}
 
 {% block body %}
-{% if total_pages > 1 %}
-<nav aria-label="Paginação de instituições">
-  <ul class="pagination justify-content-center mt-4">
-    <li class="page-item {% if page == 1 %}disabled{% endif %}">
-      <a class="page-link" href="{{ url_for('instituicao_ensino', page=page-1) }}">Anterior</a>
-    </li>
-    {% for p in range(1, total_pages+1) %}
-      <li class="page-item {% if p == page %}active{% endif %}">
-        <a class="page-link" href="{{ url_for('instituicao_ensino', page=p) }}">{{ p }}</a>
-      </li>
-    {% endfor %}
-    <li class="page-item {% if page == total_pages %}disabled{% endif %}">
-      <a class="page-link" href="{{ url_for('instituicao_ensino', page=page+1) }}">Próxima</a>
-    </li>
-  </ul>
-</nav>
-{% endif %}
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4 position-relative">
             <a href="{{ url_for('home') }}" class="back-circle position-absolute start-0">
@@ -155,4 +138,23 @@
         {% endfor %}
     </div>
 </div>
+<br>
+{% if total_pages > 1 %}
+<nav aria-label="Paginação de instituições">
+  <ul class="pagination justify-content-center mt-4">
+    <li class="page-item {% if page == 1 %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for('instituicao_ensino', page=page-1) }}">Anterior</a>
+    </li>
+    {% for p in range(1, total_pages+1) %}
+      <li class="page-item {% if p == page %}active{% endif %}">
+        <a class="page-link" href="{{ url_for('instituicao_ensino', page=p) }}">{{ p }}</a>
+      </li>
+    {% endfor %}
+    <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for('instituicao_ensino', page=page+1) }}">Próxima</a>
+    </li>
+  </ul>
+</nav>
+<br>
+{% endif %}
 {% endblock %}
