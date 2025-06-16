@@ -12,23 +12,6 @@
 {% endblock %}
 
 {% block body %}
-{% if total_pages > 1 %}
-<nav aria-label="Paginação de alunos">
-  <ul class="pagination justify-content-center mt-4">
-    <li class="page-item {% if page == 1 %}disabled{% endif %}">
-      <a class="page-link" href="{{ url_for('alunos_instituicao', page=page-1) }}{% if filtro_curso %}&curso={{ filtro_curso }}{% endif %}">Anterior</a>
-    </li>
-    {% for p in range(1, total_pages+1) %}
-      <li class="page-item {% if p == page %}active{% endif %}">
-        <a class="page-link" href="{{ url_for('alunos_instituicao', page=p) }}{% if filtro_curso %}&curso={{ filtro_curso }}{% endif %}">{{ p }}</a>
-      </li>
-    {% endfor %}
-    <li class="page-item {% if page == total_pages %}disabled{% endif %}">
-      <a class="page-link" href="{{ url_for('alunos_instituicao', page=page+1) }}{% if filtro_curso %}&curso={{ filtro_curso }}{% endif %}">Próxima</a>
-    </li>
-  </ul>
-</nav>
-{% endif %}
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4 position-relative">
         <a href="{{ url_for('home') }}" class="back-circle position-absolute start-0">
@@ -260,13 +243,13 @@
                     <div class="row g-3">
                         <div class="col-md-12">
                             <label>Hard Skills do Curso</label>
-                            <div id="hardSkillsFields" class="row g-3"></div>
+                            <div id="hardSkillsFields" class="row g-3" placeholder="Digite de 1 a 10 (Números naturais)"></div>
                         </div>
                     <label>Soft Skills</label>
                         {% for soft in SOFT_SKILLS %}
                     <div class="col-md-6">
                         <label>{{ soft }}</label>
-                        <input name="{{ soft.lower().replace(' ', '_') }}" type="number" class="form-control skill-input" min="0" max="10" step="1" required>
+                        <input name="{{ soft.lower().replace(' ', '_') }}" type="number" class="form-control skill-input" min="0" max="10" step="1" placeholder="Digite de 1 a 10 (Números naturais)" required>
                     </div>
                     {% endfor %}
                     </div>
@@ -279,9 +262,28 @@
         </div>
     </div>
 </div>
-
 </div>
 
+<br>
+
+{% if total_pages > 1 %}
+<nav aria-label="Paginação de alunos">
+  <ul class="pagination justify-content-center mt-4">
+    <li class="page-item {% if page == 1 %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for('alunos_instituicao', page=page-1) }}{% if filtro_curso %}&curso={{ filtro_curso }}{% endif %}">Anterior</a>
+    </li>
+    {% for p in range(1, total_pages+1) %}
+      <li class="page-item {% if p == page %}active{% endif %}">
+        <a class="page-link" href="{{ url_for('alunos_instituicao', page=p) }}{% if filtro_curso %}&curso={{ filtro_curso }}{% endif %}">{{ p }}</a>
+      </li>
+    {% endfor %}
+    <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for('alunos_instituicao', page=page+1) }}{% if filtro_curso %}&curso={{ filtro_curso }}{% endif %}">Próxima</a>
+    </li>
+  </ul>
+</nav>
+<br>
+{% endif %}
 <!-- Toasts de Notificação -->
 <div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
   <div id="toastNotificacao" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
