@@ -15,6 +15,7 @@ import os
 
 app = Flask(__name__)
 app.secret_key = 'minha-chave-teste'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:educ123@db:3306/educ_invest?charset=utf8mb4'
 
 user = os.getenv('DB_USER', 'root')
 password = os.getenv('DB_PASS', 'educ123')
@@ -1349,6 +1350,5 @@ def logout():
     flash('Você saiu com sucesso.', 'success')
     return redirect(url_for('login'))
 
-# if __name__ == "__main__":
-#     port = int(os.environ.get("PORT", 5000))
-#     app.run(debug=True, host='0.0.0.0', port=port)
+if __name__ == "__main__":
+    app.run(debug=True, host='0.0.0.0')  # host para expor o servidor para fora do container
