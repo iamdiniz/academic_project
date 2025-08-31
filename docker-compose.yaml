@@ -15,14 +15,23 @@ services:
     depends_on:
       - db  # Garante que o serviço db seja iniciado antes
     command: ["/wait-for-db.sh", "db", "python", "app.py"]
+    # 🔧 MODIFICAÇÃO 1: Agora usa variáveis do arquivo .env
+    env_file:
+      - .env
     environment:
-      - DATABASE_URL=mysql+pymysql://root:educ123@db:3306/educ_invest?charset=utf8mb4
+      # 🔧 MODIFICAÇÃO 2: Referência às variáveis do .env
+      - DATABASE_URL=${DATABASE_URL}
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY}
 
   db:
     image: mysql:5.7
+    # 🔧 MODIFICAÇÃO 3: Banco também usa variáveis do .env
+    env_file:
+      - .env
     environment:
-      MYSQL_ROOT_PASSWORD: educ123
-      MYSQL_DATABASE: educ_invest
+      # 🔧 MODIFICAÇÃO 4: Referência às variáveis do .env
+      MYSQL_ROOT_PASSWORD: ${DB_PASS}
+      MYSQL_DATABASE: ${DB_NAME}
       MYSQL_CHARSET: utf8mb4
       MYSQL_COLLATION: utf8mb4_unicode_ci
     ports:
