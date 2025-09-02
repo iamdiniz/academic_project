@@ -1,0 +1,27 @@
+# ========================================
+# VARIÁVEIS DE AMBIENTE - CONFIGURAÇÕES SENSÍVEIS
+# ========================================
+# ⚠️  IMPORTANTE: Renomeie este arquivo para .env
+# ⚠️  Este arquivo NÃO deve ser commitado no git!
+# ⚠️  Adicione .env ao seu .gitignore
+
+# Configurações do Banco de Dados
+DB_USER=root
+DB_PASS=jonas1385
+DB_HOST=db
+DB_PORT=3306
+DB_NAME=educ_invest
+
+# URL completa do banco de dados
+DATABASE_URL=mysql+pymysql://root:jonas1385@db:3306/educ_invest?charset=utf8mb4
+
+# Chave secreta do Flask (GERE UMA CHAVE ÚNICA E SEGURA!)
+FLASK_SECRET_KEY=sua-chave-secreta-super-segura-aqui-123456789
+
+# ========================================
+# INSTRUÇÕES:
+# 1. Renomeie este arquivo para .env
+# 2. Altere as senhas conforme necessário
+# 3. Gere uma nova FLASK_SECRET_KEY (use: python -c "import secrets; print(secrets.token_hex(32))")
+# 4. Nunca commite o arquivo .env no git
+# ========================================

@@ -1,0 +1,12 @@
+{
+  "name": "academic_project",
+  "version": "1.0.0",
+  "description": "1 - Em seu terminal builde a imagem de preferencia com o nome: 'educ'.\r     Faça isso com o comando: docker build -t educ .",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
