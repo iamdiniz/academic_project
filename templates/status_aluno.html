@@ -9,7 +9,7 @@
                     {% if par.anterior %}
                         <ul>
                         {% for skill, valor in par.atual.hard_skills.items() %}
-                            {% set diff = valor - par.anterior.hard_skills.get(skill, 0) %}
+                            {% set diff = par.anterior.hard_skills.get(skill, 0) - valor %}
                             {% if diff > 0 %}
                                 <li>Melhorou +{{ diff }} ponto{{ 's' if diff > 1 else '' }} em {{ skill }}</li>
                             {% elif diff < 0 %}
@@ -17,7 +17,7 @@
                             {% endif %}
                         {% endfor %}
                         {% for skill, valor in par.atual.soft_skills.items() %}
-                            {% set diff = valor - par.anterior.soft_skills.get(skill, 0) %}
+                            {% set diff = par.anterior.soft_skills.get(skill, 0) - valor %}
                             {% if diff > 0 %}
                                 <li>Melhorou +{{ diff }} ponto{{ 's' if diff > 1 else '' }} em {{ skill }}</li>
                             {% elif diff < 0 %}
