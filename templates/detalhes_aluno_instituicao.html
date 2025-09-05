@@ -261,8 +261,11 @@ function validateSkillsForm() {
 
     // 3. Validação de Contato (Máscara (00) 00000-0000, 11 dígitos numéricos)
     const contato = document.getElementById('contato_jovem');
+    const contatoNumeros = contato.value.replace(/\D/g, ''); // Remove tudo que não for número
     if (!contato.value.trim()) {
         invalidateField(contato, 'O campo Contato é obrigatório.');
+    } else if (contatoNumeros.length !== 11) {
+        invalidateField(contato, 'O contato deve conter exatamente 11 dígitos numéricos.');
     } else {
         validateField(contato);
     }

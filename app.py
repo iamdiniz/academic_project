@@ -767,7 +767,7 @@ def cadastrar_aluno():
 
     # Validação do contato (exemplo simples, pode ser melhorado)
     if not contato_jovem.isdigit() or len(contato_jovem) < 8:
-        flash("Contato deve conter apenas números e ter pelo menos 8 dígitos.", "danger")
+        flash("Contato deve conter apenas números e ter pelo menos 11 dígitos.", "danger")
         return redirect(url_for('alunos_instituicao'))
 
     # Validação das hard skills
@@ -951,7 +951,7 @@ def detalhes_aluno_instituicao(id_aluno):
 
         # Validação do contato
         if not contato_jovem.isdigit() or len(contato_jovem) < 8:
-            flash("Contato deve conter apenas números e ter pelo menos 8 dígitos.", "danger")
+            flash("Contato deve conter apenas números e ter pelo menos 11 dígitos.", "danger")
             return redirect(request.url)
 
         # Validação do período
