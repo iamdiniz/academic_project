@@ -1,528 +1,673 @@
-{% extends "base.html" %}
-{% set hide_navbar = True %}
-
-{% block title %}Cadastro{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/cadastro.css') }}">
-{% endblock %}
-
-{% block body %}
+{% extends "base.html" %} {% set hide_navbar = True %} {% block title
+%}Cadastro{% endblock %} {% block extra_css %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/cadastro.css') }}"
+/>
+{% endblock %} {% block body %}
 <!-- Toasts de Notificação -->
 <div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
-  <div id="toastNotificacao" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
+  <div
+    id="toastNotificacao"
+    class="toast align-items-center border-0"
+    role="alert"
+    aria-live="assertive"
+    aria-atomic="true"
+  >
     <div class="d-flex">
       <div class="toast-body" id="toastNotificacaoBody"></div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
+      <button
+        type="button"
+        class="btn-close btn-close-white me-2 m-auto"
+        data-bs-dismiss="toast"
+        aria-label="Fechar"
+      ></button>
     </div>
   </div>
 </div>
 
-<div class="container-cadastro mt-4" role="main" aria-label="Tela de cadastro do Educ+Invest">
-    <section class="left-side" aria-label="Valores e missão do DashTalent">
-        <div class="feature">
-            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-                <circle cx="32" cy="32" r="30" fill="#ffd166"/>
-                <path fill="#6a4c93" d="M23 27h18v10H23z"/>
-            </svg>
-            <div class="feature-text">
-                <h3>Conexão Eficiente</h3>
-                <p>Ligamos jovens talentos e empresas com tecnologia de ponta.</p>
-            </div>
+<div
+  class="container-cadastro mt-4"
+  role="main"
+  aria-label="Tela de cadastro do Educ+Invest"
+>
+  <section class="left-side" aria-label="Valores e missão do DashTalent">
+    <div class="feature">
+      <svg
+        aria-hidden="true"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 64 64"
+      >
+        <circle cx="32" cy="32" r="30" fill="#ffd166" />
+        <path fill="#6a4c93" d="M23 27h18v10H23z" />
+      </svg>
+      <div class="feature-text">
+        <h3>Conexão Eficiente</h3>
+        <p>Ligamos jovens talentos e empresas com tecnologia de ponta.</p>
+      </div>
+    </div>
+
+    <div class="feature">
+      <svg
+        aria-hidden="true"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 64 64"
+      >
+        <rect width="64" height="64" fill="#ffd166" rx="32" />
+        <path fill="#6a4c93" d="M32 12a12 12 0 1 0 0 24 12 12 0 0 0 0-24z" />
+      </svg>
+      <div class="feature-text">
+        <h3>Desenvolvimento Qualificado</h3>
+        <p>Apoiamos a formação e crescimento dos jovens profissionais.</p>
+      </div>
+    </div>
+
+    <div class="feature">
+      <svg
+        aria-hidden="true"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 64 64"
+      >
+        <circle cx="32" cy="32" r="30" fill="#ffd166" />
+        <path fill="#6a4c93" d="M40 24h-16l-4 16h24l-4-16z" />
+      </svg>
+      <div class="feature-text">
+        <h3>ODS 8.6</h3>
+        <p>Compromisso com a redução do desemprego juvenil global.</p>
+      </div>
+    </div>
+
+    <div class="feature">
+      <svg
+        aria-hidden="true"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 64 64"
+      >
+        <circle cx="32" cy="32" r="30" fill="#ffd166" />
+        <path fill="#6a4c93" d="M21 38h22v4H21z" />
+      </svg>
+      <div class="feature-text">
+        <h3>Transparência</h3>
+        <p>Dados seguros para decisões claras entre empresas e instituições.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="right-side" aria-label="Formulário de cadastro">
+    <form
+      method="POST"
+      class="form-box"
+      onsubmit="return validarFormulario()"
+      novalidate
+    >
+      <a href="{{url_for('carousel')}}">
+        <h2 class="text-center">DashTalent</h2>
+      </a>
+      <p class="text-center">
+        Conectando talentos, instituições e empresas para construir futuros de
+        sucesso.
+      </p>
+      <br />
+      <div class="welcome-text" tabindex="0">Bem-vindo! Faça seu cadastro.</div>
+
+      <!-- Tipo de usuário -->
+      <div class="mb-3">
+        <label class="form-label">Tipo de cadastro (*)</label>
+        <select
+          name="tipo_usuario"
+          id="tipoUsuario"
+          class="form-select"
+          required
+          onchange="exibirCampos()"
+        >
+          <option value="" selected disabled>Selecione</option>
+          <option value="chefe">Chefe</option>
+          <option value="instituicao">Instituição de Ensino</option>
+        </select>
+      </div>
+
+      <!-- Campos comuns -->
+      <div class="mb-3">
+        <label for="nome" class="form-label">Nome de usuário (*)</label>
+        <input
+          type="text"
+          name="nome"
+          class="form-control"
+          id="nome"
+          placeholder="Nome de usuário"
+          required
+          oninput="filtrarEntrada(this, 'letras')"
+          minlength="3"
+          maxlength="30"
+          pattern="[A-Za-zÀ-ÿ\s]+"
+          title="Apenas letras, mínimo de 3 e máximo de 30 caracteres"
+        />
+        <div id="erro-nome" class="invalid-feedback"></div>
+      </div>
+
+      <div class="mb-3">
+        <label for="email" class="form-label">E-mail (*)</label>
+        <input
+          type="email"
+          name="email"
+          id="email"
+          class="form-control"
+          placeholder="exemplo@dominio.com"
+          required
+          maxlength="50"
+          title="Insira um e-mail válido com até 50 caracteres"
+          onblur="validarEmail(this)"
+        />
+        <div id="erro-email" class="invalid-feedback"></div>
+      </div>
+      <div class="row">
+        <div class="col-12 col-md-6 mb-3">
+          <label for="senha" class="form-label">Senha (*)</label>
+          <input
+            type="password"
+            name="senha"
+            id="senha"
+            class="form-control"
+            placeholder="Senha com no mínimo 6 caracteres"
+            required
+            minlength="6"
+            maxlength="20"
+            oninput="validarSenha(this)"
+            title="Senha entre 6 e 20 caracteres"
+          />
+          <div id="erro-senha" class="invalid-feedback"></div>
+          <small id="forca-senha" class="form-text"></small>
         </div>
-
-        <div class="feature">
-            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-                <rect width="64" height="64" fill="#ffd166" rx="32"/>
-                <path fill="#6a4c93" d="M32 12a12 12 0 1 0 0 24 12 12 0 0 0 0-24z"/>
-            </svg>
-            <div class="feature-text">
-                <h3>Desenvolvimento Qualificado</h3>
-                <p>Apoiamos a formação e crescimento dos jovens profissionais.</p>
-            </div>
+        <div class="col-12 col-md-6 mb-3">
+          <label for="confirmarSenha" class="form-label"
+            >Repita a senha (*)</label
+          >
+          <input
+            type="password"
+            name="confirmar_senha"
+            id="confirmarSenha"
+            class="form-control"
+            placeholder="Repita a senha"
+            required
+            minlength="6"
+            maxlength="20"
+            oninput="validarConfirmacaoSenha()"
+            title="Confirme a senha com o mesmo número de caracteres"
+          />
         </div>
+        <div id="erro-confirmarSenha" class="invalid-feedback"></div>
+      </div>
 
-        <div class="feature">
-            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-                <circle cx="32" cy="32" r="30" fill="#ffd166"/>
-                <path fill="#6a4c93" d="M40 24h-16l-4 16h24l-4-16z"/>
-            </svg>
-            <div class="feature-text">
-                <h3>ODS 8.6</h3>
-                <p>Compromisso com a redução do desemprego juvenil global.</p>
-            </div>
-        </div>
-
-        <div class="feature">
-            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-                <circle cx="32" cy="32" r="30" fill="#ffd166"/>
-                <path fill="#6a4c93" d="M21 38h22v4H21z"/>
-            </svg>
-            <div class="feature-text">
-                <h3>Transparência</h3>
-                <p>Dados seguros para decisões claras entre empresas e instituições.</p>
-            </div>
-        </div>
-    </section>
-
-    <section class="right-side" aria-label="Formulário de cadastro">
-        <form method="POST" class="form-box" onsubmit="return validarFormulario()" novalidate>
-        <a href="{{url_for('carousel')}}">
-            <h2 class="text-center" >DashTalent</h2>
-        </a>
-        <p class="text-center">Conectando talentos, instituições e empresas para construir futuros de sucesso.</p>
-        <br>
-        <div class="welcome-text" tabindex="0">Bem-vindo! Faça seu cadastro.</div>
-
-            <!-- Tipo de usuário -->
-            <div class="mb-3">
-            <label class="form-label">Tipo de cadastro (*)</label>
-            <select name="tipo_usuario" id="tipoUsuario" class="form-select" required onchange="exibirCampos()">
-                <option value="" selected disabled>Selecione</option>
-                <option value="chefe">Chefe</option>
-                <option value="instituicao">Instituição de Ensino</option>
-            </select>
-        </div>
-
-        <!-- Campos comuns -->
+      <!-- Campos específicos para instituição -->
+      <div id="camposInstituicao" style="display: none">
         <div class="mb-3">
-            <label for="nome" class="form-label">Nome de usuário (*)</label>
-            <input type="text" name="nome" class="form-control" id="nome" 
-                placeholder="Nome de usuário" required 
-                oninput="filtrarEntrada(this, 'letras')" 
-                minlength="3" maxlength="30" pattern="[A-Za-zÀ-ÿ\s]+" 
-                title="Apenas letras, mínimo de 3 e máximo de 30 caracteres">
-            <div id="erro-nome" class="invalid-feedback"></div>
+          <label class="form-label">Nome da Instituição (*)</label>
+          <input
+            type="text"
+            name="instituicao_nome"
+            id="instituicao_nome"
+            class="form-control"
+            placeholder="Instituição"
+            required
+            maxlength="30"
+            pattern="[A-Za-zÀ-ÿ\s]+"
+            title="Apenas letras. Máximo de 30 caracteres"
+            oninput="filtrarEntrada(this, 'letras')"
+          />
+          <div id="erro-instituicao_nome" class="invalid-feedback"></div>
         </div>
 
         <div class="mb-3">
-            <label for="email" class="form-label">E-mail (*)</label>
-            <input type="email" name="email" id="email" class="form-control"
-                placeholder="exemplo@dominio.com" required 
-                maxlength="50" title="Insira um e-mail válido com até 50 caracteres" 
-                onblur="validarEmail(this)">
-            <div id="erro-email" class="invalid-feedback"></div>
+          <label class="form-label">Endereço da Instituição (*)</label>
+          <input
+            type="text"
+            name="endereco_instituicao"
+            id="endereco_instituicao"
+            class="form-control"
+            placeholder="Endereço"
+            required
+            maxlength="80"
+            title="Máximo de 80 caracteres"
+          />
+          <div id="erro-endereco_instituicao" class="invalid-feedback"></div>
         </div>
-        <div class="row">
-            <div class="col-12 col-md-6 mb-3">
-                <label for="senha" class="form-label">Senha (*)</label>
-                <input type="password" name="senha" id="senha" class="form-control" 
-                    placeholder="Senha com no mínimo 6 caracteres" required 
-                    minlength="6" maxlength="20"
-                    oninput="validarSenha(this)" 
-                    title="Senha entre 6 e 20 caracteres">
-                <div id="erro-senha" class="invalid-feedback"></div>
-                <small id="forca-senha" class="form-text"></small>
-            </div>
-            <div class="col-12 col-md-6 mb-3">
-                <label  for="confirmarSenha" class="form-label">Repita a senha (*)</label>
-                <input type="password" name="confirmar_senha" id="confirmarSenha" class="form-control" 
-                    placeholder="Repita a senha" required 
-                    minlength="6" maxlength="20"
-                    oninput="validarConfirmacaoSenha()" 
-                    title="Confirme a senha com o mesmo número de caracteres">
-                </div>
-            <div id="erro-confirmarSenha" class="invalid-feedback"></div>
-        </div>
-
-        <!-- Campos específicos para instituição -->
-        <div id="camposInstituicao" style="display: none;">
-            <div class="mb-3">
-                <label class="form-label">Nome da Instituição (*)</label>
-                <input type="text" name="instituicao_nome" id="instituicao_nome" class="form-control"
-                    placeholder="Instituição" required 
-                    maxlength="30" pattern="[A-Za-zÀ-ÿ\s]+" 
-                    title="Apenas letras. Máximo de 30 caracteres" 
-                    oninput="filtrarEntrada(this, 'letras')">
-                <div id="erro-instituicao_nome" class="invalid-feedback"></div>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Endereço da Instituição (*)</label>
-                <input type="text" name="endereco_instituicao" id="endereco_instituicao" class="form-control"
-                    placeholder="Endereço" required 
-                    maxlength="80" title="Máximo de 80 caracteres">
-                <div id="erro-endereco_instituicao" class="invalid-feedback"></div>
-            </div>
-            <div class="mb-3">
-                <label for="cpf" class="form-label">CNPJ (*)</label>
-                <input type="text" name="instituicao_cnpj" id="cnpj" class="form-control" 
-                    placeholder="CNPJ (somente números)" required 
-                    maxlength="14" minlength="14"
-                    pattern="\d{14}" inputmode="numeric"
-                    oninput="filtrarEntrada(this, 'numeros')"
-                    title="Informe exatamente 14 números do CNPJ">
-                <div id="erro-cnpj" class="invalid-feedback"></div>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Infraestrutura (*)</label>
-                <textarea name="infraestrutura" id="infraestrutura" class="form-control" 
-                        placeholder="Descreva a infraestrutura da instituição. Exemplo:2 Blocos, com 3 Laboratórios cada, com 1 Refeitório cada e 1 Auditório" required 
-                        maxlength="150" minlength="20"
-                        title="Mínimo de 20 e máximo de 150 caracteres"></textarea>
-                <div id="erro-infraestrutura" class="invalid-feedback"></div>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Nota MEC (*)</label>
-                <input type="number" name="nota_mec" class="form-control" min="1" max="5" step="1"
-                    placeholder="Nota MEC (1 a 5)" required id="nota_mec_input"
-                    inputmode="numeric" pattern="[1-5]">
-                <div id="erro-nota_mec_input" class="invalid-feedback"></div>
-                <small class="text-muted">Digite um valor entre 1 e 5.</small>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Cursos da Instituição (*)</label>
-                <div class="row" id="cursos_container">
-                    {% for curso in cursos_padrao %}
-                        <div class="col-12 col-md-6">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="cursos_selecionados"
-                                    id="curso_{{ loop.index }}" value="{{ curso }}">
-                                <label class="form-check-label" for="curso_{{ loop.index }}">{{ curso }}</label>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-                <div id="erro-cursos" class="invalid-feedback d-block text-danger"></div>
-                <small class="text-muted">Selecione um ou mais cursos.</small>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Modalidades (*)</label>
-                <select name="modalidades" id="modalidades" class="form-select" required>
-                    <option value="" disabled selected>Selecione a modalidade</option>
-                    <option value="Presencial">Presencial</option>
-                    <option value="Híbrido">Híbrido</option>
-                    <option value="EAD">EAD</option>
-                </select>
-                <div id="erro-modalidades" class="invalid-feedback"></div>
-            </div>
+        <div class="mb-3">
+          <label for="cpf" class="form-label">CNPJ (*)</label>
+          <input
+            type="text"
+            name="instituicao_cnpj"
+            id="cnpj"
+            class="form-control"
+            placeholder="CNPJ (somente números)"
+            required
+            maxlength="14"
+            minlength="14"
+            pattern="\d{14}"
+            inputmode="numeric"
+            oninput="filtrarEntrada(this, 'numeros')"
+            title="Informe exatamente 14 números do CNPJ"
+          />
+          <div id="erro-cnpj" class="invalid-feedback"></div>
         </div>
 
-        <!-- Campos específicos para chefe -->
-        <div id="camposChefe" style="display: none;">
-            <div class="mb-3">
-                <label class="form-label">Nome da Empresa (*)</label>
-                <input type="text" name="empresa_nome" id="empresa_nome" class="form-control"
-                    placeholder="Nome da empresa" required 
-                    maxlength="30" pattern="[A-Za-zÀ-ÿ\s]+" 
-                    title="Apenas letras. Máximo de 30 caracteres" 
-                    oninput="filtrarEntrada(this, 'letras')">
-                <div id="erro-empresa_nome" class="invalid-feedback"></div>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Cargo (*)</label>
-                <select name="cargo" id="cargo" class="form-select" required>
-                    <option value="" selected disabled>Selecione o cargo</option>
-                    <option value="CEO">CEO</option>
-                    <option value="Gerente">Gerente</option>
-                    <option value="Coordenador">Coordenador</option>
-                </select>
-                <div id="erro-cargo" class="invalid-feedback"></div>
-            </div>
+        <div class="mb-3">
+          <label class="form-label">Infraestrutura (*)</label>
+          <textarea
+            name="infraestrutura"
+            id="infraestrutura"
+            class="form-control"
+            placeholder="Descreva a infraestrutura da instituição. Exemplo:2 Blocos, com 3 Laboratórios cada, com 1 Refeitório cada e 1 Auditório"
+            required
+            maxlength="150"
+            minlength="20"
+            title="Mínimo de 20 e máximo de 150 caracteres"
+          ></textarea>
+          <div id="erro-infraestrutura" class="invalid-feedback"></div>
         </div>
 
-        <button type="submit" class="btn btn-success w-100">Cadastrar</button>
-        <p class="mt-3">Já tem conta? <a href="{{ url_for('login') }}">Faça login</a></p>
+        <div class="mb-3">
+          <label class="form-label">Nota MEC (*)</label>
+          <input
+            type="number"
+            name="nota_mec"
+            class="form-control"
+            min="1"
+            max="5"
+            step="1"
+            placeholder="Nota MEC (1 a 5)"
+            required
+            id="nota_mec_input"
+            inputmode="numeric"
+            pattern="[1-5]"
+          />
+          <div id="erro-nota_mec_input" class="invalid-feedback"></div>
+          <small class="text-muted">Digite um valor entre 1 e 5.</small>
+        </div>
 
-        <!-- Toasts de Notificação -->
-        <div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
-        <div id="toastNotificacao" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
+        <div class="mb-3">
+          <label class="form-label">Cursos da Instituição (*)</label>
+          <div class="row" id="cursos_container">
+            {% for curso in cursos_padrao %}
+            <div class="col-12 col-md-6">
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  name="cursos_selecionados"
+                  id="curso_{{ loop.index }}"
+                  value="{{ curso }}"
+                />
+                <label class="form-check-label" for="curso_{{ loop.index }}"
+                  >{{ curso }}</label
+                >
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          <div
+            id="erro-cursos"
+            class="invalid-feedback d-block text-danger"
+          ></div>
+          <small class="text-muted">Selecione um ou mais cursos.</small>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Modalidades (*)</label>
+          <select
+            name="modalidades"
+            id="modalidades"
+            class="form-select"
+            required
+          >
+            <option value="" disabled selected>Selecione a modalidade</option>
+            <option value="Presencial">Presencial</option>
+            <option value="Híbrido">Híbrido</option>
+            <option value="EAD">EAD</option>
+          </select>
+          <div id="erro-modalidades" class="invalid-feedback"></div>
+        </div>
+      </div>
+
+      <!-- Campos específicos para chefe -->
+      <div id="camposChefe" style="display: none">
+        <div class="mb-3">
+          <label class="form-label">Nome da Empresa (*)</label>
+          <input
+            type="text"
+            name="empresa_nome"
+            id="empresa_nome"
+            class="form-control"
+            placeholder="Nome da empresa"
+            required
+            maxlength="30"
+            pattern="[A-Za-zÀ-ÿ\s]+"
+            title="Apenas letras. Máximo de 30 caracteres"
+            oninput="filtrarEntrada(this, 'letras')"
+          />
+          <div id="erro-empresa_nome" class="invalid-feedback"></div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Cargo (*)</label>
+          <select name="cargo" id="cargo" class="form-select" required>
+            <option value="" selected disabled>Selecione o cargo</option>
+            <option value="CEO">CEO</option>
+            <option value="Gerente">Gerente</option>
+            <option value="Coordenador">Coordenador</option>
+          </select>
+          <div id="erro-cargo" class="invalid-feedback"></div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-success w-100">Cadastrar</button>
+      <p class="mt-3">
+        Já tem conta? <a href="{{ url_for('auth.login') }}">Faça login</a>
+      </p>
+
+      <!-- Toasts de Notificação -->
+      <div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
+        <div
+          id="toastNotificacao"
+          class="toast align-items-center text-bg-success border-0"
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
+        >
+          <div class="d-flex">
             <div class="toast-body" id="toastNotificacaoBody"></div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
-            </div>
+            <button
+              type="button"
+              class="btn-close btn-close-white me-2 m-auto"
+              data-bs-dismiss="toast"
+              aria-label="Fechar"
+            ></button>
+          </div>
         </div>
-    </div>
+      </div>
     </form>
-    </section>
-    </div>
+  </section>
+</div>
 
 <script>
-function exibirCampos() {
-    const tipo = document.getElementById('tipoUsuario').value;
-    const blocoInstituicao = document.getElementById('camposInstituicao');
-    const blocoChefe = document.getElementById('camposChefe');
+  function exibirCampos() {
+      const tipo = document.getElementById('tipoUsuario').value;
+      const blocoInstituicao = document.getElementById('camposInstituicao');
+      const blocoChefe = document.getElementById('camposChefe');
 
-    // Inclua selects na seleção!
-    const camposInstituicao = blocoInstituicao.querySelectorAll('input:not([type="checkbox"]), textarea, select');
-    const camposChefe = blocoChefe.querySelectorAll('input, select');
+      // Inclua selects na seleção!
+      const camposInstituicao = blocoInstituicao.querySelectorAll('input:not([type="checkbox"]), textarea, select');
+      const camposChefe = blocoChefe.querySelectorAll('input, select');
 
-    if (tipo === 'instituicao') {
-        blocoInstituicao.style.display = 'block';
-        blocoChefe.style.display = 'none';
-        camposInstituicao.forEach(campo => campo.required = true);
-        camposChefe.forEach(campo => campo.required = false);
-    } else if (tipo === 'chefe') {
-        blocoInstituicao.style.display = 'none';
-        blocoChefe.style.display = 'block';
-        camposChefe.forEach(campo => campo.required = true);
-        camposInstituicao.forEach(campo => campo.required = false);
-    } else {
-        blocoInstituicao.style.display = 'none';
-        blocoChefe.style.display = 'none';
-        camposInstituicao.forEach(campo => campo.required = false);
-        camposChefe.forEach(campo => campo.required = false);
-    }
-}
+      if (tipo === 'instituicao') {
+          blocoInstituicao.style.display = 'block';
+          blocoChefe.style.display = 'none';
+          camposInstituicao.forEach(campo => campo.required = true);
+          camposChefe.forEach(campo => campo.required = false);
+      } else if (tipo === 'chefe') {
+          blocoInstituicao.style.display = 'none';
+          blocoChefe.style.display = 'block';
+          camposChefe.forEach(campo => campo.required = true);
+          camposInstituicao.forEach(campo => campo.required = false);
+      } else {
+          blocoInstituicao.style.display = 'none';
+          blocoChefe.style.display = 'none';
+          camposInstituicao.forEach(campo => campo.required = false);
+          camposChefe.forEach(campo => campo.required = false);
+      }
+  }
 
-document.querySelector('.form-box').addEventListener('submit', function(e) {
-    const tipo = document.getElementById('tipoUsuario').value;
-    if (tipo === 'instituicao') {
-        const checkboxes = document.querySelectorAll('input[name="cursos_selecionados"]:checked');
-        if (checkboxes.length === 0) {
-            showToast('Selecione pelo menos um curso da instituição.', 'danger', 3500, '<i class="bi bi-exclamation-triangle-fill me-2"></i>');
-            e.preventDefault();
-        }
-    }
-});
+  document.querySelector('.form-box').addEventListener('submit', function(e) {
+      const tipo = document.getElementById('tipoUsuario').value;
+      if (tipo === 'instituicao') {
+          const checkboxes = document.querySelectorAll('input[name="cursos_selecionados"]:checked');
+          if (checkboxes.length === 0) {
+              showToast('Selecione pelo menos um curso da instituição.', 'danger', 3500, '<i class="bi bi-exclamation-triangle-fill me-2"></i>');
+              e.preventDefault();
+          }
+      }
+  });
 
-document.addEventListener('DOMContentLoaded', function() {
-    const notaInput = document.getElementById('nota_mec_input');
-    if (notaInput) {
-        // Bloqueia qualquer caractere que não seja número de 1 a 5
-        notaInput.addEventListener('keydown', function(e) {
-            // Permite teclas de controle
-            if (
-                e.key === "Backspace" || e.key === "Tab" || e.key === "Delete" ||
-                e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === "Home" || e.key === "End"
-            ) {
-                return;
-            }
-            // Permite apenas números de 1 a 5
-            if (!/^[1-5]$/.test(e.key)) {
-                e.preventDefault();
-            }
-            // Impede digitar mais de um dígito
-            if (this.value.length >= 1 && this.selectionStart === this.selectionEnd) {
-                e.preventDefault();
-            }
-        });
+  document.addEventListener('DOMContentLoaded', function() {
+      const notaInput = document.getElementById('nota_mec_input');
+      if (notaInput) {
+          // Bloqueia qualquer caractere que não seja número de 1 a 5
+          notaInput.addEventListener('keydown', function(e) {
+              // Permite teclas de controle
+              if (
+                  e.key === "Backspace" || e.key === "Tab" || e.key === "Delete" ||
+                  e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === "Home" || e.key === "End"
+              ) {
+                  return;
+              }
+              // Permite apenas números de 1 a 5
+              if (!/^[1-5]$/.test(e.key)) {
+                  e.preventDefault();
+              }
+              // Impede digitar mais de um dígito
+              if (this.value.length >= 1 && this.selectionStart === this.selectionEnd) {
+                  e.preventDefault();
+              }
+          });
 
-        // Impede colar valores inválidos
-        notaInput.addEventListener('input', function() {
-            let value = this.value.replace(/[^1-5]/g, '');
-            if (value.length > 1) value = value[0];
-            this.value = value;
-        });
-    }
-});
+          // Impede colar valores inválidos
+          notaInput.addEventListener('input', function() {
+              let value = this.value.replace(/[^1-5]/g, '');
+              if (value.length > 1) value = value[0];
+              this.value = value;
+          });
+      }
+  });
 
-window.showToast = function(mensagem, cor='success', tempo=2500, icone='') {
-    const toast = document.getElementById('toastNotificacao');
-    const toastBody = document.getElementById('toastNotificacaoBody');
-    toast.className = `toast align-items-center text-bg-${cor} border-0`;
-    toastBody.innerHTML = icone + mensagem;
-    const bsToast = new bootstrap.Toast(toast, { delay: tempo });
-    bsToast.show();
-};
+  window.showToast = function(mensagem, cor='success', tempo=2500, icone='') {
+      const toast = document.getElementById('toastNotificacao');
+      const toastBody = document.getElementById('toastNotificacaoBody');
+      toast.className = `toast align-items-center text-bg-${cor} border-0`;
+      toastBody.innerHTML = icone + mensagem;
+      const bsToast = new bootstrap.Toast(toast, { delay: tempo });
+      bsToast.show();
+  };
 
-document.addEventListener('DOMContentLoaded', function() {
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                let corToast = 'success';
-                if ('{{category}}' === 'error' || '{{category}}' === 'danger') corToast = 'danger';
-                else if ('{{category}}' === 'warning') corToast = 'warning';
+  document.addEventListener('DOMContentLoaded', function() {
+      {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+              {% for category, message in messages %}
+                  let corToast = 'success';
+                  if ('{{category}}' === 'error' || '{{category}}' === 'danger') corToast = 'danger';
+                  else if ('{{category}}' === 'warning') corToast = 'warning';
 
-                showToast({{ message|tojson }}, corToast, 4000);
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-});
+                  showToast({{ message|tojson }}, corToast, 4000);
+              {% endfor %}
+          {% endif %}
+      {% endwith %}
+  });
 
-// Garante que ao recarregar a página, os campos estejam corretos
-document.addEventListener('DOMContentLoaded', exibirCampos);
+  // Garante que ao recarregar a página, os campos estejam corretos
+  document.addEventListener('DOMContentLoaded', exibirCampos);
 
-// Validações
-const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // Validações
+  const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function aplicarErro(input, mensagem, idErro) {
-    const erroDiv = document.getElementById(idErro);
-    if (mensagem) {
-        input.classList.add('is-invalid');
-        input.classList.remove('is-valid');
-        erroDiv.textContent = mensagem;
-    } else {
-        input.classList.remove('is-invalid');
-        input.classList.add('is-valid');
-        erroDiv.textContent = '';
-    }
-}
+  function aplicarErro(input, mensagem, idErro) {
+      const erroDiv = document.getElementById(idErro);
+      if (mensagem) {
+          input.classList.add('is-invalid');
+          input.classList.remove('is-valid');
+          erroDiv.textContent = mensagem;
+      } else {
+          input.classList.remove('is-invalid');
+          input.classList.add('is-valid');
+          erroDiv.textContent = '';
+      }
+  }
 
-function validarCampoObrigatorio(input, mensagem, idErro) {
-    const valor = input.value.trim();
-    const valido = valor !== '';
-    aplicarErro(input, valido ? '' : mensagem, idErro);
-    return valido;
-}
+  function validarCampoObrigatorio(input, mensagem, idErro) {
+      const valor = input.value.trim();
+      const valido = valor !== '';
+      aplicarErro(input, valido ? '' : mensagem, idErro);
+      return valido;
+  }
 
-function validarCampo(input, condicao, mensagemErro, idErro) {
-    const valido = condicao(input.value);
-    aplicarErro(input, valido ? '' : mensagemErro, idErro);
-    return valido;
-}
+  function validarCampo(input, condicao, mensagemErro, idErro) {
+      const valido = condicao(input.value);
+      aplicarErro(input, valido ? '' : mensagemErro, idErro);
+      return valido;
+  }
 
-function filtrarEntrada(input, tipo) {
-    const original = input.value;
-    const filtrado = tipo === 'letras' ? original.replace(/[^A-Za-zÀ-ÿ\s]/g, '') : original.replace(/[^0-9]/g, '');
-    input.value = filtrado;
+  function filtrarEntrada(input, tipo) {
+      const original = input.value;
+      const filtrado = tipo === 'letras' ? original.replace(/[^A-Za-zÀ-ÿ\s]/g, '') : original.replace(/[^0-9]/g, '');
+      input.value = filtrado;
 
-    aplicarErro(
-        input,
-        original !== filtrado
-            ? (tipo === 'letras' ? "O campo só pode conter letras e espaços." : "Este campo só pode conter números.")
-            : "",
-        "erro-" + input.id
-    );
-}
+      aplicarErro(
+          input,
+          original !== filtrado
+              ? (tipo === 'letras' ? "O campo só pode conter letras e espaços." : "Este campo só pode conter números.")
+              : "",
+          "erro-" + input.id
+      );
+  }
 
-function validarEmail(input) {
-    const email = input.value.trim();
-    aplicarErro(input, (email && !regexEmail.test(email)) ? "Formato de e-mail inválido." : "", "erro-email");
-}
+  function validarEmail(input) {
+      const email = input.value.trim();
+      aplicarErro(input, (email && !regexEmail.test(email)) ? "Formato de e-mail inválido." : "", "erro-email");
+  }
 
-function validarSenha(input) {
-    const senha = input.value;
-    aplicarErro(input, senha.length < 6 ? "A senha deve conter no mínimo 6 caracteres." : "", "erro-senha");
+  function validarSenha(input) {
+      const senha = input.value;
+      aplicarErro(input, senha.length < 6 ? "A senha deve conter no mínimo 6 caracteres." : "", "erro-senha");
 
-    // Força da senha
-    let forca = 0;
-    if (senha.length >= 6) forca++;
-    if (/[A-Z]/.test(senha)) forca++;
-    if (/[0-9]/.test(senha)) forca++;
-    if (/[\W_]/.test(senha)) forca++;
+      // Força da senha
+      let forca = 0;
+      if (senha.length >= 6) forca++;
+      if (/[A-Z]/.test(senha)) forca++;
+      if (/[0-9]/.test(senha)) forca++;
+      if (/[\W_]/.test(senha)) forca++;
 
-    let texto = "", cor = "";
-    switch (forca) {
-        case 1:
-        case 2:
-            texto = "Senha fraca";
-            cor = "text-danger";
-            break;
-        case 3:
-            texto = "Senha média";
-            cor = "text-warning";
-            break;
-        case 4:
-            texto = "Senha forte";
-            cor = "text-success";
-            break;
-    }
+      let texto = "", cor = "";
+      switch (forca) {
+          case 1:
+          case 2:
+              texto = "Senha fraca";
+              cor = "text-danger";
+              break;
+          case 3:
+              texto = "Senha média";
+              cor = "text-warning";
+              break;
+          case 4:
+              texto = "Senha forte";
+              cor = "text-success";
+              break;
+      }
 
-    const forcaEl = document.getElementById("forca-senha");
-    if (forcaEl) { 
-        forcaEl.textContent = texto;
-        forcaEl.className = `form-text ${cor}`;
-    }
+      const forcaEl = document.getElementById("forca-senha");
+      if (forcaEl) {
+          forcaEl.textContent = texto;
+          forcaEl.className = `form-text ${cor}`;
+      }
 
-    validarConfirmacaoSenha(); 
-}
+      validarConfirmacaoSenha();
+  }
 
-function validarConfirmacaoSenha() {
-    const senha = document.getElementById('senha').value;
-    const confirmar = document.getElementById('confirmarSenha');
+  function validarConfirmacaoSenha() {
+      const senha = document.getElementById('senha').value;
+      const confirmar = document.getElementById('confirmarSenha');
 
-    aplicarErro(
-        confirmar,
-        confirmar.value && confirmar.value !== senha ? "As senhas não coincidem." : "",
-        "erro-confirmarSenha"
-    );
-}
+      aplicarErro(
+          confirmar,
+          confirmar.value && confirmar.value !== senha ? "As senhas não coincidem." : "",
+          "erro-confirmarSenha"
+      );
+  }
 
-function validarCamposComuns() {
-    const nome = document.getElementById('nome');
-    const email = document.getElementById('email');
-    const senha = document.getElementById('senha');
-    const confirmarSenha = document.getElementById('confirmarSenha');
+  function validarCamposComuns() {
+      const nome = document.getElementById('nome');
+      const email = document.getElementById('email');
+      const senha = document.getElementById('senha');
+      const confirmarSenha = document.getElementById('confirmarSenha');
 
-    let valido = true;
+      let valido = true;
 
-    valido &= validarCampo(nome, val => /^[A-Za-zÀ-ÿ\s]{3,30}$/.test(val), 'Nome inválido. Apenas letras entre 3 e 30 caracteres.', 'erro-nome'); 
-    valido &= validarCampo(email, val => regexEmail.test(val.trim()) && val.length <= 50, 'E-mail inválido.', 'erro-email');
-    valido &= validarCampo(senha, val => val.length >= 6 && val.length <= 20, 'Senha entre 6 e 20 caracteres.', 'erro-senha'); 
-    valido &= validarCampo(confirmarSenha, val => val === senha.value && val !== '', 'As senhas não coincidem.', 'erro-confirmarSenha');
+      valido &= validarCampo(nome, val => /^[A-Za-zÀ-ÿ\s]{3,30}$/.test(val), 'Nome inválido. Apenas letras entre 3 e 30 caracteres.', 'erro-nome');
+      valido &= validarCampo(email, val => regexEmail.test(val.trim()) && val.length <= 50, 'E-mail inválido.', 'erro-email');
+      valido &= validarCampo(senha, val => val.length >= 6 && val.length <= 20, 'Senha entre 6 e 20 caracteres.', 'erro-senha');
+      valido &= validarCampo(confirmarSenha, val => val === senha.value && val !== '', 'As senhas não coincidem.', 'erro-confirmarSenha');
 
-    return !!valido;
-}
+      return !!valido;
+  }
 
-function validarCamposInstituicao() {
-    const instituicaoNome = document.getElementById('instituicao_nome');
-    const enderecoInstituicao = document.getElementById('endereco_instituicao');
-    const cnpj = document.getElementById('cnpj');
-    const infraestrutura = document.getElementById('infraestrutura');
-    const notaMec = document.getElementById('nota_mec_input');
-    const modalidades = document.getElementById('modalidades');
-    const cursosSelecionados = document.querySelectorAll('input[name="cursos_selecionados"]:checked');
+  function validarCamposInstituicao() {
+      const instituicaoNome = document.getElementById('instituicao_nome');
+      const enderecoInstituicao = document.getElementById('endereco_instituicao');
+      const cnpj = document.getElementById('cnpj');
+      const infraestrutura = document.getElementById('infraestrutura');
+      const notaMec = document.getElementById('nota_mec_input');
+      const modalidades = document.getElementById('modalidades');
+      const cursosSelecionados = document.querySelectorAll('input[name="cursos_selecionados"]:checked');
 
-    let valido = true;
+      let valido = true;
 
-    valido &= validarCampo(instituicaoNome, val => /^[A-Za-zÀ-ÿ\s]{1,30}$/.test(val), 'Nome inválido. Apenas letras até 30 caracteres.', 'erro-instituicao_nome'); 
-    valido &= validarCampo(enderecoInstituicao, val => val.length <= 80 && val.length > 5, 'Informe um endereço com no mínimo 5 caracteres.', 'erro-endereco_instituicao'); 
-    valido &= validarCampo(cnpj, val => /^\d{14}$/.test(val), 'CNPJ deve conter exatamente 14 números.', 'erro-cnpj'); 
-    valido &= validarCampo(infraestrutura, val => val.length >= 20 && val.length <= 150, 'Descreva a infraestrutura entre 20 e 150 caracteres.', 'erro-infraestrutura'); 
-    valido &= validarCampo(notaMec, val => /^[1-5]$/.test(val), 'Nota deve ser entre 1 e 5.', 'erro-nota_mec_input'); 
-    valido &= validarCampo(modalidades, val => val !== '', 'Selecione uma modalidade.', 'erro-modalidades');
+      valido &= validarCampo(instituicaoNome, val => /^[A-Za-zÀ-ÿ\s]{1,30}$/.test(val), 'Nome inválido. Apenas letras até 30 caracteres.', 'erro-instituicao_nome');
+      valido &= validarCampo(enderecoInstituicao, val => val.length <= 80 && val.length > 5, 'Informe um endereço com no mínimo 5 caracteres.', 'erro-endereco_instituicao');
+      valido &= validarCampo(cnpj, val => /^\d{14}$/.test(val), 'CNPJ deve conter exatamente 14 números.', 'erro-cnpj');
+      valido &= validarCampo(infraestrutura, val => val.length >= 20 && val.length <= 150, 'Descreva a infraestrutura entre 20 e 150 caracteres.', 'erro-infraestrutura');
+      valido &= validarCampo(notaMec, val => /^[1-5]$/.test(val), 'Nota deve ser entre 1 e 5.', 'erro-nota_mec_input');
+      valido &= validarCampo(modalidades, val => val !== '', 'Selecione uma modalidade.', 'erro-modalidades');
 
-    if (cursosSelecionados.length === 0) {
-        showToast("Selecione pelo menos um curso.", "danger", 3500, '<i class="bi bi-exclamation-triangle-fill me-2"></i>');
-        valido = false;
-    }
+      if (cursosSelecionados.length === 0) {
+          showToast("Selecione pelo menos um curso.", "danger", 3500, '<i class="bi bi-exclamation-triangle-fill me-2"></i>');
+          valido = false;
+      }
 
-    return !!valido;
-}
+      return !!valido;
+  }
 
-function validarCamposChefe() {
-    const empresaNome = document.getElementById('empresa_nome');
-    const cargo = document.getElementById('cargo');
+  function validarCamposChefe() {
+      const empresaNome = document.getElementById('empresa_nome');
+      const cargo = document.getElementById('cargo');
 
-    let valido = true;
+      let valido = true;
 
-    valido &= validarCampoObrigatorio(empresaNome && val.length <= 30, 'O nome da empresa é obrigatório.', 'erro-empresa_nome');
-    valido &= validarCampoObrigatorio(cargo, 'O cargo é obrigatório.', 'erro-cargo');
+      valido &= validarCampoObrigatorio(empresaNome && val.length <= 30, 'O nome da empresa é obrigatório.', 'erro-empresa_nome');
+      valido &= validarCampoObrigatorio(cargo, 'O cargo é obrigatório.', 'erro-cargo');
 
-    return !!valido;
-}
+      return !!valido;
+  }
 
-function validarFormulario() {
-    const tipoUsuario = document.getElementById('tipoUsuario').value;
+  function validarFormulario() {
+      const tipoUsuario = document.getElementById('tipoUsuario').value;
 
-    let valido = true;
+      let valido = true;
 
-    valido &= validarCamposComuns();
+      valido &= validarCamposComuns();
 
-    if (tipoUsuario === 'instituicao') {
-        valido &= validarCamposInstituicao();
-    } else if (tipoUsuario === 'chefe') {
-        valido &= validarCamposChefe();
-    }
+      if (tipoUsuario === 'instituicao') {
+          valido &= validarCamposInstituicao();
+      } else if (tipoUsuario === 'chefe') {
+          valido &= validarCamposChefe();
+      }
 
-    if (!valido) {
-        showToast('Existem campos inválidos. Verifique e tente novamente.', 'danger', 3500, '<i class="bi bi-exclamation-triangle-fill"></i> ');
-    }
-    
-    if (tipoUsuario !== 'instituicao' && tipoUsuario !== 'chefe') {
-        showToast('Selecione o tipo de cadastro.', 'danger', 3500, '<i class="bi bi-exclamation-triangle-fill"></i> ');
-        return false; 
-    }
+      if (!valido) {
+          showToast('Existem campos inválidos. Verifique e tente novamente.', 'danger', 3500, '<i class="bi bi-exclamation-triangle-fill"></i> ');
+      }
 
-    return !!valido;
-}
+      if (tipoUsuario !== 'instituicao' && tipoUsuario !== 'chefe') {
+          showToast('Selecione o tipo de cadastro.', 'danger', 3500, '<i class="bi bi-exclamation-triangle-fill"></i> ');
+          return false;
+      }
 
-function validarCamposChefe() {
-    const empresaNome = document.getElementById('empresa_nome');
-    const cargo = document.getElementById('cargo');
+      return !!valido;
+  }
 
-    let valido = true;
+  function validarCamposChefe() {
+      const empresaNome = document.getElementById('empresa_nome');
+      const cargo = document.getElementById('cargo');
 
-    valido &= validarCampoObrigatorio(empresaNome, 'O nome da empresa é obrigatório.', 'erro-empresa_nome');
-    valido &= validarCampo(cargo, val => ['CEO','Gerente','Coordenador'].includes(val), 'Selecione um cargo válido.', 'erro-cargo');
+      let valido = true;
 
-    return !!valido;
-}
+      valido &= validarCampoObrigatorio(empresaNome, 'O nome da empresa é obrigatório.', 'erro-empresa_nome');
+      valido &= validarCampo(cargo, val => ['CEO','Gerente','Coordenador'].includes(val), 'Selecione um cargo válido.', 'erro-cargo');
 
+      return !!valido;
+  }
 </script>
 {% endblock %}

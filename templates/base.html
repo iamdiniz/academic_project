@@ -1,153 +1,238 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}DashTalent{% endblock %}</title>
 
     <!-- Bootstrap + Estilos principais -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/home.css') }}" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="{{ url_for('static', filename='css/main.css') }}"
+      rel="stylesheet"
+    />
+    <link
+      href="{{ url_for('static', filename='css/home.css') }}"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
 
-    {% block head %}{% endblock %}
-    {% block extra_css %}{% endblock %}
-
-</head>
-<body>
-
+    {% block head %}{% endblock %} {% block extra_css %}{% endblock %}
+  </head>
+  <body>
     {% if not hide_navbar %}
     <!-- Navbar Global -->
-    <nav class="navbar navbar-expand-lg navbar-dark custom-navbar fixed-top" style="z-index: 1051;">
-        <div class="container-fluid">
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+    <nav
+      class="navbar navbar-expand-lg navbar-dark custom-navbar fixed-top"
+      style="z-index: 1051"
+    >
+      <div class="container-fluid">
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarContent"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
 
-            <a id="navbarBrandMobile" class="navbar-brand fw-bold d-lg-none mx-auto position-absolute start-50 translate-middle-x" href="{{ url_for('home') }}">DashTalent</a>
+        <a
+          id="navbarBrandMobile"
+          class="navbar-brand fw-bold d-lg-none mx-auto position-absolute start-50 translate-middle-x"
+          href="{{ url_for('home') }}"
+          >DashTalent</a
+        >
 
-            <div class="collapse navbar-collapse" id="navbarContent">
-                <div class="row w-100 align-items-center text-center">
-                    <div class="col-4 text-start">
-                        <a class="navbar-brand fw-bold" href="{{ url_for('home') }}">DashTalent</a>
-                    </div>
-                    <div class="col-4">
-                        <ul class="navbar-nav justify-content-center mb-2 mb-lg-0">
-                            {% if session.get('tipo_usuario') == 'chefe' %}
-                                <li class="nav-item">
-                                    <a class="nav-link {% if request.path == url_for('instituicao_ensino') %}active{% endif %}" href="{{ url_for('instituicao_ensino') }}">
-                                        Instituições de Ensino
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {% if request.path == url_for('minhas_selecoes') %}active{% endif %}" href="{{ url_for('minhas_selecoes') }}">
-                                        Minhas Seleções
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {% if request.path == url_for('acompanhar') %}active{% endif %}" href="{{ url_for('acompanhar') }}">
-                                        Monitorar Alunos
-                                    </a>
-                                </li>
-                            {% elif session.get('tipo_usuario') == 'instituicao' %}
-                                <li class="nav-item">
-                                    <a class="nav-link {% if request.path == url_for('alunos_instituicao') %}active{% endif %}" href="{{ url_for('alunos_instituicao') }}">
-                                        Gerenciar Alunos
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {% if request.path == url_for('cursos') %}active{% endif %}" href="{{ url_for('cursos') }}">
-                                        Cursos
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {% if request.path == url_for('alunos_indicados') %}active{% endif %}" href="{{ url_for('alunos_indicados') }}">
-                                        Alunos indicados
-                                    </a>
-                                </li>
-                            {% endif %}
-                        </ul>
-                    </div>
-                    <div class="col-4 text-end">
-                        <ul class="navbar-nav justify-content-end">
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="userMenu" role="button" data-bs-toggle="dropdown">
-                                    <i class="bi bi-person-circle"></i> Perfil
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="{{ url_for('perfil') }}">Ver Perfil</a></li>
-                                    <li><a class="dropdown-item" href="{{ url_for('configuracoes') }}">Configurações</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item custom-logout" href="{{ url_for('logout') }}">Sair</a></li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
+        <div class="collapse navbar-collapse" id="navbarContent">
+          <div class="row w-100 align-items-center text-center">
+            <div class="col-4 text-start">
+              <a class="navbar-brand fw-bold" href="{{ url_for('home') }}"
+                >DashTalent</a
+              >
             </div>
+            <div class="col-4">
+              <ul class="navbar-nav justify-content-center mb-2 mb-lg-0">
+                {% if session.get('tipo_usuario') == 'chefe' %}
+                <li class="nav-item">
+                  <a
+                    class="nav-link {% if request.path == url_for('instituicao_ensino') %}active{% endif %}"
+                    href="{{ url_for('instituicao_ensino') }}"
+                  >
+                    Instituições de Ensino
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a
+                    class="nav-link {% if request.path == url_for('minhas_selecoes') %}active{% endif %}"
+                    href="{{ url_for('minhas_selecoes') }}"
+                  >
+                    Minhas Seleções
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a
+                    class="nav-link {% if request.path == url_for('acompanhar') %}active{% endif %}"
+                    href="{{ url_for('acompanhar') }}"
+                  >
+                    Monitorar Alunos
+                  </a>
+                </li>
+                {% elif session.get('tipo_usuario') == 'instituicao' %}
+                <li class="nav-item">
+                  <a
+                    class="nav-link {% if request.path == url_for('alunos_instituicao') %}active{% endif %}"
+                    href="{{ url_for('alunos_instituicao') }}"
+                  >
+                    Gerenciar Alunos
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a
+                    class="nav-link {% if request.path == url_for('cursos') %}active{% endif %}"
+                    href="{{ url_for('cursos') }}"
+                  >
+                    Cursos
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a
+                    class="nav-link {% if request.path == url_for('alunos_indicados') %}active{% endif %}"
+                    href="{{ url_for('alunos_indicados') }}"
+                  >
+                    Alunos indicados
+                  </a>
+                </li>
+                {% endif %}
+              </ul>
+            </div>
+            <div class="col-4 text-end">
+              <ul class="navbar-nav justify-content-end">
+                <li class="nav-item dropdown">
+                  <a
+                    class="nav-link dropdown-toggle"
+                    href="#"
+                    id="userMenu"
+                    role="button"
+                    data-bs-toggle="dropdown"
+                  >
+                    <i class="bi bi-person-circle"></i> Perfil
+                  </a>
+                  <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                      <a class="dropdown-item" href="{{ url_for('perfil') }}"
+                        >Ver Perfil</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        href="{{ url_for('configuracoes') }}"
+                        >Configurações</a
+                      >
+                    </li>
+                    <li><hr class="dropdown-divider" /></li>
+                    <li>
+                      <a
+                        class="dropdown-item custom-logout"
+                        href="{{ url_for('auth.logout') }}"
+                        >Sair</a
+                      >
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
+      </div>
     </nav>
 
     <!-- Sidebar lateral -->
     <div class="sidebar">
-        <a class="nav-link {% if request.path == url_for('home') %}active{% endif %}" href="{{ url_for('home') }}">
-            <i class="bi bi-house-door"></i>
-            <span class="sidebar-tooltip">Home</span>
-        </a>
-        {% if session.get('tipo_usuario') == 'chefe' %}
-            <a class="nav-link {% if request.path == url_for('instituicao_ensino') %}active{% endif %}" href="{{ url_for('instituicao_ensino') }}">
-                <i class="bi bi-building"></i>
-                <span class="sidebar-tooltip">Instituições de Ensino</span>
-            </a>
-            <a class="nav-link {% if request.path == url_for('minhas_selecoes') %}active{% endif %}" href="{{ url_for('minhas_selecoes') }}">
-                <i class="bi bi-star"></i>
-                <span class="sidebar-tooltip">Minhas Seleções</span>
-            </a>
-            <a class="nav-link {% if request.path == url_for('acompanhar') %}active{% endif %}" href="{{ url_for('acompanhar') }}">
-                <i class="bi bi-people"></i>
-                <span class="sidebar-tooltip">Monitorar Alunos</span>
-            </a>
-        {% elif session.get('tipo_usuario') == 'instituicao' %}
-            <a class="nav-link {% if request.path == url_for('alunos_instituicao') %}active{% endif %}" href="{{ url_for('alunos_instituicao') }}">
-                <i class="bi bi-mortarboard"></i>
-                <span class="sidebar-tooltip">Gerenciar Alunos</span>
-            </a>
-            <a class="nav-link {% if request.path == url_for('cursos') %}active{% endif %}" href="{{ url_for('cursos') }}">
-                <i class="bi bi-journal-bookmark"></i>
-                <span class="sidebar-tooltip">Cursos</span>
-            </a>
-            <a class="nav-link {% if request.path == url_for('alunos_indicados') %}active{% endif %}" href="{{ url_for('alunos_indicados') }}">
-                <i class="bi bi-person-check"></i>
-                <span class="sidebar-tooltip">Alunos indicados</span>
-            </a>
-        {% endif %}
+      <a
+        class="nav-link {% if request.path == url_for('home') %}active{% endif %}"
+        href="{{ url_for('home') }}"
+      >
+        <i class="bi bi-house-door"></i>
+        <span class="sidebar-tooltip">Home</span>
+      </a>
+      {% if session.get('tipo_usuario') == 'chefe' %}
+      <a
+        class="nav-link {% if request.path == url_for('instituicao_ensino') %}active{% endif %}"
+        href="{{ url_for('instituicao_ensino') }}"
+      >
+        <i class="bi bi-building"></i>
+        <span class="sidebar-tooltip">Instituições de Ensino</span>
+      </a>
+      <a
+        class="nav-link {% if request.path == url_for('minhas_selecoes') %}active{% endif %}"
+        href="{{ url_for('minhas_selecoes') }}"
+      >
+        <i class="bi bi-star"></i>
+        <span class="sidebar-tooltip">Minhas Seleções</span>
+      </a>
+      <a
+        class="nav-link {% if request.path == url_for('acompanhar') %}active{% endif %}"
+        href="{{ url_for('acompanhar') }}"
+      >
+        <i class="bi bi-people"></i>
+        <span class="sidebar-tooltip">Monitorar Alunos</span>
+      </a>
+      {% elif session.get('tipo_usuario') == 'instituicao' %}
+      <a
+        class="nav-link {% if request.path == url_for('alunos_instituicao') %}active{% endif %}"
+        href="{{ url_for('alunos_instituicao') }}"
+      >
+        <i class="bi bi-mortarboard"></i>
+        <span class="sidebar-tooltip">Gerenciar Alunos</span>
+      </a>
+      <a
+        class="nav-link {% if request.path == url_for('cursos') %}active{% endif %}"
+        href="{{ url_for('cursos') }}"
+      >
+        <i class="bi bi-journal-bookmark"></i>
+        <span class="sidebar-tooltip">Cursos</span>
+      </a>
+      <a
+        class="nav-link {% if request.path == url_for('alunos_indicados') %}active{% endif %}"
+        href="{{ url_for('alunos_indicados') }}"
+      >
+        <i class="bi bi-person-check"></i>
+        <span class="sidebar-tooltip">Alunos indicados</span>
+      </a>
+      {% endif %}
     </div>
     {% endif %}
 
     <!-- Conteúdo dinâmico -->
     <main class="{% if hide_navbar %}no-navbar{% endif %}">
-        {% block body %}{% endblock %}
+      {% block body %}{% endblock %}
     </main>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const navbarToggler = document.querySelector('.navbar-toggler');
-            const navbarCollapse = document.getElementById('navbarContent');
-            const brandMobile = document.getElementById('navbarBrandMobile');
+      document.addEventListener("DOMContentLoaded", function () {
+        const navbarToggler = document.querySelector(".navbar-toggler");
+        const navbarCollapse = document.getElementById("navbarContent");
+        const brandMobile = document.getElementById("navbarBrandMobile");
 
-            if (navbarToggler && navbarCollapse && brandMobile) {
-                navbarCollapse.addEventListener('show.bs.collapse', function () {
-                    brandMobile.style.display = 'none';
-                });
-                navbarCollapse.addEventListener('hide.bs.collapse', function () {
-                    brandMobile.style.display = 'block';
-                });
-            }
-        });
+        if (navbarToggler && navbarCollapse && brandMobile) {
+          navbarCollapse.addEventListener("show.bs.collapse", function () {
+            brandMobile.style.display = "none";
+          });
+          navbarCollapse.addEventListener("hide.bs.collapse", function () {
+            brandMobile.style.display = "block";
+          });
+        }
+      });
     </script>
-</body>
+  </body>
 </html>

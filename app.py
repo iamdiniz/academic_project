@@ -1,8 +1,8 @@
+from auth import auth_bp
 from functools import wraps
 from flask import Flask, render_template, url_for, request, redirect, session, flash, jsonify
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
-from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash
+from flask_login import LoginManager, login_required, current_user
 from sqlalchemy.exc import IntegrityError
 # Biblioteca para remover acentos e caracteres especiais
 from unidecode import unidecode
@@ -15,6 +15,7 @@ import pytz
 import os
 # 🔧 NOVA IMPORTAÇÃO: Para carregar variáveis do arquivo .env
 from dotenv import load_dotenv
+from models import db, InstituicaodeEnsino, Curso, Aluno, Chefe, SkillsDoAluno, Acompanhamento, SkillsHistorico, Indicacao
 
 # 🔧 MODIFICAÇÃO 1: Carrega as variáveis do arquivo .env
 load_dotenv()
@@ -41,12 +42,16 @@ if database_url.startswith("mysql://"):
     database_url = database_url.replace("mysql://", "mysql+pymysql://", 1)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
-db = SQLAlchemy(app)
+db.init_app(app)
+
+# Registrar blueprints
+app.register_blueprint(auth_bp)
 
 # Configuração do flask-login
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'login'  # Redireciona para a página de login se não autenticado
+# Redireciona para a página de login se não autenticado
+login_manager.login_view = 'auth.login'
 
 CURSOS_PADRAO = [
     "Administração", "Agronomia", "Arquitetura", "Biologia", "Ciência da Computação",
@@ -115,113 +120,14 @@ SOFT_SKILLS = [
     "Criatividade", "Trabalho em Equipe"
 ]
 
-class InstituicaodeEnsino(db.Model, UserMixin):
-    __tablename__ = 'instituicao_de_ensino'
 
-    id_instituicao = db.Column(db.Integer, primary_key=True)
-    nome_instituicao = db.Column(db.String(100), nullable=False)
-    endereco_instituicao = db.Column(db.String(255), nullable=False)
-    email = db.Column(db.String(255), nullable=False)
-    senha = db.Column(db.String(255), nullable=False)
-    infraestrutura = db.Column(db.Text, nullable=False)
-    nota_mec = db.Column(db.Numeric, nullable=False)
-    areas_de_formacao = db.Column(db.Text, nullable=False)
-    modalidades = db.Column(db.String(255), nullable=False)
-    quantidade_de_alunos = db.Column(db.Integer, nullable=False)
-    reitor = db.Column(db.String(255), nullable=False)
+# Modelos movidos para models.py
 
-    def get_id(self):
-        return str(self.id_instituicao)
-
-class Curso(db.Model):
-    __tablename__ = 'cursos'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    nome = db.Column(db.String(255), nullable=False)
-    id_instituicao = db.Column(db.Integer, db.ForeignKey('instituicao_de_ensino.id_instituicao'), nullable=False)
-
-    instituicao = db.relationship('InstituicaodeEnsino', backref='cursos')
-
-class Aluno(db.Model):
-    __tablename__ = 'alunos'
-
-    id_aluno = db.Column(db.Integer, primary_key=True)
-    nome_jovem = db.Column(db.String(255), nullable=False)
-    data_nascimento = db.Column(db.Date)
-    contato_jovem = db.Column(db.String(255))
-    email = db.Column(db.String(255), unique=True)
-    endereco_jovem = db.Column(db.String(255))
-    id_instituicao = db.Column(db.Integer, db.ForeignKey('instituicao_de_ensino.id_instituicao'))
-    curso = db.Column(db.String(255))
-    formacao = db.Column(db.String(255))
-    periodo = db.Column(db.Integer)
-    indicado_por = db.Column(db.Integer, db.ForeignKey('chefe.id_chefe'))  # Relacionamento com Chefe
-
-    chefe = db.relationship('Chefe', backref='alunos_indicados') # Relacionamento reverso
-
-class Chefe(db.Model, UserMixin):
-    __tablename__ = 'chefe'
-
-    id_chefe = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    nome = db.Column(db.String(100), nullable=False)
-    cargo = db.Column(db.String(50), nullable=False)
-    email = db.Column(db.String(100), unique=True) # Pode ser nulo, mas deve ser único se fornecido
-    senha = db.Column(db.String(255), nullable=False)
-    nome_empresa = db.Column(db.String(100))
-
-    def get_id(self):
-        return str(self.id_chefe)
-
-class SkillsDoAluno(db.Model):
-    __tablename__ = 'skills_do_aluno'
-
-    id_aluno = db.Column(db.Integer, db.ForeignKey('alunos.id_aluno'), primary_key=True)
-    hard_skills_json = db.Column(db.Text)  # Hard skills dinâmicas por curso (JSON)
-    soft_skills_json = db.Column(db.Text)  # Soft skills detalhadas (JSON)
-    aluno = db.relationship('Aluno', backref=db.backref('skills', uselist=False))
-
-class Acompanhamento(db.Model):
-    __tablename__ = 'acompanhamento'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    id_chefe = db.Column(db.Integer, db.ForeignKey('chefe.id_chefe'), nullable=False)
-    id_aluno = db.Column(db.Integer, db.ForeignKey('alunos.id_aluno'), nullable=False)
-    data_acompanhamento = db.Column(db.DateTime, server_default=db.func.now())
-
-    chefe = db.relationship('Chefe', backref='acompanhamentos')
-    aluno = db.relationship('Aluno', backref='acompanhamentos')
-
-    __table_args__ = (
-        db.UniqueConstraint('id_chefe', 'id_aluno', name='uix_chefe_aluno'),
-    )
-
-class SkillsHistorico(db.Model):
-    __tablename__ = 'skills_historico'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    id_aluno = db.Column(db.Integer, db.ForeignKey('alunos.id_aluno'), nullable=False)
-    id_chefe = db.Column(db.Integer, db.ForeignKey('chefe.id_chefe'), nullable=False)
-    data = db.Column(db.DateTime, server_default=db.func.now())
-    hard_skills_json = db.Column(db.Text)
-    soft_skills_json = db.Column(db.Text)
-
-    aluno = db.relationship('Aluno', backref='historicos')
-    chefe = db.relationship('Chefe', backref='historicos')
-
-class Indicacao(db.Model):
-    __tablename__ = 'indicacoes'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    id_chefe = db.Column(db.Integer, db.ForeignKey('chefe.id_chefe'), nullable=False)
-    id_aluno = db.Column(db.Integer, db.ForeignKey('alunos.id_aluno'), nullable=False)
-    data_indicacao = db.Column(db.DateTime, server_default=db.func.now())
-
-    chefe = db.relationship('Chefe', backref='indicacoes')
-    aluno = db.relationship('Aluno', backref='indicacoes')
-
-    __table_args__ = (
-        db.UniqueConstraint('id_chefe', 'id_aluno', name='uix_chefe_aluno_indicacao'),
-    )
 
 with app.app_context():
     db.create_all()  # Recria as tabelas com base nos modelos
     print("Tabelas recriadas com sucesso!")
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -232,23 +138,28 @@ def load_user(user_id):
         return InstituicaodeEnsino.query.get(int(user_id))
     return None
 
+
 def bloquear_chefe(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if session.get('tipo_usuario') == 'chefe':
             flash("Acesso não permitido para o perfil chefe.", "danger")
-            return redirect(url_for('home')) # Redireciona para a página inicial
+            # Redireciona para a página inicial
+            return redirect(url_for('home'))
         return f(*args, **kwargs)
     return decorated_function
+
 
 def bloquear_instituicao(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if session.get('tipo_usuario') == 'instituicao':
             flash("Acesso não permitido para o perfil instituição de ensino.", "danger")
-            return redirect(url_for('home')) # Redireciona para a página inicial
+            # Redireciona para a página inicial
+            return redirect(url_for('home'))
         return f(*args, **kwargs)
     return decorated_function
+
 
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
@@ -272,7 +183,8 @@ def cadastro():
             cursos_selecionados = request.form.getlist('cursos_selecionados')
 
             if not nome or not email or not senha or not instituicao_nome or not endereco or not cursos_selecionados:
-                flash('Todos os campos obrigatórios para Instituição de Ensino devem ser preenchidos!')
+                flash(
+                    'Todos os campos obrigatórios para Instituição de Ensino devem ser preenchidos!')
                 return redirect(url_for('cadastro'))
 
             # Validação: não permitir e-mail duplicado
@@ -287,7 +199,8 @@ def cadastro():
                     senha=generate_password_hash(senha),
                     infraestrutura=infraestrutura,
                     nota_mec=nota_mec,
-                    areas_de_formacao=", ".join(cursos_selecionados), # Apenas para histórico, não para lógica
+                    # Apenas para histórico, não para lógica
+                    areas_de_formacao=", ".join(cursos_selecionados),
                     modalidades=modalidades,
                     quantidade_de_alunos=0,
                     reitor=nome,
@@ -298,12 +211,14 @@ def cadastro():
 
                 # Salva os cursos selecionados na tabela cursos
                 for nome_curso in cursos_selecionados:
-                    curso = Curso(nome=nome_curso, id_instituicao=nova_instituicaodeEnsino.id_instituicao)
+                    curso = Curso(
+                        nome=nome_curso, id_instituicao=nova_instituicaodeEnsino.id_instituicao)
                     db.session.add(curso)
                 db.session.commit()
 
-                flash('Cadastro de Instituição realizado com sucesso! Faça login agora.', 'success')
-                return redirect(url_for('login'))
+                flash(
+                    'Cadastro de Instituição realizado com sucesso! Faça login agora.', 'success')
+                return redirect(url_for('auth.login'))
             except IntegrityError:
                 db.session.rollback()
                 flash('Erro: E-mail ou instituição já cadastrados.', 'error')
@@ -332,8 +247,9 @@ def cadastro():
                 )
                 db.session.add(novo_chefe)
                 db.session.commit()
-                flash('Cadastro de Chefe realizado com sucesso! Faça login agora.', 'success')
-                return redirect(url_for('login'))
+                flash(
+                    'Cadastro de Chefe realizado com sucesso! Faça login agora.', 'success')
+                return redirect(url_for('auth.login'))
             except IntegrityError:
                 db.session.rollback()
                 flash('Erro: E-mail ou chefe já cadastrados.', 'error')
@@ -345,34 +261,13 @@ def cadastro():
 
     return render_template('cadastro.html', cursos_padrao=CURSOS_PADRAO)
 
+
 @app.route('/')
 def index():
     return redirect(url_for('carousel'))
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        email = request.form['email']
-        senha = request.form['senha']
+# Rota de login movida para auth.py
 
-        # Verifica se o usuário é um chefe
-        chefe = Chefe.query.filter_by(email=email).first()
-        if chefe and check_password_hash(chefe.senha, senha):
-            session['user_id'] = chefe.id_chefe
-            session['tipo_usuario'] = 'chefe'
-            login_user(chefe)
-            return redirect(url_for('home'))
-
-        # Verifica se o usuário é uma instituição de ensino
-        instituicao = InstituicaodeEnsino.query.filter_by(email=email).first()
-        if instituicao and check_password_hash(instituicao.senha, senha):
-            session['user_id'] = instituicao.id_instituicao
-            session['tipo_usuario'] = 'instituicao'
-            login_user(instituicao)
-            return redirect(url_for('home'))
-
-        flash("E-mail ou senha inválidos.", "danger")
-    return render_template('login.html')
 
 @app.route('/home')
 @login_required
@@ -390,6 +285,7 @@ def home():
         flash("Tipo de usuário inválido. Faça login novamente.", "danger")
         return redirect(url_for('login'))
 
+
 @app.route('/instituicaoEnsino')
 @bloquear_instituicao
 @login_required
@@ -399,11 +295,13 @@ def instituicao_ensino():
 
     # Calcula a quantidade de alunos para cada instituição
     for instituicao in instituicoes:
-        instituicao.quantidade_de_alunos = Aluno.query.filter_by(id_instituicao=instituicao.id_instituicao).count()
+        instituicao.quantidade_de_alunos = Aluno.query.filter_by(
+            id_instituicao=instituicao.id_instituicao).count()
 
     # Novo: monta um dicionário com os cursos de cada instituição
     cursos_por_instituicao = {
-        inst.id_instituicao: [curso.nome for curso in Curso.query.filter_by(id_instituicao=inst.id_instituicao).all()]
+        inst.id_instituicao: [curso.nome for curso in Curso.query.filter_by(
+            id_instituicao=inst.id_instituicao).all()]
         for inst in instituicoes
     }
 
@@ -424,12 +322,14 @@ def instituicao_ensino():
         total_pages=total_pages
     )
 
+
 @app.route('/detalhes_instituicao/<int:id_instituicao>')
 @login_required
 def detalhes_instituicao(id_instituicao):
     instituicao = InstituicaodeEnsino.query.get_or_404(id_instituicao)
     cursos = Curso.query.filter_by(id_instituicao=id_instituicao).all()
     return render_template('detalhes_instituicao.html', instituicao=instituicao, cursos=cursos)
+
 
 @app.route('/minhas_selecoes')
 @bloquear_instituicao
@@ -453,8 +353,10 @@ def minhas_selecoes():
         soft_labels = []
         soft_skills = []
         if skills:
-            hard_dict = json.loads(skills.hard_skills_json) if skills.hard_skills_json else {}
-            soft_dict = json.loads(skills.soft_skills_json) if skills.soft_skills_json else {}
+            hard_dict = json.loads(
+                skills.hard_skills_json) if skills.hard_skills_json else {}
+            soft_dict = json.loads(
+                skills.soft_skills_json) if skills.soft_skills_json else {}
 
             hard_labels = list(hard_dict.keys())
             hard_skills = list(hard_dict.values())
@@ -491,6 +393,7 @@ def minhas_selecoes():
         total_pages=total_pages
     )
 
+
 @app.route('/remover_indicacao/<int:id_aluno>', methods=['POST'])
 @bloquear_instituicao
 @login_required
@@ -510,6 +413,7 @@ def remover_indicacao(id_aluno):
     db.session.commit()
 
     return jsonify({'message': 'Indicação removida com sucesso!'}), 200
+
 
 @app.route('/remover_aluno/<int:id_aluno>', methods=['POST'])
 @login_required
@@ -531,6 +435,7 @@ def remover_aluno(id_aluno):
         flash("Erro ao remover aluno.", "danger")
 
     return redirect(url_for('alunos'))
+
 
 @app.route('/ver_alunos_por_curso', methods=['GET'])
 @bloquear_instituicao
@@ -557,7 +462,8 @@ def ver_alunos_por_curso():
 
     # Filtro por período
     if periodo and periodo.isdigit():
-        alunos_filtrados = [aluno for aluno in alunos_filtrados if str(aluno.periodo) == periodo]
+        alunos_filtrados = [
+            aluno for aluno in alunos_filtrados if str(aluno.periodo) == periodo]
 
     # Ordenação por múltiplas habilidades (hard e soft)
     if habilidade:
@@ -565,8 +471,10 @@ def ver_alunos_por_curso():
             skills = aluno.skills
             total = 0
             if skills:
-                hard_dict = json.loads(skills.hard_skills_json) if skills.hard_skills_json else {}
-                soft_dict = json.loads(skills.soft_skills_json) if skills.soft_skills_json else {}
+                hard_dict = json.loads(
+                    skills.hard_skills_json) if skills.hard_skills_json else {}
+                soft_dict = json.loads(
+                    skills.soft_skills_json) if skills.soft_skills_json else {}
                 for hab in habilidade:
                     if ':' in hab:
                         tipo, nome = hab.split(':', 1)
@@ -575,7 +483,8 @@ def ver_alunos_por_curso():
                         elif tipo == 'soft':
                             total += soft_dict.get(nome, 0)
             return total
-        alunos_filtrados = sorted(alunos_filtrados, key=get_total_skills, reverse=True)
+        alunos_filtrados = sorted(
+            alunos_filtrados, key=get_total_skills, reverse=True)
 
     alunos_com_skills = []
     for aluno in alunos_filtrados:
@@ -585,8 +494,10 @@ def ver_alunos_por_curso():
         soft_labels = []
         soft_skills = []
         if skills:
-            hard_dict = json.loads(skills.hard_skills_json) if skills.hard_skills_json else {}
-            soft_dict = json.loads(skills.soft_skills_json) if skills.soft_skills_json else {}
+            hard_dict = json.loads(
+                skills.hard_skills_json) if skills.hard_skills_json else {}
+            soft_dict = json.loads(
+                skills.soft_skills_json) if skills.soft_skills_json else {}
 
             hard_labels = list(hard_dict.keys())
             hard_skills = list(hard_dict.values())
@@ -634,6 +545,7 @@ def ver_alunos_por_curso():
         SOFT_SKILLS=SOFT_SKILLS
     )
 
+
 @app.route('/detalhes_aluno/<int:id_aluno>')
 @bloquear_instituicao
 @login_required
@@ -649,8 +561,10 @@ def detalhes_aluno(id_aluno):
     soft_labels, soft_values = [], []
     if aluno.skills:
         import json
-        hard_dict = json.loads(aluno.skills.hard_skills_json) if aluno.skills.hard_skills_json else {}
-        soft_dict = json.loads(aluno.skills.soft_skills_json) if aluno.skills.soft_skills_json else {}
+        hard_dict = json.loads(
+            aluno.skills.hard_skills_json) if aluno.skills.hard_skills_json else {}
+        soft_dict = json.loads(
+            aluno.skills.soft_skills_json) if aluno.skills.soft_skills_json else {}
         hard_labels = list(hard_dict.keys())
         hard_values = list(hard_dict.values())
         soft_labels = list(soft_dict.keys())
@@ -666,6 +580,7 @@ def detalhes_aluno(id_aluno):
         previous_url=previous_url
     )
 
+
 @app.route('/indicar_aluno/<int:id_aluno>', methods=['POST'])
 @bloquear_instituicao
 @login_required
@@ -676,7 +591,8 @@ def indicar_aluno(id_aluno):
     chefe_id = current_user.id_chefe
 
     # Verifica se já existe indicação deste chefe para este aluno
-    ja_indicado = Indicacao.query.filter_by(id_chefe=chefe_id, id_aluno=id_aluno).first()
+    ja_indicado = Indicacao.query.filter_by(
+        id_chefe=chefe_id, id_aluno=id_aluno).first()
     if ja_indicado:
         return jsonify({'error': 'Você já indicou este aluno.'}), 400
 
@@ -686,9 +602,11 @@ def indicar_aluno(id_aluno):
 
     return jsonify({'message': 'Aluno indicado com sucesso!'}), 200
 
+
 @app.route('/carousel')
 def carousel():
     return render_template('carousel.html')
+
 
 @app.route('/cursos', methods=['GET', 'POST'])
 @login_required
@@ -709,14 +627,17 @@ def cursos():
             if ja_existe:
                 flash('Este curso já foi cadastrado!', 'warning')
             else:
-                novo_curso = Curso(nome=nome_curso, id_instituicao=current_user.id_instituicao)
+                novo_curso = Curso(
+                    nome=nome_curso, id_instituicao=current_user.id_instituicao)
                 db.session.add(novo_curso)
                 db.session.commit()
                 flash('Curso cadastrado com sucesso!', 'success')
         return redirect(url_for('cursos'))
 
-    cursos = Curso.query.filter_by(id_instituicao=current_user.id_instituicao).all()
+    cursos = Curso.query.filter_by(
+        id_instituicao=current_user.id_instituicao).all()
     return render_template('cursos.html', cursos=cursos, CURSOS_PADRAO=CURSOS_PADRAO)
+
 
 def validar_skills_por_curso(curso, hard_skills_dict, soft_skills_dict):
     # Curso deve ser válido
@@ -736,6 +657,7 @@ def validar_skills_por_curso(curso, hard_skills_dict, soft_skills_dict):
         if not isinstance(valor, int) or valor < 0 or valor > 10:
             return False, "Todas as soft skills devem ser números inteiros de 0 a 10."
     return True, ""
+
 
 @app.route('/cadastrar_aluno', methods=['POST'])
 @login_required
@@ -776,7 +698,8 @@ def cadastrar_aluno():
         field_name = f"hard_{label.lower().replace(' ', '_')}"
         valor = request.form.get(field_name)
         if valor is None or not valor.isdigit() or int(valor) < 0 or int(valor) > 10:
-            flash(f"Preencha corretamente a hard skill '{label}' (0 a 10).", "danger")
+            flash(
+                f"Preencha corretamente a hard skill '{label}' (0 a 10).", "danger")
             return redirect(url_for('alunos_instituicao'))
         hard_skills_dict[label] = int(valor)
 
@@ -786,7 +709,8 @@ def cadastrar_aluno():
         field_name = label.lower().replace(' ', '_')
         valor = request.form.get(field_name)
         if valor is None or not valor.isdigit() or int(valor) < 0 or int(valor) > 10:
-            flash(f"Preencha corretamente a soft skill '{label}' (0 a 10).", "danger")
+            flash(
+                f"Preencha corretamente a soft skill '{label}' (0 a 10).", "danger")
             return redirect(url_for('alunos_instituicao'))
         soft_skills_dict[label] = int(valor)
 
@@ -813,7 +737,8 @@ def cadastrar_aluno():
         db.session.add(skills)
         db.session.commit()
 
-        instituicao = InstituicaodeEnsino.query.get(current_user.id_instituicao)
+        instituicao = InstituicaodeEnsino.query.get(
+            current_user.id_instituicao)
         instituicao.quantidade_de_alunos += 1
         db.session.commit()
 
@@ -823,6 +748,7 @@ def cadastrar_aluno():
         flash("Erro ao cadastrar aluno. Verifique os dados e tente novamente.", "danger")
 
     return redirect(url_for('alunos_instituicao'))
+
 
 @app.route('/alunos_instituicao', methods=['GET', 'POST'])
 @login_required
@@ -834,14 +760,18 @@ def alunos_instituicao():
 
     instituicao_id = current_user.id_instituicao
 
-    cursos_disponiveis = [curso.nome for curso in Curso.query.filter_by(id_instituicao=instituicao_id).all()]
-    cursos = Aluno.query.with_entities(Aluno.curso).filter_by(id_instituicao=instituicao_id).distinct().all()
+    cursos_disponiveis = [curso.nome for curso in Curso.query.filter_by(
+        id_instituicao=instituicao_id).all()]
+    cursos = Aluno.query.with_entities(Aluno.curso).filter_by(
+        id_instituicao=instituicao_id).distinct().all()
     cursos = [curso[0] for curso in cursos if curso[0]]
 
-    filtro_curso = request.form.get('curso') if request.method == 'POST' else None
+    filtro_curso = request.form.get(
+        'curso') if request.method == 'POST' else None
 
     if filtro_curso:
-        alunos = Aluno.query.filter_by(id_instituicao=instituicao_id, curso=filtro_curso).all()
+        alunos = Aluno.query.filter_by(
+            id_instituicao=instituicao_id, curso=filtro_curso).all()
     else:
         alunos = Aluno.query.filter_by(id_instituicao=instituicao_id).all()
 
@@ -855,8 +785,10 @@ def alunos_instituicao():
         soft_labels = []
         if skills:
             import json
-            hard_dict = json.loads(skills.hard_skills_json) if skills.hard_skills_json else {}
-            soft_dict = json.loads(skills.soft_skills_json) if skills.soft_skills_json else {}
+            hard_dict = json.loads(
+                skills.hard_skills_json) if skills.hard_skills_json else {}
+            soft_dict = json.loads(
+                skills.soft_skills_json) if skills.soft_skills_json else {}
 
             hard_labels = list(hard_dict.keys())
             hard_skills = list(hard_dict.values())
@@ -896,6 +828,7 @@ def alunos_instituicao():
         total_pages=total_pages
     )
 
+
 @app.route('/detalhes_aluno_instituicao/<int:id_aluno>', methods=['GET', 'POST'])
 @login_required
 @bloquear_chefe
@@ -905,7 +838,8 @@ def detalhes_aluno_instituicao(id_aluno):
         return redirect(url_for('home'))
 
     aluno = Aluno.query.get_or_404(id_aluno)
-    cursos_disponiveis = [curso.nome for curso in Curso.query.filter_by(id_instituicao=aluno.id_instituicao).all()]
+    cursos_disponiveis = [curso.nome for curso in Curso.query.filter_by(
+        id_instituicao=aluno.id_instituicao).all()]
 
     # Pegue as listas para o formulário
     hard_labels = HARD_SKILLS_POR_CURSO.get(aluno.curso, [])
@@ -916,8 +850,10 @@ def detalhes_aluno_instituicao(id_aluno):
     hard_dict = {}
     soft_dict = {}
     if skills:
-        hard_dict = json.loads(skills.hard_skills_json) if skills.hard_skills_json else {}
-        soft_dict = json.loads(skills.soft_skills_json) if skills.soft_skills_json else {}
+        hard_dict = json.loads(
+            skills.hard_skills_json) if skills.hard_skills_json else {}
+        soft_dict = json.loads(
+            skills.soft_skills_json) if skills.soft_skills_json else {}
 
     if request.method == 'POST':
         # Validação do curso
@@ -936,7 +872,8 @@ def detalhes_aluno_instituicao(id_aluno):
         periodo = request.form.get('periodo', '').strip()
 
         # Verifica se já existe outro aluno com este e-mail
-        email_existente = Aluno.query.filter(Aluno.email == email, Aluno.id_aluno != aluno.id_aluno).first()
+        email_existente = Aluno.query.filter(
+            Aluno.email == email, Aluno.id_aluno != aluno.id_aluno).first()
         if email_existente:
             flash("Já existe um aluno cadastrado com este e-mail.", "danger")
 
@@ -951,7 +888,8 @@ def detalhes_aluno_instituicao(id_aluno):
 
         # Validação do contato
         if not contato_jovem.isdigit() or len(contato_jovem) < 8:
-            flash("Contato deve conter apenas números e ter pelo menos 11 dígitos.", "danger")
+            flash(
+                "Contato deve conter apenas números e ter pelo menos 11 dígitos.", "danger")
             return redirect(request.url)
 
         # Validação do período
@@ -1014,7 +952,8 @@ def detalhes_aluno_instituicao(id_aluno):
 
         # Salvar histórico das skills após atualizar para todos os chefes que acompanham este aluno
         try:
-            acompanhamentos = Acompanhamento.query.filter_by(id_aluno=aluno.id_aluno).all()
+            acompanhamentos = Acompanhamento.query.filter_by(
+                id_aluno=aluno.id_aluno).all()
             fuso_brasil = pytz.timezone('America/Recife')
             data_atualizacao = datetime.now(fuso_brasil)
             for ac in acompanhamentos:
@@ -1059,12 +998,14 @@ def perfil():
 
             nome = request.form['nome'].strip()
             if not re.match(r'^[A-Za-zÀ-ÖØ-öø-ÿ\s]{2,30}$', nome):
-                flash("O nome deve ter entre 2 e 30 letras e não pode conter números.", "danger")
+                flash(
+                    "O nome deve ter entre 2 e 30 letras e não pode conter números.", "danger")
                 return redirect(url_for('perfil'))
 
             # Verifica se já existe outro chefe com este e-mail
             novo_email = request.form['email']
-            email_existente = Chefe.query.filter(Chefe.email == novo_email, Chefe.id_chefe != chefe.id_chefe).first()
+            email_existente = Chefe.query.filter(
+                Chefe.email == novo_email, Chefe.id_chefe != chefe.id_chefe).first()
             if email_existente:
                 flash("Já existe um chefe cadastrado com este e-mail.", "danger")
                 return redirect(url_for('perfil'))
@@ -1087,15 +1028,18 @@ def perfil():
                 return redirect(url_for('perfil'))
         # Atualizar informações da instituição
         elif tipo_usuario == 'instituicao':
-            instituicao = InstituicaodeEnsino.query.get_or_404(current_user.id_instituicao)
+            instituicao = InstituicaodeEnsino.query.get_or_404(
+                current_user.id_instituicao)
             nome_instituicao = request.form['nome_instituicao'].strip()
             reitor = request.form['reitor'].strip()
 
             if not re.match(r'^[A-Za-zÀ-ÖØ-öø-ÿ\s]{2,50}$', nome_instituicao):
-                flash("O nome da instituição deve ter entre 2 e 50 letras e não pode conter números.", "danger")
+                flash(
+                    "O nome da instituição deve ter entre 2 e 50 letras e não pode conter números.", "danger")
                 return redirect(url_for('perfil'))
             if not re.match(r'^[A-Za-zÀ-ÖØ-öø-ÿ\s]{2,30}$', reitor):
-                flash("O nome do reitor deve ter entre 2 e 30 letras e não pode conter números.", "danger")
+                flash(
+                    "O nome do reitor deve ter entre 2 e 30 letras e não pode conter números.", "danger")
                 return redirect(url_for('perfil'))
 
             novo_email = request.form['email']
@@ -1128,7 +1072,8 @@ def perfil():
 
             instituicao.email = novo_email
             if request.form['senha']:
-                instituicao.senha = generate_password_hash(request.form['senha'])
+                instituicao.senha = generate_password_hash(
+                    request.form['senha'])
             try:
                 db.session.commit()
                 flash("Perfil atualizado com sucesso!", "success")
@@ -1142,13 +1087,16 @@ def perfil():
         usuario = Chefe.query.get_or_404(current_user.id_chefe)
         cursos_da_instituicao = []
     elif tipo_usuario == 'instituicao':
-        usuario = InstituicaodeEnsino.query.get_or_404(current_user.id_instituicao)
-        cursos_da_instituicao = Curso.query.filter_by(id_instituicao=current_user.id_instituicao).all()
+        usuario = InstituicaodeEnsino.query.get_or_404(
+            current_user.id_instituicao)
+        cursos_da_instituicao = Curso.query.filter_by(
+            id_instituicao=current_user.id_instituicao).all()
     else:
         flash("Tipo de usuário inválido.", "danger")
         return redirect(url_for('home'))
 
     return render_template('perfil.html', usuario=usuario, cursos_da_instituicao=cursos_da_instituicao)
+
 
 @app.route('/acompanhar_aluno/<int:id_aluno>', methods=['POST'])
 @login_required
@@ -1157,7 +1105,8 @@ def acompanhar_aluno(id_aluno):
     chefe_id = current_user.id_chefe
 
     # Verifica se já está acompanhando
-    acompanhamento = Acompanhamento.query.filter_by(id_chefe=chefe_id, id_aluno=id_aluno).first()
+    acompanhamento = Acompanhamento.query.filter_by(
+        id_chefe=chefe_id, id_aluno=id_aluno).first()
     if acompanhamento:
         return jsonify({'error': 'Você já está acompanhando este aluno.'}), 400
 
@@ -1166,7 +1115,8 @@ def acompanhar_aluno(id_aluno):
     db.session.commit()
 
     # Cria snapshot das skills no momento do acompanhamento, se não existir para este chefe
-    historico_existente = SkillsHistorico.query.filter_by(id_aluno=id_aluno, id_chefe=chefe_id).count()
+    historico_existente = SkillsHistorico.query.filter_by(
+        id_aluno=id_aluno, id_chefe=chefe_id).count()
     aluno = Aluno.query.get(id_aluno)
     if aluno and aluno.skills and historico_existente == 0:
         novo_historico = SkillsHistorico(
@@ -1180,6 +1130,7 @@ def acompanhar_aluno(id_aluno):
     # -------------------------------------------------------------------------------
 
     return jsonify({'message': 'Aluno adicionado à sua lista de acompanhamento!'})
+
 
 @app.route('/acompanhar')
 @login_required
@@ -1196,8 +1147,10 @@ def acompanhar():
         soft_labels = []
         soft_skills = []
         if skills:
-            hard_dict = json.loads(skills.hard_skills_json) if skills.hard_skills_json else {}
-            soft_dict = json.loads(skills.soft_skills_json) if skills.soft_skills_json else {}
+            hard_dict = json.loads(
+                skills.hard_skills_json) if skills.hard_skills_json else {}
+            soft_dict = json.loads(
+                skills.soft_skills_json) if skills.soft_skills_json else {}
 
             hard_labels = list(hard_dict.keys())
             hard_skills = list(hard_dict.values())
@@ -1233,12 +1186,14 @@ def acompanhar():
         total_pages=total_pages
     )
 
+
 @app.route('/remover_acompanhamento/<int:id_aluno>', methods=['POST'])
 @login_required
 @bloquear_instituicao
 def remover_acompanhamento(id_aluno):
     chefe_id = current_user.id_chefe
-    ac = Acompanhamento.query.filter_by(id_chefe=chefe_id, id_aluno=id_aluno).first()
+    ac = Acompanhamento.query.filter_by(
+        id_chefe=chefe_id, id_aluno=id_aluno).first()
     if ac:
         db.session.delete(ac)
         db.session.commit()
@@ -1247,14 +1202,14 @@ def remover_acompanhamento(id_aluno):
         flash("Acompanhamento não encontrado.", "danger")
     return redirect(url_for('acompanhar'))
 
-import pytz
 
 @app.route('/status_aluno/<int:id_aluno>')
 @login_required
 @bloquear_instituicao
 def status_aluno(id_aluno):
     chefe_id = current_user.id_chefe
-    historicos = SkillsHistorico.query.filter_by(id_aluno=id_aluno, id_chefe=chefe_id).order_by(SkillsHistorico.data.desc()).all()
+    historicos = SkillsHistorico.query.filter_by(
+        id_aluno=id_aluno, id_chefe=chefe_id).order_by(SkillsHistorico.data.desc()).all()
     aluno = Aluno.query.get_or_404(id_aluno)
     historicos_dict = []
     fuso_brasil = pytz.timezone('America/Recife')
@@ -1262,11 +1217,14 @@ def status_aluno(id_aluno):
         # Converte para o fuso de Recife se não tiver tzinfo
         data_brasil = hist.data
         if data_brasil and data_brasil.tzinfo is None:
-            data_brasil = pytz.utc.localize(data_brasil).astimezone(fuso_brasil)
+            data_brasil = pytz.utc.localize(
+                data_brasil).astimezone(fuso_brasil)
         elif data_brasil:
             data_brasil = data_brasil.astimezone(fuso_brasil)
-        hard = json.loads(hist.hard_skills_json) if hist.hard_skills_json else {}
-        soft = json.loads(hist.soft_skills_json) if hist.soft_skills_json else {}
+        hard = json.loads(
+            hist.hard_skills_json) if hist.hard_skills_json else {}
+        soft = json.loads(
+            hist.soft_skills_json) if hist.soft_skills_json else {}
         historicos_dict.append({
             'data': data_brasil,
             'hard_skills': hard,
@@ -1290,6 +1248,7 @@ def status_aluno(id_aluno):
             'anterior': None
         })
     return render_template('status_aluno.html', historicos=historicos_dict, historico_pares=historico_pares, aluno=aluno)
+
 
 @app.route('/alunos_indicados')
 @bloquear_chefe
@@ -1333,6 +1292,7 @@ def alunos_indicados():
         total_pages=total_pages
     )
 
+
 @app.route('/configuracoes', methods=['GET', 'POST'])
 @login_required
 def configuracoes():
@@ -1342,20 +1302,21 @@ def configuracoes():
         usuario = Chefe.query.get_or_404(current_user.id_chefe)
         cursos_da_instituicao = []
     elif tipo_usuario == 'instituicao':
-        usuario = InstituicaodeEnsino.query.get_or_404(current_user.id_instituicao)
-        cursos_da_instituicao = Curso.query.filter_by(id_instituicao=current_user.id_instituicao).all()
+        usuario = InstituicaodeEnsino.query.get_or_404(
+            current_user.id_instituicao)
+        cursos_da_instituicao = Curso.query.filter_by(
+            id_instituicao=current_user.id_instituicao).all()
     else:
         flash("Tipo de usuário inválido.", "danger")
         return redirect(url_for('home'))
 
     return render_template('configuracoes.html', usuario=usuario, cursos_da_instituicao=cursos_da_instituicao)
 
-@app.route('/logout')
-def logout():
-    logout_user()
-    session.clear()
-    flash('Você saiu com sucesso.', 'success')
-    return redirect(url_for('login'))
+# Rota de logout movida para auth.py
+
+# Registrar blueprints
+
 
 if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0') # host para expor o servidor para fora do container
+    # host para expor o servidor para fora do container
+    app.run(debug=True, host='0.0.0.0')

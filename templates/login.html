@@ -61,7 +61,7 @@
         </a>
         <br>
         <div class="welcome-text" tabindex="0">Bem-vindo de volta! Faça seu login.</div>
-            <form method="POST" action="{{ url_for('login') }}" class="form-box">
+            <form method="POST" action="{{ url_for('auth.login') }}" class="form-box">
                     <div class="mb-3">
                         <label for="email" class="form-label">E-mail</label>
                         <input type="email" id="email" name="email" class="form-control" placeholder="Digite seu e-mail" required>
