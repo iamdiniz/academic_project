@@ -1102,13 +1102,11 @@ def perfil():
         # Atualizar informações do chefe
         if tipo_usuario == 'chefe':
             chefe = Chefe.query.get_or_404(current_user.id_chefe)
-
             nome = request.form['nome'].strip()
             if not re.match(r'^[A-Za-zÀ-ÖØ-öø-ÿ\s]{2,30}$', nome):
                 flash("O nome deve ter entre 2 e 30 letras e não pode conter números.", "danger")
                 return redirect(url_for('perfil'))
 
-            # Verifica se já existe outro chefe com este e-mail
             novo_email = request.form['email']
             email_existente = Chefe.query.filter(Chefe.email == novo_email, Chefe.id_chefe != chefe.id_chefe).first()
             if email_existente:
@@ -1122,8 +1120,12 @@ def perfil():
             chefe.cargo = cargo
             chefe.nome_empresa = request.form.get('nome_empresa')
             chefe.email = novo_email
-            if request.form['senha']:
-                chefe.senha = generate_password_hash(request.form['senha'])
+            senha_nova = request.form.get('senha', '')
+            if senha_nova:
+                if len(senha_nova) < 8:
+                    flash("A senha deve ter no mínimo 8 caracteres.", "danger")
+                    return redirect(url_for('perfil'))
+                chefe.senha = generate_password_hash(senha_nova)
             try:
                 db.session.commit()
                 flash("Perfil atualizado com sucesso!", "success")
@@ -1131,6 +1133,7 @@ def perfil():
                 db.session.rollback()
                 flash("Já existe um chefe cadastrado com este e-mail.", "danger")
                 return redirect(url_for('perfil'))
+            
         # Atualizar informações da instituição
         elif tipo_usuario == 'instituicao':
             instituicao = InstituicaodeEnsino.query.get_or_404(current_user.id_instituicao)
@@ -1145,7 +1148,6 @@ def perfil():
                 return redirect(url_for('perfil'))
 
             novo_email = request.form['email']
-            # Verifica se já existe outra instituição com este e-mail
             email_existente = InstituicaodeEnsino.query.filter(
                 InstituicaodeEnsino.email == novo_email,
                 InstituicaodeEnsino.id_instituicao != instituicao.id_instituicao
@@ -1158,14 +1160,12 @@ def perfil():
             instituicao.reitor = request.form['reitor']
             instituicao.infraestrutura = request.form['infraestrutura']
 
-            # Validação da nota MEC
             nota_mec = request.form['nota_mec']
             if nota_mec not in ['1', '2', '3', '4', '5']:
                 flash("Nota MEC deve ser um valor entre 1 e 5.", "danger")
                 return redirect(url_for('perfil'))
             instituicao.nota_mec = int(nota_mec)
 
-            # Validação das modalidades
             modalidades = request.form['modalidades']
             if modalidades not in ['Presencial', 'Hibrido', 'EAD']:
                 flash("Selecione uma modalidade válida.", "danger")
@@ -1173,8 +1173,12 @@ def perfil():
             instituicao.modalidades = modalidades
 
             instituicao.email = novo_email
-            if request.form['senha']:
-                instituicao.senha = generate_password_hash(request.form['senha'])
+            senha_nova = request.form.get('senha', '')
+            if senha_nova:
+                if len(senha_nova) < 8:
+                    flash("A senha deve ter no mínimo 8 caracteres.", "danger")
+                    return redirect(url_for('perfil'))
+                instituicao.senha = generate_password_hash(senha_nova)
             try:
                 db.session.commit()
                 flash("Perfil atualizado com sucesso!", "success")
@@ -1195,6 +1199,7 @@ def perfil():
         return redirect(url_for('home'))
 
     return render_template('perfil.html', usuario=usuario, cursos_da_instituicao=cursos_da_instituicao)
+
 
 @app.route('/acompanhar_aluno/<int:id_aluno>', methods=['POST'])
 @login_required
