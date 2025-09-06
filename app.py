@@ -750,6 +750,11 @@ def cadastrar_aluno():
     formacao = request.form.get('formacao', '').strip()
     periodo = request.form.get('periodo', '').strip()
 
+    # Validação do e-mail duplicado
+    if Aluno.query.filter_by(email=email).first():
+        flash("Já existe um aluno cadastrado com este e-mail.", "danger")
+        return redirect(url_for('alunos_instituicao'))
+
     # Validação dos campos obrigatórios
     if not nome_jovem or not data_nascimento or not endereco_jovem or not contato_jovem or not email or not curso or not formacao or not periodo:
         flash("Preencha todos os campos obrigatórios!", "error")
@@ -820,7 +825,7 @@ def cadastrar_aluno():
         flash("Aluno cadastrado com sucesso!", "success")
     except IntegrityError:
         db.session.rollback()
-        flash("Erro ao cadastrar aluno. Verifique os dados e tente novamente.", "danger")
+        flash("Erro inesperado ao cadastrar aluno. Tente novamente.", "danger")
 
     return redirect(url_for('alunos_instituicao'))
 
