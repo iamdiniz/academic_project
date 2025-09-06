@@ -4,7 +4,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
-# Biblioteca para remover acentos e caracteres especiais
 from unidecode import unidecode
 from urllib.parse import unquote
 from math import ceil
@@ -13,40 +12,41 @@ import re
 import json
 import pytz
 import os
-# 🔧 NOVA IMPORTAÇÃO: Para carregar variáveis do arquivo .env
 from dotenv import load_dotenv
 
-# 🔧 MODIFICAÇÃO 1: Carrega as variáveis do arquivo .env
+
 load_dotenv()
 
 app = Flask(__name__)
 
-# 🔧 MODIFICAÇÃO 2: Chave secreta agora vem de variável de ambiente
+
 app.secret_key = os.getenv('FLASK_SECRET_KEY')
 if not app.secret_key:
     raise RuntimeError(
         "A variável FLASK_SECRET_KEY não está definida no ambiente!")
 
-# 🔧 MODIFICAÇÃO 3: Removida a configuração hardcoded do banco
-# 🔧 MODIFICAÇÃO 4: Removidas as variáveis não utilizadas (user, password, host, port, dbname)
 
-# 🔧 MODIFICAÇÃO 5: Busca variável de ambiente para conexão do banco
+
+
 database_url = os.getenv("DATABASE_URL")
 if not database_url:
     raise RuntimeError(
         "A variável DATABASE_URL não está definida no ambiente!")
 
-# 🔧 MODIFICAÇÃO 6: Adapta para SQLAlchemy se necessário
+
 if database_url.startswith("mysql://"):
     database_url = database_url.replace("mysql://", "mysql+pymysql://", 1)
+
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 db = SQLAlchemy(app)
 
-# Configuração do flask-login
+
+
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'login'  # Redireciona para a página de login se não autenticado
+login_manager.login_view = 'login'
+
 
 CURSOS_PADRAO = [
     "Administração", "Agronomia", "Arquitetura", "Biologia", "Ciência da Computação",
@@ -54,7 +54,8 @@ CURSOS_PADRAO = [
     "Matemática", "Medicina", "Pedagogia", "Psicologia", "Química", "Sistemas de Informação",
 ]
 
-# Hard skills por curso
+
+
 HARD_SKILLS_POR_CURSO = {
     "Administração": [
         "Gestão de Pessoas", "Finanças", "Marketing", "Empreendedorismo", "Planejamento Estratégico"
@@ -109,11 +110,13 @@ HARD_SKILLS_POR_CURSO = {
     ]
 }
 
-# Soft skills para todos os cursos
+
+
 SOFT_SKILLS = [
     "Participação", "Comunicação", "Proatividade",
     "Criatividade", "Trabalho em Equipe"
 ]
+
 
 class InstituicaodeEnsino(db.Model, UserMixin):
     __tablename__ = 'instituicao_de_ensino'
@@ -133,6 +136,7 @@ class InstituicaodeEnsino(db.Model, UserMixin):
     def get_id(self):
         return str(self.id_instituicao)
 
+
 class Curso(db.Model):
     __tablename__ = 'cursos'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -140,6 +144,7 @@ class Curso(db.Model):
     id_instituicao = db.Column(db.Integer, db.ForeignKey('instituicao_de_ensino.id_instituicao'), nullable=False)
 
     instituicao = db.relationship('InstituicaodeEnsino', backref='cursos')
+
 
 class Aluno(db.Model):
     __tablename__ = 'alunos'
@@ -158,6 +163,7 @@ class Aluno(db.Model):
 
     chefe = db.relationship('Chefe', backref='alunos_indicados') # Relacionamento reverso
 
+
 class Chefe(db.Model, UserMixin):
     __tablename__ = 'chefe'
 
@@ -171,6 +177,7 @@ class Chefe(db.Model, UserMixin):
     def get_id(self):
         return str(self.id_chefe)
 
+
 class SkillsDoAluno(db.Model):
     __tablename__ = 'skills_do_aluno'
 
@@ -178,6 +185,7 @@ class SkillsDoAluno(db.Model):
     hard_skills_json = db.Column(db.Text)  # Hard skills dinâmicas por curso (JSON)
     soft_skills_json = db.Column(db.Text)  # Soft skills detalhadas (JSON)
     aluno = db.relationship('Aluno', backref=db.backref('skills', uselist=False))
+
 
 class Acompanhamento(db.Model):
     __tablename__ = 'acompanhamento'
@@ -193,6 +201,7 @@ class Acompanhamento(db.Model):
         db.UniqueConstraint('id_chefe', 'id_aluno', name='uix_chefe_aluno'),
     )
 
+
 class SkillsHistorico(db.Model):
     __tablename__ = 'skills_historico'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -204,6 +213,7 @@ class SkillsHistorico(db.Model):
 
     aluno = db.relationship('Aluno', backref='historicos')
     chefe = db.relationship('Chefe', backref='historicos')
+
 
 class Indicacao(db.Model):
     __tablename__ = 'indicacoes'
@@ -219,9 +229,11 @@ class Indicacao(db.Model):
         db.UniqueConstraint('id_chefe', 'id_aluno', name='uix_chefe_aluno_indicacao'),
     )
 
+
 with app.app_context():
     db.create_all()  # Recria as tabelas com base nos modelos
     print("Tabelas recriadas com sucesso!")
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -232,6 +244,7 @@ def load_user(user_id):
         return InstituicaodeEnsino.query.get(int(user_id))
     return None
 
+
 def bloquear_chefe(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -240,6 +253,7 @@ def bloquear_chefe(f):
             return redirect(url_for('home')) # Redireciona para a página inicial
         return f(*args, **kwargs)
     return decorated_function
+
 
 def bloquear_instituicao(f):
     @wraps(f)
@@ -250,6 +264,7 @@ def bloquear_instituicao(f):
         return f(*args, **kwargs)
     return decorated_function
 
+
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
     if request.method == 'POST':
@@ -258,6 +273,11 @@ def cadastro():
         email = request.form.get('email')
         senha = request.form.get('senha')
         confirmar_senha = request.form.get('confirmar_senha')
+
+        # Validação: senha mínima de 8 caracteres
+        if not senha or len(senha) < 8:
+            flash('A senha deve ter no mínimo 8 caracteres.', 'danger')
+            return redirect(url_for('cadastro'))
 
         if senha != confirmar_senha:
             flash('As senhas não coincidem!')
@@ -345,9 +365,11 @@ def cadastro():
 
     return render_template('cadastro.html', cursos_padrao=CURSOS_PADRAO)
 
+
 @app.route('/')
 def index():
     return redirect(url_for('carousel'))
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -374,6 +396,7 @@ def login():
         flash("E-mail ou senha inválidos.", "danger")
     return render_template('login.html')
 
+
 @app.route('/home')
 @login_required
 def home():
@@ -389,6 +412,7 @@ def home():
         # Caso o tipo de usuário não seja reconhecido, redireciona para o login
         flash("Tipo de usuário inválido. Faça login novamente.", "danger")
         return redirect(url_for('login'))
+
 
 @app.route('/instituicaoEnsino')
 @bloquear_instituicao
@@ -424,12 +448,14 @@ def instituicao_ensino():
         total_pages=total_pages
     )
 
+
 @app.route('/detalhes_instituicao/<int:id_instituicao>')
 @login_required
 def detalhes_instituicao(id_instituicao):
     instituicao = InstituicaodeEnsino.query.get_or_404(id_instituicao)
     cursos = Curso.query.filter_by(id_instituicao=id_instituicao).all()
     return render_template('detalhes_instituicao.html', instituicao=instituicao, cursos=cursos)
+
 
 @app.route('/minhas_selecoes')
 @bloquear_instituicao
@@ -491,6 +517,7 @@ def minhas_selecoes():
         total_pages=total_pages
     )
 
+
 @app.route('/remover_indicacao/<int:id_aluno>', methods=['POST'])
 @bloquear_instituicao
 @login_required
@@ -510,6 +537,7 @@ def remover_indicacao(id_aluno):
     db.session.commit()
 
     return jsonify({'message': 'Indicação removida com sucesso!'}), 200
+
 
 @app.route('/remover_aluno/<int:id_aluno>', methods=['POST'])
 @login_required
@@ -531,6 +559,7 @@ def remover_aluno(id_aluno):
         flash("Erro ao remover aluno.", "danger")
 
     return redirect(url_for('alunos'))
+
 
 @app.route('/ver_alunos_por_curso', methods=['GET'])
 @bloquear_instituicao
@@ -633,6 +662,7 @@ def ver_alunos_por_curso():
         HARD_SKILLS_POR_CURSO=HARD_SKILLS_POR_CURSO,
         SOFT_SKILLS=SOFT_SKILLS
     )
+
 
 @app.route('/detalhes_aluno/<int:id_aluno>')
 @bloquear_instituicao
@@ -1338,6 +1368,7 @@ def alunos_indicados():
         total_pages=total_pages
     )
 
+
 @app.route('/configuracoes', methods=['GET', 'POST'])
 @login_required
 def configuracoes():
@@ -1355,12 +1386,14 @@ def configuracoes():
 
     return render_template('configuracoes.html', usuario=usuario, cursos_da_instituicao=cursos_da_instituicao)
 
+
 @app.route('/logout')
 def logout():
     logout_user()
     session.clear()
     flash('Você saiu com sucesso.', 'success')
     return redirect(url_for('login'))
+
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0') # host para expor o servidor para fora do container
