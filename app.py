@@ -9,6 +9,7 @@ from urllib.parse import unquote
 from math import ceil
 from dotenv import load_dotenv
 from datetime import datetime
+from flask_wtf import CSRFProtect
 import csv
 import re
 import json
@@ -19,7 +20,6 @@ import os
 load_dotenv()
 
 app = Flask(__name__)
-
 
 app.secret_key = os.getenv('FLASK_SECRET_KEY')
 if not app.secret_key:
@@ -41,18 +41,17 @@ app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 db = SQLAlchemy(app)
 
 
-
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
+csrf = CSRFProtect(app)
 
 CURSOS_PADRAO = [
     "Administração", "Agronomia", "Arquitetura", "Biologia", "Ciência da Computação",
     "Direito", "Educação Física", "Enfermagem", "Engenharia", "Farmácia", "Física",
     "Matemática", "Medicina", "Pedagogia", "Psicologia", "Química", "Sistemas de Informação",
 ]
-
 
 
 HARD_SKILLS_POR_CURSO = {
@@ -1417,7 +1416,7 @@ def registrar_log(acao, usuario_nome, cargo, tipo_usuario):
 
 
 
-@app.route('/logout')
+@app.route('/logout', methods=['POST'])
 def logout():
     
     if 'tipo_usuario' in session:
