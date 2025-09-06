@@ -7,12 +7,13 @@ from sqlalchemy.exc import IntegrityError
 from unidecode import unidecode
 from urllib.parse import unquote
 from math import ceil
+from dotenv import load_dotenv
 from datetime import datetime
+import csv
 import re
 import json
 import pytz
 import os
-from dotenv import load_dotenv
 
 
 load_dotenv()
@@ -24,8 +25,6 @@ app.secret_key = os.getenv('FLASK_SECRET_KEY')
 if not app.secret_key:
     raise RuntimeError(
         "A variável FLASK_SECRET_KEY não está definida no ambiente!")
-
-
 
 
 database_url = os.getenv("DATABASE_URL")
@@ -116,6 +115,16 @@ SOFT_SKILLS = [
     "Participação", "Comunicação", "Proatividade",
     "Criatividade", "Trabalho em Equipe"
 ]
+
+
+class LogAcesso(db.Model):
+    __tablename__ = 'log_acesso'
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_nome = db.Column(db.String(100), nullable=False)
+    cargo = db.Column(db.String(50), nullable=False)
+    tipo_usuario = db.Column(db.String(30), nullable=False)
+    acao = db.Column(db.String(20), nullable=False)  # login ou logout
+    data_hora = db.Column(db.DateTime, default=datetime.now)
 
 
 class InstituicaodeEnsino(db.Model, UserMixin):
@@ -383,6 +392,7 @@ def login():
             session['user_id'] = chefe.id_chefe
             session['tipo_usuario'] = 'chefe'
             login_user(chefe)
+            registrar_log('login', chefe.nome, chefe.cargo, 'chefe')
             return redirect(url_for('home'))
 
         # Verifica se o usuário é uma instituição de ensino
@@ -391,6 +401,7 @@ def login():
             session['user_id'] = instituicao.id_instituicao
             session['tipo_usuario'] = 'instituicao'
             login_user(instituicao)
+            registrar_log('login', instituicao.nome_instituicao, 'reitor', 'instituicao')
             return redirect(url_for('home'))
 
         flash("E-mail ou senha inválidos.", "danger")
@@ -1387,8 +1398,34 @@ def configuracoes():
     return render_template('configuracoes.html', usuario=usuario, cursos_da_instituicao=cursos_da_instituicao)
 
 
+
+def registrar_log(acao, usuario_nome, cargo, tipo_usuario):
+    log = LogAcesso(
+        usuario_nome=usuario_nome,
+        cargo=cargo,
+        tipo_usuario=tipo_usuario,
+        acao=acao,
+        data_hora=datetime.now()
+    )
+    db.session.add(log)
+    db.session.commit()
+
+
+
 @app.route('/logout')
 def logout():
+    
+    if 'tipo_usuario' in session:
+        tipo_usuario = session['tipo_usuario']
+        if tipo_usuario == 'chefe':
+            chefe = Chefe.query.get(session.get('user_id'))
+            if chefe:
+                registrar_log('logout', chefe.nome, chefe.cargo, 'chefe')
+        elif tipo_usuario == 'instituicao':
+            instituicao = InstituicaodeEnsino.query.get(session.get('user_id'))
+            if instituicao:
+                registrar_log('logout', instituicao.nome_instituicao, 'reitor', 'instituicao')
+            
     logout_user()
     session.clear()
     flash('Você saiu com sucesso.', 'success')
