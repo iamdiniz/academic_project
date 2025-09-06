@@ -1,134 +1,187 @@
-{% extends "base.html" %}
-{% set hide_navbar = False %}
-
-{% block title %}Cursos - DashTalent{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/cursos.css') }}">
-{% endblock %}
-
-{% block body %}
+{% extends "base.html" %} {% set hide_navbar = False %} {% block title %}Cursos
+- DashTalent{% endblock %} {% block extra_css %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/cursos.css') }}"
+/>
+{% endblock %} {% block body %}
 <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4 position-relative">
-        <a href="{{ url_for('home') }}" class="back-circle position-absolute start-0">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" class="bi bi-arrow-left" viewBox="0 0 16 16">
-                <path fill-rule="evenodd" d="M15 8a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 7.5H14.5a.5.5 0 0 1 .5.5z"/>
-            </svg>
-        </a>
-        <h1 class="m-0 w-100 text-center page-title">Cursos da Instituição</h1>
+  <div
+    class="d-flex justify-content-between align-items-center mb-4 position-relative"
+  >
+    <a
+      href="{{ url_for('main.home') }}"
+      class="back-circle position-absolute start-0"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="20"
+        height="20"
+        fill="white"
+        class="bi bi-arrow-left"
+        viewBox="0 0 16 16"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M15 8a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 7.5H14.5a.5.5 0 0 1 .5.5z"
+        />
+      </svg>
+    </a>
+    <h1 class="m-0 w-100 text-center page-title">Cursos da Instituição</h1>
   </div>
 
-    <div class="text-center"><p>Cadastre um novo curso!</p></div>
+  <div class="text-center"><p>Cadastre um novo curso!</p></div>
 
-    {% if cursos|length == 0 %}
-        <div class="text-center">
-            <p class="lead">Nenhum curso cadastrado.</p>
+  {% if cursos|length == 0 %}
+  <div class="text-center">
+    <p class="lead">Nenhum curso cadastrado.</p>
+  </div>
+  {% else %}
+  <ul class="list-group list-group-flush mb-4">
+    {% for curso in cursos %}
+    <li class="list-group-item fs-5">{{ curso.nome }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  <div class="container mb-4 text-center">
+    <button
+      class="btn btn-success"
+      data-bs-toggle="modal"
+      data-bs-target="#cadastroCursosModal"
+    >
+      Cadastrar Novo Curso
+    </button>
+  </div>
+  <!-- Modal -->
+
+  <div
+    class="modal fade"
+    id="cadastroCursosModal"
+    tabindex="-1"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content p-4 rounded-4">
+        <div class="modal-header">
+          <h5 class="modal-title">Cadastro de Curso</h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Fechar"
+          ></button>
         </div>
-    {% else %}
-        <ul class="list-group list-group-flush mb-4">
-            {% for curso in cursos %}
-                <li class="list-group-item fs-5">{{ curso.nome }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
-    
-    <div class="container mb-4 text-center">
-        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#cadastroCursosModal">
-            Cadastrar Novo Curso
-        </button>
-    </div>
-    <!-- Modal -->
-
-    <div class="modal fade" id="cadastroCursosModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content p-4 rounded-4">
-                <div class="modal-header">
-                    <h5 class="modal-title">Cadastro de Curso</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-                </div>
-                <form action="{{ url_for('cursos') }}" method="POST">
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="curso" class="form-label">Nome do Curso</label>
-                            <select id="curso" name="curso" class="form-select" required>
-                                <option value="" disabled selected>Selecione o curso</option>
-                                {% for curso in CURSOS_PADRAO %}
-                                    <option value="{{ curso }}">{{ curso }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-success">Cadastrar</button>
-                    </div>
-                </form>
+        <form action="{{ url_for('cursos') }}" method="POST">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="curso" class="form-label">Nome do Curso</label>
+              <select id="curso" name="curso" class="form-select" required>
+                <option value="" disabled selected>Selecione o curso</option>
+                {% for curso in CURSOS_PADRAO %}
+                <option value="{{ curso }}">{{ curso }}</option>
+                {% endfor %}
+              </select>
             </div>
-        </div>
-    </div>
-
-<!-- Toasts de Notificação -->
-<div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
-  <div id="toastNotificacao" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
-    <div class="d-flex">
-      <div class="toast-body" id="toastNotificacaoBody">
-        <!-- Mensagem via JS -->
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-success">Cadastrar</button>
+          </div>
+        </form>
       </div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
     </div>
   </div>
-</div>
-<br>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('#cadastroCursosModal form');
-    const selectCurso = document.getElementById('curso');
-    // Lista de cursos já cadastrados (passada pelo backend)
-    const cursosAdicionados = [
-        {% for curso in cursos %}
-            {{ curso.nome|tojson }}{% if not loop.last %},{% endif %}
-        {% endfor %}
-    ];
+  <!-- Toasts de Notificação -->
+  <div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
+    <div
+      id="toastNotificacao"
+      class="toast align-items-center text-bg-success border-0"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+    >
+      <div class="d-flex">
+        <div class="toast-body" id="toastNotificacaoBody">
+          <!-- Mensagem via JS -->
+        </div>
+        <button
+          type="button"
+          class="btn-close btn-close-white me-2 m-auto"
+          data-bs-dismiss="toast"
+          aria-label="Fechar"
+        ></button>
+      </div>
+    </div>
+  </div>
+  <br />
 
-    form.addEventListener('submit', function(e) {
-        const cursoSelecionado = selectCurso.value;
-        if (cursosAdicionados.includes(cursoSelecionado)) {
-            showToast('Este curso já foi cadastrado!', 'warning', 3000, '<i class="bi bi-exclamation-triangle-fill me-2"></i>');
-            e.preventDefault();
-        }
-    });
-
-    // Função para exibir toast
-    window.showToast = function(mensagem, cor='success', tempo=2500, icone='') {
-        const toast = document.getElementById('toastNotificacao');
-        const toastBody = document.getElementById('toastNotificacaoBody');
-        toast.className = `toast align-items-center text-bg-${cor} border-0`;
-        toastBody.innerHTML = icone + mensagem;
-        const bsToast = new bootstrap.Toast(toast, { delay: tempo });
-        bsToast.show();
-    };
-
-    // Exibe toast para mensagens flash do Flask
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                showToast({{ message|tojson }}, 
-                    {% if category == 'success' %}'success'
-                    {% elif category == 'warning' %}'warning'
-                    {% elif category == 'danger' %}'danger'
-                    {% else %}'info'{% endif %},
-                    3000,
-                    {% if category == 'success' %}'<i class="bi bi-check-circle-fill me-2"></i>'
-                    {% elif category == 'warning' %}'<i class="bi bi-exclamation-triangle-fill me-2"></i>'
-                    {% elif category == 'danger' %}'<i class="bi bi-x-circle-fill me-2"></i>'
-                    {% else %}''{% endif %}
-                );
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('#cadastroCursosModal form');
+        const selectCurso = document.getElementById('curso');
+        // Lista de cursos já cadastrados (passada pelo backend)
+        // Dados passados para JavaScript modular
+        window.cursosExistentes = [
+            {% for curso in cursos %}
+                {{ curso.nome|tojson }}{% if not loop.last %},{% endif %}
             {% endfor %}
-        {% endif %}
-    {% endwith %}
-});
-</script>
-<!-- Bootstrap Icons CDN para ícones -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-{% endblock %}
+        ];
+        const cursosAdicionados = window.cursosExistentes;
+
+        form.addEventListener('submit', function(e) {
+            const cursoSelecionado = selectCurso.value;
+            if (cursosAdicionados.includes(cursoSelecionado)) {
+                showToast('Este curso já foi cadastrado!', 'warning', 3000, '<i class="bi bi-exclamation-triangle-fill me-2"></i>');
+                e.preventDefault();
+            }
+        });
+
+        // Função para exibir toast
+        window.showToast = function(mensagem, cor='success', tempo=2500, icone='') {
+            const toast = document.getElementById('toastNotificacao');
+            const toastBody = document.getElementById('toastNotificacaoBody');
+            toast.className = `toast align-items-center text-bg-${cor} border-0`;
+            toastBody.innerHTML = icone + mensagem;
+            const bsToast = new bootstrap.Toast(toast, { delay: tempo });
+            bsToast.show();
+        };
+
+        // Exibe toast para mensagens flash do Flask
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    showToast({{ message|tojson }},
+                        {% if category == 'success' %}'success'
+                        {% elif category == 'warning' %}'warning'
+                        {% elif category == 'danger' %}'danger'
+                        {% else %}'info'{% endif %},
+                        3000,
+                        {% if category == 'success' %}'<i class="bi bi-check-circle-fill me-2"></i>'
+                        {% elif category == 'warning' %}'<i class="bi bi-exclamation-triangle-fill me-2"></i>'
+                        {% elif category == 'danger' %}'<i class="bi bi-x-circle-fill me-2"></i>'
+                        {% else %}''{% endif %}
+                    );
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    });
+  </script>
+
+  <!-- JavaScript modular para cursos -->
+  <script src="{{ url_for('static', filename='js/cursos.js') }}"></script>
+
+  <!-- Bootstrap Icons CDN para ícones -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+  />
+  {% endblock %}
+</div>

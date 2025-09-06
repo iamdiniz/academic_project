@@ -14,8 +14,8 @@
     <a class="navbar-brand-carousel text-white fw-bold order-1 me-auto" style="text-decoration: none;">DashTalent</a>
 
     <div class="d-flex order-2">
-      <a href="/login" class="btn btn-outline-light me-2">Login</a>
-      <a href="/cadastro" class="btn btn-primary">Cadastro</a>
+      <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light me-2">Login</a>
+              <a href="{{ url_for('auth.cadastro') }}" class="btn btn-primary">Cadastro</a>
     </div>
   </div>
 </nav>
@@ -155,7 +155,7 @@
                     </div>
 
                     <div class="mt-3">
-                        <a href="/login" class="btn btn-primary w-100 btn-glow">Detalhes</a>
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-primary w-100 btn-glow">Detalhes</a>
                     </div>
                 </div>
             </div>
@@ -178,7 +178,7 @@
                     </div>
 
                     <div class="mt-3">
-                        <a href="/login" class="btn btn-primary w-100 btn-glow">Detalhes</a>
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-primary w-100 btn-glow">Detalhes</a>
                     </div>
                 </div>
             </div>
@@ -201,7 +201,7 @@
                     </div>
 
                     <div class="mt-3">
-                        <a href="/login" class="btn btn-primary w-100 btn-glow">Detalhes</a>
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-primary w-100 btn-glow">Detalhes</a>
                     </div>
                 </div>
             </div>
@@ -214,8 +214,8 @@
             <h2 class="mb-4">Pronto para transformar o futuro da sua empresa?</h2>
             <p class="lead mb-4">Entre para a DashTalent e conecte-se a oportunidades únicas. Se já tem uma conta, acesse com seu login, ou se ainda não é cadastrado, crie sua conta agora mesmo!</p>
             <div class="d-flex justify-content-center">
-                <a href="/login" class="btn btn-primary btn-lg me-3">Realize seu Login</a>
-                <a href="/cadastro" class="btn btn-outline-primary btn-lg">Faça seu Cadastro</a>
+                <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg me-3">Realize seu Login</a>
+                <a href="{{ url_for('auth.cadastro') }}" class="btn btn-outline-primary btn-lg">Faça seu Cadastro</a>
             </div>
         </div>
     </section>

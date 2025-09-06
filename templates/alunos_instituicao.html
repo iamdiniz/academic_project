@@ -14,7 +14,7 @@
 {% block body %}
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4 position-relative">
-        <a href="{{ url_for('home') }}" class="back-circle position-absolute start-0">
+        <a href="{{ url_for('main.home') }}" class="back-circle position-absolute start-0">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" class="bi bi-arrow-left" viewBox="0 0 16 16">
                 <path fill-rule="evenodd" d="M15 8a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 7.5H14.5a.5.5 0 0 1 .5.5z"/>
             </svg>
@@ -24,13 +24,17 @@
 
     <div class="text-center"><p>Veja e gerencie aqui os alunos vinculados à sua instituição.</p></div><br>
 
-    <form method="POST" class="row g-2 align-items-end mb-4">
+    <form method="GET" class="row g-2 align-items-end mb-4">
     <div class="col-md-4">
         <select name="curso" class="form-select form-select-sm">
             <option value="">Todos os Cursos</option>
             {% for curso in cursos %}
                 <option value="{{ curso }}" {% if curso == filtro_curso %}selected{% endif %}>{{ curso }}</option>
             {% endfor %}
+            <!-- Debug: mostrar quantos cursos foram encontrados -->
+            {% if cursos|length == 0 %}
+                <option value="" disabled>Nenhum curso cadastrado</option>
+            {% endif %}
         </select>
     </div>
     <div class="col-md-3">
@@ -224,7 +228,7 @@
                         </div>
                         <div class="col-md-6">
                             <label>Contato</label>
-                            <input name="contato_jovem" class="form-control" placeholder="00000000000" required maxlength="11" inputmode="numeric" pattern="\d{11}" id="contato_jovem">
+                            <input name="contato_jovem" class="form-control" placeholder="(11) 99999-9999" required maxlength="15" inputmode="numeric" id="contato_jovem">
                         <div class="invalid-feedback"></div>
                         </div>
                         <div class="col-md-6">
@@ -564,28 +568,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-document.addEventListener('DOMContentLoaded', function() {
-    const contatoInput = document.getElementById('contato_jovem');
-    if (contatoInput) {
-        contatoInput.addEventListener('input', function() {
-            // Remove tudo que não for número
-            this.value = this.value.replace(/\D/g, '').slice(0, 11);
-        });
-        contatoInput.addEventListener('keydown', function(e) {
-            // Permite teclas de controle
-            if (
-                e.key === "Backspace" || e.key === "Tab" || e.key === "Delete" ||
-                e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === "Home" || e.key === "End"
-            ) {
-                return;
-            }
-            // Permite apenas números
-            if (!/^[0-9]$/.test(e.key)) {
-                e.preventDefault();
-            }
-        });
-    }
-});
+// Formatação de telefone já está sendo aplicada pelo main.js
+// Removido para evitar conflitos de event listeners
 </script>
 
 <!-- Bootstrap Icons CDN para ícones -->

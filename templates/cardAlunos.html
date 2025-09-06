@@ -1,299 +1,379 @@
-{% extends 'base.html' %}
-{% set hide_navbar = False %}
-
-{% block title %}Alunos - DashTalent{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/cardAlunos.css') }}">
-{% endblock %}
-
-{% block head %}
+{% extends 'base.html' %} {% set hide_navbar = False %} {% block title %}Alunos
+- DashTalent{% endblock %} {% block extra_css %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/cardAlunos.css') }}"
+/>
+{% endblock %} {% block head %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-{% endblock %}
-
-{% block body %}
+{% endblock %} {% block body %}
 <div class="container mt-4">
-    {% if mensagem %}
-        <div class="alert alert-warning alert-dismissible fade show" role="alert">
-            {{ mensagem }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
-        </div>
-    {% endif %}
-    <div class="d-flex justify-content-between align-items-center mb-4 position-relative">
-        <a href="{{ url_for('instituicao_ensino') }}" class="back-circle position-absolute start-0">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" class="bi bi-arrow-left" viewBox="0 0 16 16">
-                <path fill-rule="evenodd" d="M15 8a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 7.5H14.5a.5.5 0 0 1 .5.5z"/>
-            </svg>
-        </a>
-        <h1 class="m-0 w-100 text-center page-title">Lista de Alunos{% if curso %} de {{ curso }}{% endif %}</h1>
-    </div>
+  {% if mensagem %}
+  <div class="alert alert-warning alert-dismissible fade show" role="alert">
+    {{ mensagem }}
+    <button
+      type="button"
+      class="btn-close"
+      data-bs-dismiss="alert"
+      aria-label="Fechar"
+    ></button>
+  </div>
+  {% endif %}
+  <div
+    class="d-flex justify-content-between align-items-center mb-4 position-relative"
+  >
+    <a
+      href="{{ url_for('instituicao_ensino') }}"
+      class="back-circle position-absolute start-0"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="20"
+        height="20"
+        fill="white"
+        class="bi bi-arrow-left"
+        viewBox="0 0 16 16"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M15 8a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 7.5H14.5a.5.5 0 0 1 .5.5z"
+        />
+      </svg>
+    </a>
+    <h1 class="m-0 w-100 text-center page-title">
+      Lista de Alunos{% if curso %} de {{ curso }}{% endif %}
+    </h1>
+  </div>
 
-    <!-- Formulário de Filtro -->
-    <form method="get" class="row g-3 mb-4 align-items-end" action="{{ url_for('ver_alunos_por_curso') }}">
-        <input type="hidden" name="inst_id" value="{{ request.args.get('inst_id', '') }}">
-        <input type="hidden" name="curso" value="{{ curso }}">
-        <div class="col-12 mb-1">
-            <strong>Filtre as habilidades e o periodo</strong>
-        </div>
-        <div class="col-md-3">
-            <label for="periodo" class="form-label">Período (1 a 20)</label>
-            <input type="number" min="1" max="20" class="form-control" id="periodo" name="periodo" value="{{ request.args.get('periodo', '') }}">
-        </div>
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const periodoInput = document.getElementById('periodo');
-                if (periodoInput) {
-                    periodoInput.addEventListener('input', function() {
-                        let val = this.value.replace(/[^0-9]/g, '');
-                        if (val.length > 2) val = val.slice(0, 2);
-                        if (val !== '') {
-                            let num = parseInt(val, 10);
-                            if (num < 1) num = 1;
-                            if (num > 20) num = 20;
-                            this.value = num;
-                        } else {
-                            this.value = '';
+  <!-- Formulário de Filtro -->
+  <form
+    method="get"
+    class="row g-3 mb-4 align-items-end"
+    action="{{ url_for('cardAlunos') }}"
+  >
+    <input
+      type="hidden"
+      name="inst_id"
+      value="{{ request.args.get('inst_id', '') }}"
+    />
+    <input type="hidden" name="curso" value="{{ curso }}" />
+    <div class="col-12 mb-1">
+      <strong>Filtre as habilidades e o periodo</strong>
+    </div>
+    <div class="col-md-3">
+      <label for="periodo" class="form-label">Período (1 a 20)</label>
+      <input
+        type="number"
+        min="1"
+        max="20"
+        class="form-control"
+        id="periodo"
+        name="periodo"
+        value="{{ request.args.get('periodo', '') }}"
+      />
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const periodoInput = document.getElementById("periodo");
+        if (periodoInput) {
+          periodoInput.addEventListener("input", function () {
+            let val = this.value.replace(/[^0-9]/g, "");
+            if (val.length > 2) val = val.slice(0, 2);
+            if (val !== "") {
+              let num = parseInt(val, 10);
+              if (num < 1) num = 1;
+              if (num > 20) num = 20;
+              this.value = num;
+            } else {
+              this.value = "";
+            }
+          });
+          // Impede colar valores inválidos
+          periodoInput.addEventListener("paste", function (e) {
+            e.preventDefault();
+          });
+        }
+      });
+    </script>
+    <div class="col-md-2">
+      <label class="form-label mb-2">Hard Skills</label>
+      <div class="dropdown w-100">
+        <button
+          class="btn btn-outline-primary btn-sm dropdown-toggle w-100"
+          type="button"
+          id="dropdownHardSkills"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+        >
+          <span id="selectedHardSkillsText">Selecionar...</span>
+        </button>
+        <ul
+          class="dropdown-menu w-100"
+          aria-labelledby="dropdownHardSkills"
+          style="min-width: 150px; max-height: 200px; overflow-y: auto"
+        >
+          {% if HARD_SKILLS_POR_CURSO and curso in HARD_SKILLS_POR_CURSO %} {%
+          for label in HARD_SKILLS_POR_CURSO[curso] %}
+          <li>
+            <label class="dropdown-item d-flex align-items-center">
+              <input type="checkbox" class="form-check-input me-2
+              hard-skill-checkbox" name="habilidade" value="hard:{{ label }}" {%
+              if 'hard:' ~ label in request.args.getlist('habilidade')
+              %}checked{% endif %}>
+              <span>{{ label }}</span>
+            </label>
+          </li>
+          {% endfor %} {% endif %}
+        </ul>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label mb-2">Soft Skills</label>
+      <div class="dropdown w-100">
+        <button
+          class="btn btn-outline-danger btn-sm dropdown-toggle w-100"
+          type="button"
+          id="dropdownSoftSkills"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+        >
+          <span id="selectedSoftSkillsText">Selecionar...</span>
+        </button>
+        <ul
+          class="dropdown-menu w-100"
+          aria-labelledby="dropdownSoftSkills"
+          style="min-width: 150px; max-height: 200px; overflow-y: auto"
+        >
+          {% for label in SOFT_SKILLS %}
+          <li>
+            <label class="dropdown-item d-flex align-items-center">
+              <input type="checkbox" class="form-check-input me-2
+              soft-skill-checkbox" name="habilidade" value="soft:{{ label }}" {%
+              if 'soft:' ~ label in request.args.getlist('habilidade')
+              %}checked{% endif %}>
+              <span>{{ label }}</span>
+            </label>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    <div class="col-md-2 d-flex align-items-end">
+      <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+    </div>
+  </form>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      function updateSelectedSkillsText() {
+        const checked = document.querySelectorAll(".skill-checkbox:checked");
+        const selected = Array.from(checked).map(
+          (cb) => cb.parentElement.querySelectorAll("span")[1].innerText
+        );
+        document.getElementById("selectedSkillsText").innerText =
+          selected.length ? selected.join(", ") : "Selecione habilidades...";
+      }
+      document.querySelectorAll(".skill-checkbox").forEach((cb) => {
+        cb.addEventListener("change", updateSelectedSkillsText);
+      });
+      updateSelectedSkillsText();
+    });
+  </script>
+
+  <div class="row g-4">
+    {% if request.args.getlist('habilidade') %}
+    <h5 class="mt-4">
+      Os melhores alunos com as habilidades selecionadas em destaque:
+    </h5>
+    {% endif %} {% for aluno in alunos %}
+    <div class="col-md-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h5 class="card-title">
+            {{ aluno.nome }} {% if request.args.getlist('habilidade') and
+            loop.index == 1 %}
+            <span class="badge float-end">⭐</span>
+            {% endif %} {% if request.args.getlist('habilidade') and loop.index
+            > 1 %}
+            <span class="badge bg-secondary float-end">{{ loop.index }}</span>
+            {% endif %}
+          </h5>
+          <p><strong>Curso:</strong> {{ aluno.curso }}</p>
+          <p><strong>Periodo:</strong> {{ aluno.periodo }}</p>
+          <p>
+            <strong>Data de Nascimento:</strong> {{ aluno.data_nascimento }}
+          </p>
+          <br />
+
+          {% if aluno.hard_labels or aluno.soft_labels %}
+          <canvas id="grafico{{ loop.index }}"></canvas>
+          <script>
+            const ctx{{ loop.index }} = document.getElementById('grafico{{ loop.index }}').getContext('2d');
+            new Chart(ctx{{ loop.index }}, {
+                type: 'radar',
+                data: {
+                    labels: {{ aluno.hard_labels|tojson if aluno.hard_labels else aluno.soft_labels|tojson }},
+                    datasets: [
+                        {
+                            label: 'Hard Skills',
+                            data: {{ aluno.hard_skills|tojson }},
+                            customLabels: {{ aluno.hard_labels|tojson }},
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Soft Skills',
+                            data: {{ aluno.soft_skills|tojson }},
+                            customLabels: {{ aluno.soft_labels|tojson }},
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            pointBackgroundColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 2
                         }
-                    });
-                    // Impede colar valores inválidos
-                    periodoInput.addEventListener('paste', function(e) {
-                        e.preventDefault();
-                    });
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    interaction: {
+                        mode: 'nearest',
+                        intersect: true
+                    },
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            min: 0,
+                            max: 10,
+                            ticks: {
+                                display: false,
+                                stepSize: 1,
+                                color: '#666',
+                                backdropColor: 'rgba(255, 255, 255, 0.8)'
+                            },
+                            grid: {
+                                color: 'rgba(200, 200, 200, 0.5)'
+                            },
+                            angleLines: {
+                                color: 'rgba(200, 200, 200, 0.5)'
+                            },
+                            pointLabels: {
+                                callback: function(label, index) {
+                                    const hardLabels = {{ aluno.hard_labels|tojson }};
+                                    const softLabels = {{ aluno.soft_labels|tojson }};
+                                    const hard = hardLabels[index] ? `🟦 ${hardLabels[index]}` : '';
+                                    const soft = softLabels[index] ? `🟥 ${softLabels[index]}` : '';
+                                    return [hard, soft].filter(Boolean);
+                                },
+                                font: {
+                                    size: 8
+                                },
+                                color: '#000'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                color: 'black'
+                            }
+                        },
+                        tooltip: {
+                            enabled: true,
+                            mode: 'nearest',
+                            intersect: true,
+                            callbacks: {
+                                title: function() {
+                                    return '';
+                                },
+                                label: function(context) {
+                                    const dataset = context.dataset;
+                                    const index = context.dataIndex;
+                                    const customLabel = dataset.customLabels?.[index] || 'Skill';
+                                    const value = context.formattedValue;
+                                    const cor = dataset.label === 'Soft Skills' ? '🟥' : '🟦';
+                                    return `${cor} ${customLabel}: ${value}`;
+                                }
+                            },
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            displayColors: false
+                        }
+                    }
                 }
             });
-        </script>
-        <div class="col-md-2">
-            <label class="form-label mb-2">Hard Skills</label>
-            <div class="dropdown w-100">
-                <button class="btn btn-outline-primary btn-sm dropdown-toggle w-100" type="button" id="dropdownHardSkills" data-bs-toggle="dropdown" aria-expanded="false">
-                    <span id="selectedHardSkillsText">Selecionar...</span>
-                </button>
-                <ul class="dropdown-menu w-100" aria-labelledby="dropdownHardSkills" style="min-width: 150px; max-height: 200px; overflow-y: auto;">
-                    {% if HARD_SKILLS_POR_CURSO and curso in HARD_SKILLS_POR_CURSO %}
-                        {% for label in HARD_SKILLS_POR_CURSO[curso] %}
-                        <li>
-                            <label class="dropdown-item d-flex align-items-center">
-                                <input type="checkbox" class="form-check-input me-2 hard-skill-checkbox" name="habilidade" value="hard:{{ label }}"
-                                    {% if 'hard:' ~ label in request.args.getlist('habilidade') %}checked{% endif %}>
-                                <span>{{ label }}</span>
-                            </label>
-                        </li>
-                        {% endfor %}
-                    {% endif %}
-                </ul>
-            </div>
+          </script>
+          {% else %}
+          <p><em>Sem dados de skills disponíveis.</em></p>
+          {% endif %}
         </div>
-        <div class="col-md-2">
-            <label class="form-label mb-2">Soft Skills</label>
-            <div class="dropdown w-100">
-                <button class="btn btn-outline-danger btn-sm dropdown-toggle w-100" type="button" id="dropdownSoftSkills" data-bs-toggle="dropdown" aria-expanded="false">
-                    <span id="selectedSoftSkillsText">Selecionar...</span>
-                </button>
-                <ul class="dropdown-menu w-100" aria-labelledby="dropdownSoftSkills" style="min-width: 150px; max-height: 200px; overflow-y: auto;">
-                    {% for label in SOFT_SKILLS %}
-                    <li>
-                        <label class="dropdown-item d-flex align-items-center">
-                            <input type="checkbox" class="form-check-input me-2 soft-skill-checkbox" name="habilidade" value="soft:{{ label }}"
-                                {% if 'soft:' ~ label in request.args.getlist('habilidade') %}checked{% endif %}>
-                            <span>{{ label }}</span>
-                        </label>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
+        <div class="card-footer text-end">
+          <a
+            href="{{ url_for('detalhes_aluno', id_aluno=aluno.id_aluno, previous=request.full_path) }}"
+            class="btn btn-primary btn-sm"
+            >Ver Detalhes</a
+          >
         </div>
-        <div class="col-md-2 d-flex align-items-end">
-            <button type="submit" class="btn btn-primary w-100">Filtrar</button>
-        </div>
-    </form>
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        function updateSelectedSkillsText() {
-            const checked = document.querySelectorAll('.skill-checkbox:checked');
-            const selected = Array.from(checked).map(cb => cb.parentElement.querySelectorAll('span')[1].innerText);
-            document.getElementById('selectedSkillsText').innerText = selected.length ? selected.join(', ') : 'Selecione habilidades...';
-        }
-        document.querySelectorAll('.skill-checkbox').forEach(cb => {
-            cb.addEventListener('change', updateSelectedSkillsText);
-        });
-        updateSelectedSkillsText();
-    });
-    </script>
-
-    <div class="row g-4">
-        {% if request.args.getlist('habilidade') %}
-            <h5 class="mt-4">Os melhores alunos com as habilidades selecionadas em destaque:</h5>
-        {% endif %}
-        {% for aluno in alunos %}
-            <div class="col-md-4">
-                <div class="card shadow-sm h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ aluno.nome }}
-                            {% if request.args.getlist('habilidade') and loop.index == 1 %} 
-                                <span class="badge float-end">⭐</span>
-                            {% endif %} 
-                            {% if request.args.getlist('habilidade') and loop.index > 1 %} 
-                            <span class="badge bg-secondary float-end">{{ loop.index }}</span>
-                            {% endif %}
-                        </h5>
-                        <p><strong>Curso:</strong> {{ aluno.curso }}</p>
-                        <p><strong>Periodo:</strong> {{ aluno.periodo }}</p>
-                        <p><strong>Data de Nascimento:</strong> {{ aluno.data_nascimento }}</p><br>
-
-                        {% if aluno.hard_labels or aluno.soft_labels %}
-                            <canvas id="grafico{{ loop.index }}"></canvas>
-                            <script>
-                                const ctx{{ loop.index }} = document.getElementById('grafico{{ loop.index }}').getContext('2d');
-                                new Chart(ctx{{ loop.index }}, {
-                                    type: 'radar',
-                                    data: {
-                                        labels: {{ aluno.hard_labels|tojson if aluno.hard_labels else aluno.soft_labels|tojson }},
-                                        datasets: [
-                                            {
-                                                label: 'Hard Skills',
-                                                data: {{ aluno.hard_skills|tojson }},
-                                                customLabels: {{ aluno.hard_labels|tojson }},
-                                                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                                                borderColor: 'rgba(54, 162, 235, 1)',
-                                                pointBackgroundColor: 'rgba(54, 162, 235, 1)',
-                                                borderWidth: 2
-                                            },
-                                            {
-                                                label: 'Soft Skills',
-                                                data: {{ aluno.soft_skills|tojson }},
-                                                customLabels: {{ aluno.soft_labels|tojson }},
-                                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                                                borderColor: 'rgba(255, 99, 132, 1)',
-                                                pointBackgroundColor: 'rgba(255, 99, 132, 1)',
-                                                borderWidth: 2
-                                            }
-                                        ]
-                                    },
-                                    options: {
-                                        responsive: true,
-                                        interaction: {
-                                            mode: 'nearest',
-                                            intersect: true
-                                        },
-                                        scales: {
-                                            r: {
-                                                beginAtZero: true,
-                                                min: 0,
-                                                max: 10,
-                                                ticks: {
-                                                    display: false,
-                                                    stepSize: 1,
-                                                    color: '#666',
-                                                    backdropColor: 'rgba(255, 255, 255, 0.8)'
-                                                },
-                                                grid: {
-                                                    color: 'rgba(200, 200, 200, 0.5)'
-                                                },
-                                                angleLines: {
-                                                    color: 'rgba(200, 200, 200, 0.5)'
-                                                },
-                                                pointLabels: {
-                                                    callback: function(label, index) {
-                                                        const hardLabels = {{ aluno.hard_labels|tojson }};
-                                                        const softLabels = {{ aluno.soft_labels|tojson }};
-                                                        const hard = hardLabels[index] ? `🟦 ${hardLabels[index]}` : '';
-                                                        const soft = softLabels[index] ? `🟥 ${softLabels[index]}` : '';
-                                                        return [hard, soft].filter(Boolean);
-                                                    },
-                                                    font: {
-                                                        size: 8
-                                                    },
-                                                    color: '#000'
-                                                }
-                                            }
-                                        },
-                                        plugins: {
-                                            legend: {
-                                                display: true,
-                                                position: 'top',
-                                                labels: {
-                                                    color: 'black'
-                                                }
-                                            },
-                                            tooltip: {
-                                                enabled: true,
-                                                mode: 'nearest',
-                                                intersect: true,
-                                                callbacks: {
-                                                    title: function() {
-                                                        return '';
-                                                    },
-                                                    label: function(context) {
-                                                        const dataset = context.dataset;
-                                                        const index = context.dataIndex;
-                                                        const customLabel = dataset.customLabels?.[index] || 'Skill';
-                                                        const value = context.formattedValue;
-                                                        const cor = dataset.label === 'Soft Skills' ? '🟥' : '🟦';
-                                                        return `${cor} ${customLabel}: ${value}`;
-                                                    }
-                                                },
-                                                backgroundColor: 'rgba(0,0,0,0.8)',
-                                                titleColor: '#fff',
-                                                bodyColor: '#fff',
-                                                displayColors: false
-                                            }
-                                        }
-                                    }
-                                });
-                            </script>
-                        {% else %}
-                            <p><em>Sem dados de skills disponíveis.</em></p>
-                        {% endif %}
-                    </div>
-                    <div class="card-footer text-end">
-                        <a href="{{ url_for('detalhes_aluno', id_aluno=aluno.id_aluno, previous=request.full_path) }}" class="btn btn-primary btn-sm">Ver Detalhes</a>
-                    </div>
-                </div>
-            </div>
-        {% endfor %}
+      </div>
     </div>
+    {% endfor %}
+  </div>
 </div>
 
-<br>
+<br />
 
 {% if total_pages > 1 %}
 <nav aria-label="Paginação de alunos">
   <ul class="pagination justify-content-center mt-4">
     <li class="page-item {% if page == 1 %}disabled{% endif %}">
-      <a class="page-link" href="{{ url_for('cardAlunos', page=page-1) }}" tabindex="-1">Anterior</a>
+      <a
+        class="page-link"
+        href="{{ url_for('cardAlunos', page=page-1) }}"
+        tabindex="-1"
+        >Anterior</a
+      >
     </li>
     {% for p in range(1, total_pages+1) %}
-      <li class="page-item {% if p == page %}active{% endif %}">
-        <a class="page-link" href="{{ url_for('cardAlunos', page=p) }}">{{ p }}</a>
-      </li>
+    <li class="page-item {% if p == page %}active{% endif %}">
+      <a class="page-link" href="{{ url_for('cardAlunos', page=p) }}"
+        >{{ p }}</a
+      >
+    </li>
     {% endfor %}
     <li class="page-item {% if page == total_pages %}disabled{% endif %}">
-      <a class="page-link" href="{{ url_for('cardAlunos', page=page+1) }}">Próxima</a>
+      <a class="page-link" href="{{ url_for('cardAlunos', page=page+1) }}"
+        >Próxima</a
+      >
     </li>
   </ul>
 </nav>
-<br>
+<br />
 {% endif %}
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener("DOMContentLoaded", function () {
     function updateSelectedSkillsText() {
-        const checked = document.querySelectorAll('.skill-checkbox:checked');
-        const selected = Array.from(checked).map(cb => cb.parentElement.querySelectorAll('span')[1].innerText);
-        let displayText = '';
-        if (selected.length === 0) {
-            displayText = 'Selecione habilidades...';
-        } else if (selected.length <= 2) {
-            displayText = selected.join(', ');
-        } else {
-            displayText = selected.slice(0, 2).join(', ') + ` +${selected.length - 2}`;
-        }
-        document.getElementById('selectedSkillsText').innerText = displayText;
+      const checked = document.querySelectorAll(".skill-checkbox:checked");
+      const selected = Array.from(checked).map(
+        (cb) => cb.parentElement.querySelectorAll("span")[1].innerText
+      );
+      let displayText = "";
+      if (selected.length === 0) {
+        displayText = "Selecione habilidades...";
+      } else if (selected.length <= 2) {
+        displayText = selected.join(", ");
+      } else {
+        displayText =
+          selected.slice(0, 2).join(", ") + ` +${selected.length - 2}`;
+      }
+      document.getElementById("selectedSkillsText").innerText = displayText;
     }
-    document.querySelectorAll('.skill-checkbox').forEach(cb => {
-        cb.addEventListener('change', updateSelectedSkillsText);
+    document.querySelectorAll(".skill-checkbox").forEach((cb) => {
+      cb.addEventListener("change", updateSelectedSkillsText);
     });
     updateSelectedSkillsText();
-});
+  });
 </script>
 {% endblock %}

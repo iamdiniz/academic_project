@@ -30,7 +30,7 @@
         </div>
         <div class="mb-3">
             <label for="data_nascimento" class="form-label">Data de Nascimento</label>
-            <input type="date" class="form-control" id="data_nascimento" name="data_nascimento" value="{{ aluno.data_nascimento }}" required>
+            <input type="date" class="form-control" id="data_nascimento" name="data_nascimento" value="{{ aluno.data_nascimento.strftime('%Y-%m-%d') if aluno.data_nascimento else '' }}" required>
             <div class="invalid-feedback">
                 A data de nascimento é obrigatória e o aluno deve ter entre 17 e 70 anos.
             </div>
@@ -187,6 +187,11 @@ document.addEventListener('input', function(e) {
         }
     }
 
+    // Formatação de telefone para contato
+    if (e.target.id === 'contato_jovem') {
+        AppUtils.formatPhone(e.target);
+    }
+    
     // Prevenção de números no nome e formação
     if (e.target.id === 'nome_jovem' || e.target.id === 'formacao') {
         e.target.value = e.target.value.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ\s]/g, '');

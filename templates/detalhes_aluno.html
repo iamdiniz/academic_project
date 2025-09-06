@@ -196,6 +196,35 @@ document.getElementById('indicarAlunoBtn').addEventListener('click', function ()
       });
 });
 
+// Função para exibir toast
+function showToast(mensagem, cor='success', tempo=2500, icone='') {
+    // Criar elemento de toast se não existir
+    let toastContainer = document.getElementById('toastContainer');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toastContainer';
+        toastContainer.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999;';
+        document.body.appendChild(toastContainer);
+    }
+    
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${cor} alert-dismissible fade show`;
+    toast.style.cssText = 'min-width: 300px; margin-bottom: 10px;';
+    toast.innerHTML = `
+        ${icone}${mensagem}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    toastContainer.appendChild(toast);
+    
+    // Remover toast após o tempo especificado
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+        }
+    }, tempo);
+}
+
 // Acompanhar aluno
 document.getElementById('acompanharAlunoBtn').onclick = function() {
     fetch('{{ url_for("acompanhar_aluno", id_aluno=aluno.id_aluno) }}', {

@@ -1,42 +1,11 @@
-# Projeto Acadêmico - Estrutura Modular (Flask)
+ARQUITETURA MODULAR E BOAS PRÁTICAS
 
-Sistema de gestão acadêmica com arquitetura modular em Flask, organizado em camadas separadas para melhor manutenibilidade e escalabilidade.
+Objetivo
+- Organizar o projeto para ficar modular, escalável e de fácil manutenção.
+- Cada parte da aplicação fica separada por responsabilidade clara, mantendo o mesmo padrão de código que você já vinha usando.
 
-## 🚀 Como Executar
+ESTRUTURA COMPLETA DO PROJETO
 
-### Pré-requisitos
-
-- Docker e Docker Compose instalados
-- Arquivo `.env` configurado
-
-### Comandos Rápidos (Docker)
-
-```bash
-# 1. Navegar para o diretório
-cd academic_project
-
-# 2. Configurar ambiente (se necessário)
-copy env_example.txt .env
-
-# 3. Parar containers existentes
-docker-compose down
-
-# 4. Construir e executar
-docker-compose up --build -d
-
-# 5. Verificar status
-docker-compose ps
-```
-
-### Acessar Aplicação
-
-- URL Principal: http://localhost:5000
-- Login: http://localhost:5000/auth/login
-- Cadastro: http://localhost:5000/auth/cadastro
-
-## 📁 Estrutura Completa do Projeto
-
-```
 academic_project/
 ├── __pycache__/                    # Cache Python (gerado automaticamente)
 ├── config/                         # Configurações da aplicação
@@ -46,6 +15,16 @@ academic_project/
 ├── env/                           # Ambiente virtual Python
 │   ├── pyvenv.cfg                  # Configuração do ambiente virtual
 │   ├── Scripts/                    # Scripts do ambiente (Windows)
+│   │   ├── activate
+│   │   ├── activate.bat
+│   │   ├── Activate.ps1
+│   │   ├── deactivate.bat
+│   │   ├── flask.exe
+│   │   ├── pip.exe
+│   │   ├── pip3.12.exe
+│   │   ├── pip3.exe
+│   │   ├── python.exe
+│   │   └── pythonw.exe
 │   └── Lib/                        # Bibliotecas instaladas
 │       └── site-packages/          # Pacotes Python instalados
 │
@@ -81,17 +60,58 @@ academic_project/
 │
 ├── static/                         # Arquivos estáticos
 │   ├── css/                        # Folhas de estilo
+│   │   ├── acompanhar.css
+│   │   ├── alunos_indicados.css
+│   │   ├── alunos_instituicao.css
+│   │   ├── cadastro.css
+│   │   ├── cardAlunos.css
+│   │   ├── carousel.css
+│   │   ├── configuracoes.css
+│   │   ├── cursos.css
+│   │   ├── detalhes_aluno_instituicao.css
+│   │   ├── detalhes_aluno.css
+│   │   ├── detalhes_instituicao.css
+│   │   ├── home.css
+│   │   ├── instituicaoEnsino.css
+│   │   ├── login.css
+│   │   ├── main.css
+│   │   ├── minhas_selecoes.css
+│   │   └── perfil.css
 │   └── img/                        # Imagens
+│       ├── acompanhamento.avif
+│       ├── educ.png
+│       ├── grafico_aluno_1.png
+│       ├── inve.png
+│       ├── jovens_work.png
+│       ├── logo.png
+│       ├── mnna.avif
+│       ├── oisa.png
+│       ├── onu.png
+│       ├── procura.png
+│       ├── selecao.png
+│       └── win.png
 │
 ├── templates/                      # Templates HTML (Jinja2)
+│   ├── acompanhar.html             # Página de acompanhamento
+│   ├── alunos_indicados.html       # Lista de alunos indicados
+│   ├── alunos_instituicao.html     # Alunos por instituição
 │   ├── base.html                   # Template base
-│   ├── login.html                  # Página de login
 │   ├── cadastro.html               # Página de cadastro
+│   ├── cardAlunos.html             # Cards de alunos com paginação
+│   ├── carousel.html               # Página de carrossel
+│   ├── configuracoes.html          # Página de configurações
+│   ├── cursos.html                 # Página de cursos
+│   ├── detalhes_aluno.html         # Detalhes do aluno
+│   ├── detalhes_aluno_instituicao.html # Detalhes aluno para instituição
+│   ├── detalhes_instituicao.html   # Detalhes da instituição
+│   ├── grafico.html                # Página de gráficos
 │   ├── home_chefe.html             # Home do chefe
 │   ├── home_instituicao.html       # Home da instituição
+│   ├── instituicaoEnsino.html      # Página de instituições
+│   ├── login.html                  # Página de login
+│   ├── minhas_selecoes.html        # Minhas seleções
 │   ├── perfil.html                 # Página de perfil
-│   ├── cardAlunos.html             # Cards de alunos com paginação
-│   └── ... (outros templates)
+│   └── status_aluno.html           # Status do aluno
 │
 ├── utils/                          # Utilitários e constantes
 │   ├── __init__.py                 # Inicialização do módulo utils
@@ -106,7 +126,7 @@ academic_project/
 ├── .env                            # Variáveis de ambiente (ignorado pelo git)
 ├── .gitignore                      # Arquivo de exclusão do Git
 ├── app.py                          # Ponto de entrada principal (Application Factory)
-├── ARQUITETURA_MODULAR.txt         # Documento de arquitetura
+├── ARQUITETURA_MODULAR.txt         # Este documento de arquitetura
 ├── create_tables.py                # Script para criação de tabelas
 ├── docker-compose.yaml             # Orquestração de containers
 ├── Dockerfile                      # Imagem Docker da aplicação
@@ -119,100 +139,47 @@ academic_project/
 ├── requirements.txt                # Dependências Python
 ├── SETUP_SECURITY.md               # Guia de configuração de segurança
 └── wait-for-db.sh                  # Script para aguardar banco estar pronto
-```
 
-## 🔧 Como Funciona
+COMO FUNCIONA
 
-### Fluxo de Inicialização:
-
-1. `app.py` → `create_app()` → carrega configurações
+Fluxo de Inicialização:
+1. app.py → create_app() → carrega configurações
 2. Inicializa extensões (banco, login)
 3. Registra blueprints (auth, main, remaining)
 4. Aplicação pronta para uso
 
-### Blueprints Organizados:
+Padrões Mantidos:
+- Mesma convenção de nomes em português
+- Mesmas validações e fluxos de login/cadastro
+- Templates com ajustes de paginação e links
 
-- **auth.py**: Autenticação (login, cadastro, logout)
-- **main.py**: Rotas principais (/, /carousel, /home)
-- **remaining_routes.py**: Rotas migradas do legado (instituições, alunos, etc.)
+BOAS PRÁTICAS IMPLEMENTADAS
 
-### Compatibilidade:
+✅ Separação de Responsabilidades
+- config/: configurações
+- models/: dados do banco
+- routes/: rotas organizadas em blueprints
+- services/: lógica de negócio
+- validators/: validações e controle de acesso
+- utils/: constantes centralizadas
 
-- Endpoints com aliases mantidos para compatibilidade
-- `url_for('perfil')`, `url_for('instituicao_ensino')` continuam funcionando
-
-## 🔧 Comandos Úteis
-
-### Logs e Monitoramento
-
-```bash
-# Logs em tempo real
-docker-compose logs -f backend
-
-# Status dos containers
-docker-compose ps
-
-# Acessar container
-docker-compose exec backend bash
-```
-
-### Gerenciamento
-
-```bash
-# Parar aplicação
-docker-compose down
-
-# Reconstruir (força rebuild)
-docker-compose down --rmi all
-docker-compose up --build -d
-```
-
-## 🧪 Testes (sugestão)
-
-Recomendado usar pytest e client de teste do Flask.
-
-```bash
-pip install pytest pytest-cov
-pytest --cov=academic_project --cov-report=term-missing
-```
-
-## ✅ Boas Práticas Implementadas
-
-### Separação de Responsabilidades
-
-- **config/**: configurações centralizadas
-- **models/**: entidades do banco de dados
-- **routes/**: rotas organizadas em blueprints
-- **services/**: lógica de negócio reutilizável
-- **validators/**: validações e controle de acesso
-- **utils/**: constantes centralizadas
-
-### Arquitetura Modular
-
+✅ Arquitetura Modular
 - Application Factory para flexibilidade
 - Blueprints para organizar rotas
 - Endpoints com aliases para compatibilidade
-- Docker configurado e pronto para produção
+- Docker configurado e pronto
 
-## ⚠️ Notas Importantes
+PRÓXIMOS PASSOS
 
-- A aplicação roda na porta 5000 (Flask) e o MySQL na porta 3307 (Docker Compose padrão)
-- Não commitar o arquivo `.env`
-- A aplicação usa Application Factory (`create_app`) e blueprints (`auth`, `main`, `remaining`)
-- As rotas de templates foram atualizadas (ex.: paginação em `cardAlunos.html`)
+🔧 Melhorias Futuras:
+- Dividir remaining_routes em blueprints menores
+- Adicionar testes automatizados (pytest)
+- Implementar CSRF e migrações de banco
 
-## 📋 Próximos Passos
+RESULTADO FINAL
 
-🔧 **Melhorias Futuras:**
+✅ Projeto organizado, modular e escalável
+✅ Fácil manutenção e evolução
+✅ Código limpo seguindo boas práticas
+✅ Estrutura profissional e bem documentada
 
-1. Dividir `remaining_routes` em blueprints menores (instituições, alunos, acompanhamento)
-2. Adicionar testes automatizados (pytest)
-3. Implementar CSRF e migrações de banco (Flask-Migrate)
-4. Documentar API/rotas e fluxos de permissão
-
-## 🎯 Resultado Final
-
-✅ **Projeto organizado, modular e escalável**  
-✅ **Fácil manutenção e evolução**  
-✅ **Código limpo seguindo boas práticas**  
-✅ **Estrutura profissional e bem documentada**
