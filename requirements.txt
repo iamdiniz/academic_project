@@ -9,4 +9,3 @@ flask-login
 unidecode
 pytz
 gunicorn
-flask-wtf

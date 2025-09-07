@@ -4,49 +4,48 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
-# Biblioteca para remover acentos e caracteres especiais
 from unidecode import unidecode
 from urllib.parse import unquote
 from math import ceil
+from dotenv import load_dotenv
 from datetime import datetime
+from flask_wtf import CSRFProtect
+import csv
 import re
 import json
 import pytz
 import os
-# 🔧 NOVA IMPORTAÇÃO: Para carregar variáveis do arquivo .env
-from dotenv import load_dotenv
 
-# 🔧 MODIFICAÇÃO 1: Carrega as variáveis do arquivo .env
+
 load_dotenv()
 
 app = Flask(__name__)
 
-# 🔧 MODIFICAÇÃO 2: Chave secreta agora vem de variável de ambiente
 app.secret_key = os.getenv('FLASK_SECRET_KEY')
 if not app.secret_key:
     raise RuntimeError(
         "A variável FLASK_SECRET_KEY não está definida no ambiente!")
 
-# 🔧 MODIFICAÇÃO 3: Removida a configuração hardcoded do banco
-# 🔧 MODIFICAÇÃO 4: Removidas as variáveis não utilizadas (user, password, host, port, dbname)
 
-# 🔧 MODIFICAÇÃO 5: Busca variável de ambiente para conexão do banco
 database_url = os.getenv("DATABASE_URL")
 if not database_url:
     raise RuntimeError(
         "A variável DATABASE_URL não está definida no ambiente!")
 
-# 🔧 MODIFICAÇÃO 6: Adapta para SQLAlchemy se necessário
+
 if database_url.startswith("mysql://"):
     database_url = database_url.replace("mysql://", "mysql+pymysql://", 1)
+
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 db = SQLAlchemy(app)
 
-# Configuração do flask-login
+
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'login'  # Redireciona para a página de login se não autenticado
+login_manager.login_view = 'login'
+
+csrf = CSRFProtect(app)
 
 CURSOS_PADRAO = [
     "Administração", "Agronomia", "Arquitetura", "Biologia", "Ciência da Computação",
@@ -54,7 +53,7 @@ CURSOS_PADRAO = [
     "Matemática", "Medicina", "Pedagogia", "Psicologia", "Química", "Sistemas de Informação",
 ]
 
-# Hard skills por curso
+
 HARD_SKILLS_POR_CURSO = {
     "Administração": [
         "Gestão de Pessoas", "Finanças", "Marketing", "Empreendedorismo", "Planejamento Estratégico"
@@ -109,11 +108,23 @@ HARD_SKILLS_POR_CURSO = {
     ]
 }
 
-# Soft skills para todos os cursos
+
+
 SOFT_SKILLS = [
     "Participação", "Comunicação", "Proatividade",
     "Criatividade", "Trabalho em Equipe"
 ]
+
+
+class LogAcesso(db.Model):
+    __tablename__ = 'log_acesso'
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_nome = db.Column(db.String(100), nullable=False)
+    cargo = db.Column(db.String(50), nullable=False)
+    tipo_usuario = db.Column(db.String(30), nullable=False)
+    acao = db.Column(db.String(20), nullable=False)  # login ou logout
+    data_hora = db.Column(db.DateTime, default=datetime.now)
+
 
 class InstituicaodeEnsino(db.Model, UserMixin):
     __tablename__ = 'instituicao_de_ensino'
@@ -133,6 +144,7 @@ class InstituicaodeEnsino(db.Model, UserMixin):
     def get_id(self):
         return str(self.id_instituicao)
 
+
 class Curso(db.Model):
     __tablename__ = 'cursos'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -140,6 +152,7 @@ class Curso(db.Model):
     id_instituicao = db.Column(db.Integer, db.ForeignKey('instituicao_de_ensino.id_instituicao'), nullable=False)
 
     instituicao = db.relationship('InstituicaodeEnsino', backref='cursos')
+
 
 class Aluno(db.Model):
     __tablename__ = 'alunos'
@@ -158,6 +171,7 @@ class Aluno(db.Model):
 
     chefe = db.relationship('Chefe', backref='alunos_indicados') # Relacionamento reverso
 
+
 class Chefe(db.Model, UserMixin):
     __tablename__ = 'chefe'
 
@@ -171,6 +185,7 @@ class Chefe(db.Model, UserMixin):
     def get_id(self):
         return str(self.id_chefe)
 
+
 class SkillsDoAluno(db.Model):
     __tablename__ = 'skills_do_aluno'
 
@@ -178,6 +193,7 @@ class SkillsDoAluno(db.Model):
     hard_skills_json = db.Column(db.Text)  # Hard skills dinâmicas por curso (JSON)
     soft_skills_json = db.Column(db.Text)  # Soft skills detalhadas (JSON)
     aluno = db.relationship('Aluno', backref=db.backref('skills', uselist=False))
+
 
 class Acompanhamento(db.Model):
     __tablename__ = 'acompanhamento'
@@ -193,6 +209,7 @@ class Acompanhamento(db.Model):
         db.UniqueConstraint('id_chefe', 'id_aluno', name='uix_chefe_aluno'),
     )
 
+
 class SkillsHistorico(db.Model):
     __tablename__ = 'skills_historico'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -204,6 +221,7 @@ class SkillsHistorico(db.Model):
 
     aluno = db.relationship('Aluno', backref='historicos')
     chefe = db.relationship('Chefe', backref='historicos')
+
 
 class Indicacao(db.Model):
     __tablename__ = 'indicacoes'
@@ -219,9 +237,11 @@ class Indicacao(db.Model):
         db.UniqueConstraint('id_chefe', 'id_aluno', name='uix_chefe_aluno_indicacao'),
     )
 
+
 with app.app_context():
     db.create_all()  # Recria as tabelas com base nos modelos
     print("Tabelas recriadas com sucesso!")
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -232,6 +252,7 @@ def load_user(user_id):
         return InstituicaodeEnsino.query.get(int(user_id))
     return None
 
+
 def bloquear_chefe(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -240,6 +261,7 @@ def bloquear_chefe(f):
             return redirect(url_for('home')) # Redireciona para a página inicial
         return f(*args, **kwargs)
     return decorated_function
+
 
 def bloquear_instituicao(f):
     @wraps(f)
@@ -250,6 +272,7 @@ def bloquear_instituicao(f):
         return f(*args, **kwargs)
     return decorated_function
 
+
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
     if request.method == 'POST':
@@ -258,6 +281,11 @@ def cadastro():
         email = request.form.get('email')
         senha = request.form.get('senha')
         confirmar_senha = request.form.get('confirmar_senha')
+
+        # Validação: senha mínima de 8 caracteres
+        if not senha or len(senha) < 8:
+            flash('A senha deve ter no mínimo 8 caracteres.', 'danger')
+            return redirect(url_for('cadastro'))
 
         if senha != confirmar_senha:
             flash('As senhas não coincidem!')
@@ -345,9 +373,11 @@ def cadastro():
 
     return render_template('cadastro.html', cursos_padrao=CURSOS_PADRAO)
 
+
 @app.route('/')
 def index():
     return redirect(url_for('carousel'))
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -361,6 +391,7 @@ def login():
             session['user_id'] = chefe.id_chefe
             session['tipo_usuario'] = 'chefe'
             login_user(chefe)
+            registrar_log('login', chefe.nome, chefe.cargo, 'chefe')
             return redirect(url_for('home'))
 
         # Verifica se o usuário é uma instituição de ensino
@@ -369,10 +400,12 @@ def login():
             session['user_id'] = instituicao.id_instituicao
             session['tipo_usuario'] = 'instituicao'
             login_user(instituicao)
+            registrar_log('login', instituicao.nome_instituicao, 'reitor', 'instituicao')
             return redirect(url_for('home'))
 
         flash("E-mail ou senha inválidos.", "danger")
     return render_template('login.html')
+
 
 @app.route('/home')
 @login_required
@@ -389,6 +422,7 @@ def home():
         # Caso o tipo de usuário não seja reconhecido, redireciona para o login
         flash("Tipo de usuário inválido. Faça login novamente.", "danger")
         return redirect(url_for('login'))
+
 
 @app.route('/instituicaoEnsino')
 @bloquear_instituicao
@@ -424,12 +458,14 @@ def instituicao_ensino():
         total_pages=total_pages
     )
 
+
 @app.route('/detalhes_instituicao/<int:id_instituicao>')
 @login_required
 def detalhes_instituicao(id_instituicao):
     instituicao = InstituicaodeEnsino.query.get_or_404(id_instituicao)
     cursos = Curso.query.filter_by(id_instituicao=id_instituicao).all()
     return render_template('detalhes_instituicao.html', instituicao=instituicao, cursos=cursos)
+
 
 @app.route('/minhas_selecoes')
 @bloquear_instituicao
@@ -491,6 +527,7 @@ def minhas_selecoes():
         total_pages=total_pages
     )
 
+
 @app.route('/remover_indicacao/<int:id_aluno>', methods=['POST'])
 @bloquear_instituicao
 @login_required
@@ -510,6 +547,7 @@ def remover_indicacao(id_aluno):
     db.session.commit()
 
     return jsonify({'message': 'Indicação removida com sucesso!'}), 200
+
 
 @app.route('/remover_aluno/<int:id_aluno>', methods=['POST'])
 @login_required
@@ -531,6 +569,7 @@ def remover_aluno(id_aluno):
         flash("Erro ao remover aluno.", "danger")
 
     return redirect(url_for('alunos'))
+
 
 @app.route('/ver_alunos_por_curso', methods=['GET'])
 @bloquear_instituicao
@@ -633,6 +672,7 @@ def ver_alunos_por_curso():
         HARD_SKILLS_POR_CURSO=HARD_SKILLS_POR_CURSO,
         SOFT_SKILLS=SOFT_SKILLS
     )
+
 
 @app.route('/detalhes_aluno/<int:id_aluno>')
 @bloquear_instituicao
@@ -750,6 +790,11 @@ def cadastrar_aluno():
     formacao = request.form.get('formacao', '').strip()
     periodo = request.form.get('periodo', '').strip()
 
+    # Validação do e-mail duplicado
+    if Aluno.query.filter_by(email=email).first():
+        flash("Já existe um aluno cadastrado com este e-mail.", "danger")
+        return redirect(url_for('alunos_instituicao'))
+
     # Validação dos campos obrigatórios
     if not nome_jovem or not data_nascimento or not endereco_jovem or not contato_jovem or not email or not curso or not formacao or not periodo:
         flash("Preencha todos os campos obrigatórios!", "error")
@@ -820,7 +865,7 @@ def cadastrar_aluno():
         flash("Aluno cadastrado com sucesso!", "success")
     except IntegrityError:
         db.session.rollback()
-        flash("Erro ao cadastrar aluno. Verifique os dados e tente novamente.", "danger")
+        flash("Erro inesperado ao cadastrar aluno. Tente novamente.", "danger")
 
     return redirect(url_for('alunos_instituicao'))
 
@@ -1056,13 +1101,11 @@ def perfil():
         # Atualizar informações do chefe
         if tipo_usuario == 'chefe':
             chefe = Chefe.query.get_or_404(current_user.id_chefe)
-
             nome = request.form['nome'].strip()
             if not re.match(r'^[A-Za-zÀ-ÖØ-öø-ÿ\s]{2,30}$', nome):
                 flash("O nome deve ter entre 2 e 30 letras e não pode conter números.", "danger")
                 return redirect(url_for('perfil'))
 
-            # Verifica se já existe outro chefe com este e-mail
             novo_email = request.form['email']
             email_existente = Chefe.query.filter(Chefe.email == novo_email, Chefe.id_chefe != chefe.id_chefe).first()
             if email_existente:
@@ -1076,8 +1119,12 @@ def perfil():
             chefe.cargo = cargo
             chefe.nome_empresa = request.form.get('nome_empresa')
             chefe.email = novo_email
-            if request.form['senha']:
-                chefe.senha = generate_password_hash(request.form['senha'])
+            senha_nova = request.form.get('senha', '')
+            if senha_nova:
+                if len(senha_nova) < 8:
+                    flash("A senha deve ter no mínimo 8 caracteres.", "danger")
+                    return redirect(url_for('perfil'))
+                chefe.senha = generate_password_hash(senha_nova)
             try:
                 db.session.commit()
                 flash("Perfil atualizado com sucesso!", "success")
@@ -1085,6 +1132,7 @@ def perfil():
                 db.session.rollback()
                 flash("Já existe um chefe cadastrado com este e-mail.", "danger")
                 return redirect(url_for('perfil'))
+            
         # Atualizar informações da instituição
         elif tipo_usuario == 'instituicao':
             instituicao = InstituicaodeEnsino.query.get_or_404(current_user.id_instituicao)
@@ -1099,7 +1147,6 @@ def perfil():
                 return redirect(url_for('perfil'))
 
             novo_email = request.form['email']
-            # Verifica se já existe outra instituição com este e-mail
             email_existente = InstituicaodeEnsino.query.filter(
                 InstituicaodeEnsino.email == novo_email,
                 InstituicaodeEnsino.id_instituicao != instituicao.id_instituicao
@@ -1112,14 +1159,12 @@ def perfil():
             instituicao.reitor = request.form['reitor']
             instituicao.infraestrutura = request.form['infraestrutura']
 
-            # Validação da nota MEC
             nota_mec = request.form['nota_mec']
             if nota_mec not in ['1', '2', '3', '4', '5']:
                 flash("Nota MEC deve ser um valor entre 1 e 5.", "danger")
                 return redirect(url_for('perfil'))
             instituicao.nota_mec = int(nota_mec)
 
-            # Validação das modalidades
             modalidades = request.form['modalidades']
             if modalidades not in ['Presencial', 'Hibrido', 'EAD']:
                 flash("Selecione uma modalidade válida.", "danger")
@@ -1127,8 +1172,12 @@ def perfil():
             instituicao.modalidades = modalidades
 
             instituicao.email = novo_email
-            if request.form['senha']:
-                instituicao.senha = generate_password_hash(request.form['senha'])
+            senha_nova = request.form.get('senha', '')
+            if senha_nova:
+                if len(senha_nova) < 8:
+                    flash("A senha deve ter no mínimo 8 caracteres.", "danger")
+                    return redirect(url_for('perfil'))
+                instituicao.senha = generate_password_hash(senha_nova)
             try:
                 db.session.commit()
                 flash("Perfil atualizado com sucesso!", "success")
@@ -1149,6 +1198,7 @@ def perfil():
         return redirect(url_for('home'))
 
     return render_template('perfil.html', usuario=usuario, cursos_da_instituicao=cursos_da_instituicao)
+
 
 @app.route('/acompanhar_aluno/<int:id_aluno>', methods=['POST'])
 @login_required
@@ -1333,6 +1383,7 @@ def alunos_indicados():
         total_pages=total_pages
     )
 
+
 @app.route('/configuracoes', methods=['GET', 'POST'])
 @login_required
 def configuracoes():
@@ -1350,12 +1401,40 @@ def configuracoes():
 
     return render_template('configuracoes.html', usuario=usuario, cursos_da_instituicao=cursos_da_instituicao)
 
-@app.route('/logout')
+
+
+def registrar_log(acao, usuario_nome, cargo, tipo_usuario):
+    log = LogAcesso(
+        usuario_nome=usuario_nome,
+        cargo=cargo,
+        tipo_usuario=tipo_usuario,
+        acao=acao,
+        data_hora=datetime.now()
+    )
+    db.session.add(log)
+    db.session.commit()
+
+
+
+@app.route('/logout', methods=['POST'])
 def logout():
+    
+    if 'tipo_usuario' in session:
+        tipo_usuario = session['tipo_usuario']
+        if tipo_usuario == 'chefe':
+            chefe = Chefe.query.get(session.get('user_id'))
+            if chefe:
+                registrar_log('logout', chefe.nome, chefe.cargo, 'chefe')
+        elif tipo_usuario == 'instituicao':
+            instituicao = InstituicaodeEnsino.query.get(session.get('user_id'))
+            if instituicao:
+                registrar_log('logout', instituicao.nome_instituicao, 'reitor', 'instituicao')
+            
     logout_user()
     session.clear()
     flash('Você saiu com sucesso.', 'success')
     return redirect(url_for('login'))
+
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0') # host para expor o servidor para fora do container

@@ -387,11 +387,11 @@ function validarEmail(input) {
 
 function validarSenha(input) {
     const senha = input.value;
-    aplicarErro(input, senha.length < 6 ? "A senha deve conter no mínimo 6 caracteres." : "", "erro-senha");
+    aplicarErro(input, senha.length < 6 ? "A senha deve conter no mínimo 8 caracteres." : "", "erro-senha");
 
     // Força da senha
     let forca = 0;
-    if (senha.length >= 6) forca++;
+    if (senha.length >= 8) forca++;
     if (/[A-Z]/.test(senha)) forca++;
     if (/[0-9]/.test(senha)) forca++;
     if (/[\W_]/.test(senha)) forca++;
@@ -403,11 +403,11 @@ function validarSenha(input) {
             texto = "Senha fraca";
             cor = "text-danger";
             break;
-        case 3:
+        case 5:
             texto = "Senha média";
             cor = "text-warning";
             break;
-        case 4:
+        case 8:
             texto = "Senha forte";
             cor = "text-success";
             break;
@@ -443,7 +443,7 @@ function validarCamposComuns() {
 
     valido &= validarCampo(nome, val => /^[A-Za-zÀ-ÿ\s]{3,30}$/.test(val), 'Nome inválido. Apenas letras entre 3 e 30 caracteres.', 'erro-nome'); 
     valido &= validarCampo(email, val => regexEmail.test(val.trim()) && val.length <= 50, 'E-mail inválido.', 'erro-email');
-    valido &= validarCampo(senha, val => val.length >= 6 && val.length <= 20, 'Senha entre 6 e 20 caracteres.', 'erro-senha'); 
+    valido &= validarCampo(senha, val => val.length >= 8 && val.length <= 20, 'Senha deve ter no mínimo 8 caracteres.', 'erro-senha'); 
     valido &= validarCampo(confirmarSenha, val => val === senha.value && val !== '', 'As senhas não coincidem.', 'erro-confirmarSenha');
 
     return !!valido;
