@@ -9,4 +9,4 @@ flask-login
 unidecode
 pytz
 gunicorn
-Flask-WTF
+Flask-WTF==1.2.1
