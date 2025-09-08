@@ -8,6 +8,10 @@ from unidecode import unidecode
 from urllib.parse import unquote
 from math import ceil
 from dotenv import load_dotenv
+import pyotp
+import base64
+import io
+import qrcode
 from datetime import datetime
 from flask_wtf import CSRFProtect
 import csv
@@ -344,6 +348,20 @@ class Indicacao(db.Model):
     )
 
 
+class TwoFactor(db.Model):
+    __tablename__ = 'two_factor'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    # 'chefe' ou 'instituicao'
+    user_type = db.Column(db.String(20), nullable=False)
+    user_id = db.Column(db.Integer, nullable=False)
+    otp_secret = db.Column(db.String(64), nullable=False)
+    enabled = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    __table_args__ = (
+        db.UniqueConstraint('user_type', 'user_id', name='uix_2fa_user'),
+    )
+
+
 with app.app_context():
     db.create_all()  # Recria as tabelas com base nos modelos
     print("Tabelas recriadas com sucesso!")
@@ -528,11 +546,18 @@ def login():
             # Limpa o histórico de tentativas falhadas
             resetar_rate_limit(ip_usuario)
 
-            session['user_id'] = chefe.id_chefe
-            session['tipo_usuario'] = 'chefe'
-            login_user(chefe)
-            registrar_log('login', chefe.nome, chefe.cargo, 'chefe')
-            return redirect(url_for('home'))
+            tf = TwoFactor.query.filter_by(
+                user_type='chefe', user_id=chefe.id_chefe, enabled=True).first()
+            if tf:
+                session['pending_user'] = {
+                    'tipo': 'chefe', 'id': chefe.id_chefe}
+                return redirect(url_for('two_factor_verify'))
+            else:
+                session['user_id'] = chefe.id_chefe
+                session['tipo_usuario'] = 'chefe'
+                login_user(chefe)
+                registrar_log('login', chefe.nome, chefe.cargo, 'chefe')
+                return redirect(url_for('home'))
 
         # Verifica se o usuário é uma instituição de ensino
         instituicao = InstituicaodeEnsino.query.filter_by(email=email).first()
@@ -543,12 +568,19 @@ def login():
             # Limpa o histórico de tentativas falhadas
             resetar_rate_limit(ip_usuario)
 
-            session['user_id'] = instituicao.id_instituicao
-            session['tipo_usuario'] = 'instituicao'
-            login_user(instituicao)
-            registrar_log('login', instituicao.nome_instituicao,
-                          'reitor', 'instituicao')
-            return redirect(url_for('home'))
+            tf = TwoFactor.query.filter_by(
+                user_type='instituicao', user_id=instituicao.id_instituicao, enabled=True).first()
+            if tf:
+                session['pending_user'] = {
+                    'tipo': 'instituicao', 'id': instituicao.id_instituicao}
+                return redirect(url_for('two_factor_verify'))
+            else:
+                session['user_id'] = instituicao.id_instituicao
+                session['tipo_usuario'] = 'instituicao'
+                login_user(instituicao)
+                registrar_log('login', instituicao.nome_instituicao,
+                              'reitor', 'instituicao')
+                return redirect(url_for('home'))
 
         # =============================================================================
         # LOGIN FALHADO - EXIBE MENSAGEM COM INFORMAÇÕES DO RATE LIMITING
@@ -1612,6 +1644,107 @@ def configuracoes():
         return redirect(url_for('home'))
 
     return render_template('configuracoes.html', usuario=usuario, cursos_da_instituicao=cursos_da_instituicao)
+
+
+def _get_or_create_2fa_record(tipo_usuario, user_id):
+    tf = TwoFactor.query.filter_by(
+        user_type=tipo_usuario, user_id=user_id).first()
+    if not tf:
+        tf = TwoFactor(user_type=tipo_usuario, user_id=user_id,
+                       otp_secret=pyotp.random_base32(), enabled=False)
+        db.session.add(tf)
+        db.session.commit()
+    return tf
+
+
+def _generate_qr_data_uri(issuer, account_name, secret):
+    uri = pyotp.totp.TOTP(secret).provisioning_uri(
+        name=account_name, issuer_name=issuer)
+    qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_M)
+    qr.add_data(uri)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    buf = io.BytesIO()
+    img.save(buf, format='PNG')
+    data = base64.b64encode(buf.getvalue()).decode('utf-8')
+    return f"data:image/png;base64,{data}", uri
+
+
+@app.route('/2fa/setup', methods=['GET', 'POST'])
+@login_required
+def two_factor_setup():
+    tipo_usuario = session.get('tipo_usuario')
+    if tipo_usuario == 'chefe':
+        usuario = Chefe.query.get_or_404(current_user.id_chefe)
+        account_name = usuario.email or usuario.nome
+        user_id = usuario.id_chefe
+    elif tipo_usuario == 'instituicao':
+        usuario = InstituicaodeEnsino.query.get_or_404(
+            current_user.id_instituicao)
+        account_name = usuario.email or usuario.nome_instituicao
+        user_id = usuario.id_instituicao
+    else:
+        flash("Tipo de usuário inválido.", "danger")
+        return redirect(url_for('home'))
+
+    tf = _get_or_create_2fa_record(tipo_usuario, user_id)
+    qr_data_uri, otpauth_uri = _generate_qr_data_uri(
+        'DashTalent', account_name, tf.otp_secret)
+
+    if request.method == 'POST':
+        code = request.form.get('code', '').strip()
+        totp = pyotp.TOTP(tf.otp_secret)
+        if totp.verify(code, valid_window=1):
+            tf.enabled = True
+            db.session.commit()
+            flash('Autenticação de dois fatores ativada com sucesso.', 'success')
+            return redirect(url_for('configuracoes'))
+        else:
+            flash('Código inválido. Tente novamente.', 'danger')
+
+    return render_template('2fa_setup.html', qr_data_uri=qr_data_uri, otpauth_uri=otpauth_uri, secret=tf.otp_secret)
+
+
+@app.route('/2fa/verify', methods=['GET', 'POST'])
+def two_factor_verify():
+    pending = session.get('pending_user')
+    if not pending:
+        return redirect(url_for('login'))
+
+    tipo = pending.get('tipo')
+    user_id = pending.get('id')
+    tf = TwoFactor.query.filter_by(
+        user_type=tipo, user_id=user_id, enabled=True).first()
+    if not tf:
+        # Se não há 2FA ativo, volte ao login
+        session.pop('pending_user', None)
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        code = request.form.get('code', '').strip()
+        totp = pyotp.TOTP(tf.otp_secret)
+        if totp.verify(code, valid_window=1):
+            # Completa o login
+            if tipo == 'chefe':
+                user = Chefe.query.get_or_404(user_id)
+                session['user_id'] = user.id_chefe
+                session['tipo_usuario'] = 'chefe'
+                login_user(user)
+                registrar_log('login', user.nome, user.cargo, 'chefe')
+            elif tipo == 'instituicao':
+                user = InstituicaodeEnsino.query.get_or_404(user_id)
+                session['user_id'] = user.id_instituicao
+                session['tipo_usuario'] = 'instituicao'
+                login_user(user)
+                registrar_log('login', user.nome_instituicao,
+                              'reitor', 'instituicao')
+
+            session.pop('pending_user', None)
+            return redirect(url_for('home'))
+        else:
+            flash('Código 2FA inválido.', 'danger')
+
+    return render_template('2fa_verify.html')
 
 
 def registrar_log(acao, usuario_nome, cargo, tipo_usuario):

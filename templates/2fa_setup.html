@@ -1,0 +1,91 @@
+{% extends "base.html" %} {% set hide_navbar = False %} {% block title %}Ativar
+2FA - DashTalent{% endblock %} {% block body %}
+<div class="container mt-4">
+  <h2>Ativar Autenticação de Dois Fatores (2FA)</h2>
+  <p>
+    Escaneie o QR Code abaixo com seu app autenticador (Google Authenticator,
+    Microsoft Authenticator, etc.).
+  </p>
+
+  <div class="text-center my-4">
+    <img
+      src="{{ qr_data_uri }}"
+      alt="QR Code 2FA"
+      style="max-width: 260px; width: 100%; height: auto"
+    />
+  </div>
+
+  <div class="alert alert-secondary" role="alert">
+    <div>
+      <strong>Se não conseguir escanear:</strong> adicione manualmente a chave
+      secreta abaixo no seu app.
+    </div>
+    <div><strong>Chave secreta:</strong> <code>{{ secret }}</code></div>
+    <div>
+      <small
+        >Parâmetros: 6 dígitos, período 30s, algoritmo SHA1, issuer
+        "DashTalent"</small
+      >
+    </div>
+  </div>
+
+  <form method="POST" class="row g-3">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    <div class="col-auto">
+      <label for="code" class="visually-hidden">Código</label>
+      <input
+        type="text"
+        class="form-control"
+        id="code"
+        name="code"
+        placeholder="Código de 6 dígitos"
+        required
+      />
+    </div>
+    <div class="col-auto">
+      <button type="submit" class="btn btn-primary mb-3">
+        Confirmar e ativar
+      </button>
+    </div>
+  </form>
+
+  <a class="btn btn-link" href="{{ url_for('configuracoes') }}">Voltar</a>
+</div>
+
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
+  <div
+    id="toastNotificacao"
+    class="toast align-items-center text-bg-success border-0"
+    role="alert"
+    aria-live="assertive"
+    aria-atomic="true"
+  >
+    <div class="d-flex">
+      <div class="toast-body" id="toastNotificacaoBody"></div>
+      <button
+        type="button"
+        class="btn-close btn-close-white me-2 m-auto"
+        data-bs-dismiss="toast"
+        aria-label="Fechar"
+      ></button>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          const toast = document.getElementById('toastNotificacao');
+          const toastBody = document.getElementById('toastNotificacaoBody');
+          toast.className = `toast align-items-center text-bg-{{ 'success' if category == 'success' else ('warning' if category == 'warning' else 'danger') }} border-0`;
+          toastBody.innerHTML = {{ message|tojson }};
+          const bsToast = new bootstrap.Toast(toast, { delay: 3000 });
+          bsToast.show();
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  });
+</script>
+{% endblock %}

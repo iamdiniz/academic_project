@@ -1,7 +1,8 @@
-FROM python:3
+FROM python:3.12-slim
 
 RUN apt-get update -y && \
-    apt-get install -y python3-pip python3-dev default-mysql-client netcat-openbsd dos2unix
+    apt-get install -y build-essential default-mysql-client netcat-openbsd dos2unix libjpeg-dev zlib1g-dev && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 

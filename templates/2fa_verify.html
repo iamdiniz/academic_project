@@ -1,0 +1,69 @@
+{% extends "base.html" %} {% set hide_navbar = True %} {% block title
+%}Verificar 2FA - DashTalent{% endblock %} {% block body %}
+<div class="container mt-5" style="max-width: 420px">
+  <h3 class="text-center mb-4">Verificação de 2FA</h3>
+  <p class="text-muted">
+    Digite o código de 6 dígitos do seu app autenticador.
+  </p>
+  <form
+    method="POST"
+    action="{{ url_for('two_factor_verify') }}"
+    class="form-box"
+  >
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    <div class="mb-3">
+      <label for="code" class="form-label">Código</label>
+      <input
+        type="text"
+        id="code"
+        name="code"
+        class="form-control"
+        placeholder="000000"
+        required
+        autofocus
+      />
+    </div>
+    <button type="submit" class="btn btn-primary w-100">Verificar</button>
+  </form>
+  <div class="text-center mt-3">
+    <a href="{{ url_for('login') }}" class="login-link">Cancelar</a>
+  </div>
+</div>
+
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
+  <div
+    id="toastNotificacao"
+    class="toast align-items-center text-bg-success border-0"
+    role="alert"
+    aria-live="assertive"
+    aria-atomic="true"
+  >
+    <div class="d-flex">
+      <div class="toast-body" id="toastNotificacaoBody"></div>
+      <button
+        type="button"
+        class="btn-close btn-close-white me-2 m-auto"
+        data-bs-dismiss="toast"
+        aria-label="Fechar"
+      ></button>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          const toast = document.getElementById('toastNotificacao');
+          const toastBody = document.getElementById('toastNotificacaoBody');
+          toast.className = `toast align-items-center text-bg-{{ 'success' if category == 'success' else ('warning' if category == 'warning' else 'danger') }} border-0`;
+          toastBody.innerHTML = {{ message|tojson }};
+          const bsToast = new bootstrap.Toast(toast, { delay: 3000 });
+          bsToast.show();
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  });
+</script>
+{% endblock %}
