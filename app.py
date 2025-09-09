@@ -1634,16 +1634,22 @@ def configuracoes():
     if tipo_usuario == 'chefe':
         usuario = Chefe.query.get_or_404(current_user.id_chefe)
         cursos_da_instituicao = []
+        user_id = usuario.id_chefe
     elif tipo_usuario == 'instituicao':
         usuario = InstituicaodeEnsino.query.get_or_404(
             current_user.id_instituicao)
         cursos_da_instituicao = Curso.query.filter_by(
             id_instituicao=current_user.id_instituicao).all()
+        user_id = usuario.id_instituicao
     else:
         flash("Tipo de usuário inválido.", "danger")
         return redirect(url_for('home'))
 
-    return render_template('configuracoes.html', usuario=usuario, cursos_da_instituicao=cursos_da_instituicao)
+    # Verificar se 2FA está ativo
+    tf_enabled = TwoFactor.query.filter_by(
+        user_type=tipo_usuario, user_id=user_id, enabled=True).first() is not None
+
+    return render_template('configuracoes.html', usuario=usuario, cursos_da_instituicao=cursos_da_instituicao, two_factor_enabled=tf_enabled)
 
 
 def _get_or_create_2fa_record(tipo_usuario, user_id):
@@ -1745,6 +1751,59 @@ def two_factor_verify():
             flash('Código 2FA inválido.', 'danger')
 
     return render_template('2fa_verify.html')
+
+
+@app.route('/2fa/disable', methods=['GET', 'POST'])
+@login_required
+def two_factor_disable():
+    tipo_usuario = session.get('tipo_usuario')
+    if tipo_usuario == 'chefe':
+        usuario = Chefe.query.get_or_404(current_user.id_chefe)
+        user_id = usuario.id_chefe
+    elif tipo_usuario == 'instituicao':
+        usuario = InstituicaodeEnsino.query.get_or_404(
+            current_user.id_instituicao)
+        user_id = usuario.id_instituicao
+    else:
+        flash("Tipo de usuário inválido.", "danger")
+        return redirect(url_for('home'))
+
+    tf = TwoFactor.query.filter_by(
+        user_type=tipo_usuario, user_id=user_id, enabled=True).first()
+    if not tf:
+        flash("2FA não está ativo para esta conta.", "warning")
+        return redirect(url_for('configuracoes'))
+
+    if request.method == 'POST':
+        senha_atual = request.form.get('senha_atual', '').strip()
+        codigo_2fa = request.form.get('codigo_2fa', '').strip()
+
+        # Verificar senha atual
+        if not check_password_hash(usuario.senha, senha_atual):
+            flash('Senha atual incorreta.', 'danger')
+            return render_template('2fa_disable.html')
+
+        # Verificar código 2FA
+        totp = pyotp.TOTP(tf.otp_secret)
+        if not totp.verify(codigo_2fa, valid_window=1):
+            flash('Código 2FA inválido.', 'danger')
+            return render_template('2fa_disable.html')
+
+        # Desativar 2FA
+        tf.enabled = False
+        db.session.commit()
+
+        # Log de auditoria
+        if tipo_usuario == 'chefe':
+            registrar_log('2fa_disable', usuario.nome, usuario.cargo, 'chefe')
+        else:
+            registrar_log('2fa_disable', usuario.nome_instituicao,
+                          'reitor', 'instituicao')
+
+        flash('2FA desativado com sucesso.', 'success')
+        return redirect(url_for('configuracoes'))
+
+    return render_template('2fa_disable.html')
 
 
 def registrar_log(acao, usuario_nome, cargo, tipo_usuario):

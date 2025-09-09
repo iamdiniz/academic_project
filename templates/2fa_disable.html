@@ -1,0 +1,84 @@
+{% extends "base.html" %} {% set hide_navbar = False %} {% block title
+%}Desativar 2FA - DashTalent{% endblock %} {% block body %}
+<div class="container mt-4">
+  <h2>Desativar Autenticação de Dois Fatores (2FA)</h2>
+  <div class="alert alert-warning" role="alert">
+    <strong>Atenção:</strong> Desativar o 2FA reduzirá a segurança da sua conta.
+    Para confirmar esta ação, você precisa fornecer sua senha atual e um código
+    2FA válido.
+  </div>
+
+  <form method="POST" class="row g-3">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+    <div class="col-12">
+      <label for="senha_atual" class="form-label">Senha Atual</label>
+      <input
+        type="password"
+        class="form-control"
+        id="senha_atual"
+        name="senha_atual"
+        placeholder="Digite sua senha atual"
+        required
+      />
+    </div>
+
+    <div class="col-12">
+      <label for="codigo_2fa" class="form-label">Código 2FA</label>
+      <input
+        type="text"
+        class="form-control"
+        id="codigo_2fa"
+        name="codigo_2fa"
+        placeholder="Digite o código de 6 dígitos do seu app autenticador"
+        required
+        maxlength="6"
+      />
+    </div>
+
+    <div class="col-12">
+      <button type="submit" class="btn btn-danger me-2">Desativar 2FA</button>
+      <a href="{{ url_for('configuracoes') }}" class="btn btn-secondary"
+        >Cancelar</a
+      >
+    </div>
+  </form>
+</div>
+
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
+  <div
+    id="toastNotificacao"
+    class="toast align-items-center text-bg-success border-0"
+    role="alert"
+    aria-live="assertive"
+    aria-atomic="true"
+  >
+    <div class="d-flex">
+      <div class="toast-body" id="toastNotificacaoBody"></div>
+      <button
+        type="button"
+        class="btn-close btn-close-white me-2 m-auto"
+        data-bs-dismiss="toast"
+        aria-label="Fechar"
+      ></button>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          const toast = document.getElementById('toastNotificacao');
+          const toastBody = document.getElementById('toastNotificacaoBody');
+          toast.className = `toast align-items-center text-bg-{{ 'success' if category == 'success' else ('warning' if category == 'warning' else 'danger') }} border-0`;
+          toastBody.innerHTML = {{ message|tojson }};
+          const bsToast = new bootstrap.Toast(toast, { delay: 3000 });
+          bsToast.show();
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  });
+</script>
+{% endblock %}
