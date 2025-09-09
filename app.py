@@ -32,7 +32,6 @@ if not app.secret_key:
     raise RuntimeError(
         "A variável FLASK_SECRET_KEY não está definida no ambiente!")
 
-
 database_url = os.getenv("DATABASE_URL")
 if not database_url:
     raise RuntimeError(
