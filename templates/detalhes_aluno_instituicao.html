@@ -21,6 +21,8 @@
     <div class="text-center"><p>Mantenha as habilidades do seu aluno sempre atualizadas e visíveis para o mercado!</p></div>
 
     <form method="POST" onsubmit="return validateSkillsForm();" novalidate>
+        <!-- CSRF: campo hidden para proteção contra Cross-Site Request Forgery -->
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="mb-3">
             <label for="nome_jovem" class="form-label">Nome</label>
             <input type="text" class="form-control" id="nome_jovem" name="nome_jovem" value="{{ aluno.nome_jovem }}" required maxlength="30" pattern="[A-Za-zÀ-ÖØ-öø-ÿ\s]+" title="Apenas letras e espaços são permitidos para o nome.">

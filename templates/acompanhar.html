@@ -1,154 +1,193 @@
-{% extends 'base.html' %}
-{% set hide_navbar = False %}
-
-{% block title %}Acompanhamento de Alunos - DashTalent{% endblock %}
-
-{% block head %}
+{% extends 'base.html' %} {% set hide_navbar = False %} {% block title
+%}Acompanhamento de Alunos - DashTalent{% endblock %} {% block head %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/acompanhar.css') }}">
-{% endblock %}
-
-{% block body %}
+{% endblock %} {% block extra_css %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/acompanhar.css') }}"
+/>
+{% endblock %} {% block body %}
 <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4 position-relative">
-        <a href="{{ url_for('home') }}" class="back-circle position-absolute start-0">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" class="bi bi-arrow-left" viewBox="0 0 16 16">
-                <path fill-rule="evenodd" d="M15 8a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 7.5H14.5a.5.5 0 0 1 .5.5z"/>
-            </svg>
-        </a>
-        <h1 class="m-0 w-100 text-center title-responsive">Alunos em monitoramento</h1>
-    </div>
+  <div
+    class="d-flex justify-content-between align-items-center mb-4 position-relative"
+  >
+    <a
+      href="{{ url_for('home') }}"
+      class="back-circle position-absolute start-0"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="20"
+        height="20"
+        fill="white"
+        class="bi bi-arrow-left"
+        viewBox="0 0 16 16"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M15 8a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 7.5H14.5a.5.5 0 0 1 .5.5z"
+        />
+      </svg>
+    </a>
+    <h1 class="m-0 w-100 text-center title-responsive">
+      Alunos em monitoramento
+    </h1>
+  </div>
 
-    <div class="text-center"><p>Alunos monitorados por você</p></div><br>
+  <div class="text-center"><p>Alunos monitorados por você</p></div>
+  <br />
 
-    {% if alunos %}
-    <div class="row g-4">
-        {% for aluno in alunos %}
-            <div class="col-md-4">
-                <div class="card p-3 shadow-sm h-100 d-flex flex-column justify-content-between">
-                    <h5>{{ aluno.nome_jovem }}</h5>
-                    <p><strong>Curso:</strong> {{ aluno.curso }}</p><br>
-                    {% if aluno.hard_labels or aluno.soft_labels %}
-                        <canvas id="grafico{{ loop.index }}" style="max-width: 100%; max-height: 250px;"></canvas>
-                        <script>
-                            const ctx{{ loop.index }} = document.getElementById('grafico{{ loop.index }}').getContext('2d');
-                            new Chart(ctx{{ loop.index }}, {
-                                type: 'radar',
-                                data: {
-                                    labels: {{ aluno.hard_labels|tojson if aluno.hard_labels else aluno.soft_labels|tojson }},
-                                    datasets: [
-                                        {
-                                            label: 'Hard Skills',
-                                            data: {{ aluno.hard_skills|tojson }},
-                                            customLabels: {{ aluno.hard_labels|tojson }},
-                                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                                            borderColor: 'rgba(54, 162, 235, 1)',
-                                            pointBackgroundColor: 'rgba(54, 162, 235, 1)',
-                                            borderWidth: 2
-                                        },
-                                        {
-                                            label: 'Soft Skills',
-                                            data: {{ aluno.soft_skills|tojson }},
-                                            customLabels: {{ aluno.soft_labels|tojson }},
-                                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                                            borderColor: 'rgba(255, 99, 132, 1)',
-                                            pointBackgroundColor: 'rgba(255, 99, 132, 1)',
-                                            borderWidth: 2
-                                        }
-                                    ]
-                                },
-                                options: {
-                                    responsive: true,
-                                    interaction: {
-                                        mode: 'nearest',
-                                        intersect: true
-                                    },
-                                    scales: {
-                                        r: {
-                                            beginAtZero: true,
-                                            min: 0,
-                                            max: 10,
-                                            ticks: {
-                                                display: false,
-                                                stepSize: 1,
-                                                color: '#666',
-                                                backdropColor: 'rgba(255, 255, 255, 0.8)'
-                                            },
-                                            grid: {
-                                                color: 'rgba(200, 200, 200, 0.5)'
-                                            },
-                                            angleLines: {
-                                                color: 'rgba(200, 200, 200, 0.5)'
-                                            },
-                                            pointLabels: {
-                                                callback: function(label, index) {
-                                                    const hardLabels = {{ aluno.hard_labels|tojson }};
-                                                    const softLabels = {{ aluno.soft_labels|tojson }};
-                                                    const hard = hardLabels[index] ? `🟦 ${hardLabels[index]}` : '';
-                                                    const soft = softLabels[index] ? `🟥 ${softLabels[index]}` : '';
-                                                    return [hard, soft].filter(Boolean);
-                                                },
-                                                font: {
-                                                    size: 8
-                                                },
-                                                color: '#000'
-                                            }
-                                        }
-                                    },
-                                    plugins: {
-                                        legend: {
-                                            display: true,
-                                            position: 'top',
-                                            labels: {
-                                                color: 'black'
-                                            }
-                                        },
-                                        tooltip: {
-                                            enabled: true,
-                                            mode: 'nearest',
-                                            intersect: true,
-                                            callbacks: {
-                                                title: function() {
-                                                    return '';
-                                                },
-                                                label: function(context) {
-                                                    const dataset = context.dataset;
-                                                    const index = context.dataIndex;
-                                                    const customLabel = dataset.customLabels?.[index] || 'Skill';
-                                                    const value = context.formattedValue;
-                                                    const cor = dataset.label === 'Soft Skills' ? '🟥' : '🟦';
-                                                    return `${cor} ${customLabel}: ${value}`;
-                                                }
-                                            },
-                                            backgroundColor: 'rgba(0,0,0,0.8)',
-                                            titleColor: '#fff',
-                                            bodyColor: '#fff',
-                                            displayColors: false
-                                        }
-                                    }
-                                }
-                            });
-                        </script>
-                    {% else %}
-                        <p><em>Sem dados de skills disponíveis.</em></p>
-                    {% endif %}
-                    <div class="mt-3 text-end">
-                        <a href="{{ url_for('detalhes_aluno', id_aluno=aluno.id_aluno, previous=request.full_path) }}" class="btn btn-primary btn-sm">Detalhes</a>
-                        <button class="btn btn-info btn-sm" onclick="abrirStatus({{ aluno.id_aluno }})">Últimos Status</button>
-                        <form method="post" action="{{ url_for('remover_acompanhamento', id_aluno=aluno.id_aluno) }}" style="display:inline;" onsubmit="return confirm('Deseja realmente remover este aluno do acompanhamento?');">
-                            <button type="button" class="btn btn-danger btn-sm" onclick="abrirModalRemover({{ aluno.id_aluno }})">Remover</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        {% endfor %}
+  {% if alunos %}
+  <div class="row g-4">
+    {% for aluno in alunos %}
+    <div class="col-md-4">
+      <div
+        class="card p-3 shadow-sm h-100 d-flex flex-column justify-content-between"
+      >
+        <h5>{{ aluno.nome_jovem }}</h5>
+        <p><strong>Curso:</strong> {{ aluno.curso }}</p>
+        <br />
+        {% if aluno.hard_labels or aluno.soft_labels %}
+        <canvas
+          id="grafico{{ loop.index }}"
+          style="max-width: 100%; max-height: 250px"
+        ></canvas>
+        <script>
+          const ctx{{ loop.index }} = document.getElementById('grafico{{ loop.index }}').getContext('2d');
+          new Chart(ctx{{ loop.index }}, {
+              type: 'radar',
+              data: {
+                  labels: {{ aluno.hard_labels|tojson if aluno.hard_labels else aluno.soft_labels|tojson }},
+                  datasets: [
+                      {
+                          label: 'Hard Skills',
+                          data: {{ aluno.hard_skills|tojson }},
+                          customLabels: {{ aluno.hard_labels|tojson }},
+                          backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                          borderColor: 'rgba(54, 162, 235, 1)',
+                          pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                          borderWidth: 2
+                      },
+                      {
+                          label: 'Soft Skills',
+                          data: {{ aluno.soft_skills|tojson }},
+                          customLabels: {{ aluno.soft_labels|tojson }},
+                          backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                          borderColor: 'rgba(255, 99, 132, 1)',
+                          pointBackgroundColor: 'rgba(255, 99, 132, 1)',
+                          borderWidth: 2
+                      }
+                  ]
+              },
+              options: {
+                  responsive: true,
+                  interaction: {
+                      mode: 'nearest',
+                      intersect: true
+                  },
+                  scales: {
+                      r: {
+                          beginAtZero: true,
+                          min: 0,
+                          max: 10,
+                          ticks: {
+                              display: false,
+                              stepSize: 1,
+                              color: '#666',
+                              backdropColor: 'rgba(255, 255, 255, 0.8)'
+                          },
+                          grid: {
+                              color: 'rgba(200, 200, 200, 0.5)'
+                          },
+                          angleLines: {
+                              color: 'rgba(200, 200, 200, 0.5)'
+                          },
+                          pointLabels: {
+                              callback: function(label, index) {
+                                  const hardLabels = {{ aluno.hard_labels|tojson }};
+                                  const softLabels = {{ aluno.soft_labels|tojson }};
+                                  const hard = hardLabels[index] ? `🟦 ${hardLabels[index]}` : '';
+                                  const soft = softLabels[index] ? `🟥 ${softLabels[index]}` : '';
+                                  return [hard, soft].filter(Boolean);
+                              },
+                              font: {
+                                  size: 8
+                              },
+                              color: '#000'
+                          }
+                      }
+                  },
+                  plugins: {
+                      legend: {
+                          display: true,
+                          position: 'top',
+                          labels: {
+                              color: 'black'
+                          }
+                      },
+                      tooltip: {
+                          enabled: true,
+                          mode: 'nearest',
+                          intersect: true,
+                          callbacks: {
+                              title: function() {
+                                  return '';
+                              },
+                              label: function(context) {
+                                  const dataset = context.dataset;
+                                  const index = context.dataIndex;
+                                  const customLabel = dataset.customLabels?.[index] || 'Skill';
+                                  const value = context.formattedValue;
+                                  const cor = dataset.label === 'Soft Skills' ? '🟥' : '🟦';
+                                  return `${cor} ${customLabel}: ${value}`;
+                              }
+                          },
+                          backgroundColor: 'rgba(0,0,0,0.8)',
+                          titleColor: '#fff',
+                          bodyColor: '#fff',
+                          displayColors: false
+                      }
+                  }
+              }
+          });
+        </script>
+        {% else %}
+        <p><em>Sem dados de skills disponíveis.</em></p>
+        {% endif %}
+        <div class="mt-3 text-end">
+          <a
+            href="{{ url_for('detalhes_aluno', id_aluno=aluno.id_aluno, previous=request.full_path) }}"
+            class="btn btn-primary btn-sm"
+            >Detalhes</a
+          >
+          <button
+            class="btn btn-info btn-sm"
+            onclick="abrirStatus({{ aluno.id_aluno }})"
+          >
+            Últimos Status
+          </button>
+          <form
+            method="post"
+            action="{{ url_for('remover_acompanhamento', id_aluno=aluno.id_aluno) }}"
+            style="display: inline"
+            onsubmit="return confirm('Deseja realmente remover este aluno do acompanhamento?');"
+          >
+            <button
+              type="button"
+              class="btn btn-danger btn-sm"
+              onclick="abrirModalRemover({{ aluno.id_aluno }})"
+            >
+              Remover
+            </button>
+          </form>
+        </div>
+      </div>
     </div>
-    {% else %}
-        <p class="text-center"><em>Nenhum aluno sob acompanhamento.</em></p>
-    {% endif %}
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="text-center"><em>Nenhum aluno sob acompanhamento.</em></p>
+  {% endif %}
 </div>
 
 <!-- Modal para status -->
@@ -157,7 +196,12 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Evolução das Skills</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Fechar"
+        ></button>
       </div>
       <div class="modal-body" id="statusBody">
         <!-- Conteúdo dinâmico -->
@@ -167,30 +211,47 @@
 </div>
 
 <script>
-function abrirStatus(id_aluno) {
-    fetch('/status_aluno/' + id_aluno)
-        .then(response => response.text())
-        .then(html => {
-            document.getElementById('statusBody').innerHTML = html;
-            var myModal = new bootstrap.Modal(document.getElementById('statusModal'));
-            myModal.show();
-        });
-}
+  function abrirStatus(id_aluno) {
+    fetch("/status_aluno/" + id_aluno)
+      .then((response) => response.text())
+      .then((html) => {
+        document.getElementById("statusBody").innerHTML = html;
+        var myModal = new bootstrap.Modal(
+          document.getElementById("statusModal")
+        );
+        myModal.show();
+      });
+  }
 </script>
 
 <!-- Modal de confirmação de remoção -->
-<div class="modal fade" id="modalRemoverAcompanhamento" tabindex="-1" aria-labelledby="modalRemoverLabel" aria-hidden="true">
+<div
+  class="modal fade"
+  id="modalRemoverAcompanhamento"
+  tabindex="-1"
+  aria-labelledby="modalRemoverLabel"
+  aria-hidden="true"
+>
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="modalRemoverLabel">Remover acompanhamento</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        <h5 class="modal-title" id="modalRemoverLabel">
+          Remover acompanhamento
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Fechar"
+        ></button>
       </div>
       <div class="modal-body">
         Deseja realmente remover este aluno do acompanhamento?
       </div>
       <div class="modal-footer">
         <form id="formRemoverAcompanhamento" method="post">
+          <!-- CSRF: campo hidden para proteção contra Cross-Site Request Forgery -->
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
           <button type="submit" class="btn btn-danger">Remover</button>
         </form>
@@ -201,72 +262,91 @@ function abrirStatus(id_aluno) {
 
 <!-- Toasts de Notificação -->
 <div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
-  <div id="toastNotificacao" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+  <div
+    id="toastNotificacao"
+    class="toast align-items-center text-bg-success border-0"
+    role="alert"
+    aria-live="assertive"
+    aria-atomic="true"
+  >
     <div class="d-flex">
       <div class="toast-body" id="toastNotificacaoBody"></div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
+      <button
+        type="button"
+        class="btn-close btn-close-white me-2 m-auto"
+        data-bs-dismiss="toast"
+        aria-label="Fechar"
+      ></button>
     </div>
   </div>
 </div>
 
-<br>
+<br />
 {% if total_pages > 1 %}
 <nav aria-label="Paginação de alunos">
   <ul class="pagination justify-content-center mt-4">
     <li class="page-item {% if page == 1 %}disabled{% endif %}">
-      <a class="page-link" href="{{ url_for('acompanhar', page=page-1) }}">Anterior</a>
+      <a class="page-link" href="{{ url_for('acompanhar', page=page-1) }}"
+        >Anterior</a
+      >
     </li>
     {% for p in range(1, total_pages+1) %}
-      <li class="page-item {% if p == page %}active{% endif %}">
-        <a class="page-link" href="{{ url_for('acompanhar', page=p) }}">{{ p }}</a>
-      </li>
+    <li class="page-item {% if p == page %}active{% endif %}">
+      <a class="page-link" href="{{ url_for('acompanhar', page=p) }}"
+        >{{ p }}</a
+      >
+    </li>
     {% endfor %}
     <li class="page-item {% if page == total_pages %}disabled{% endif %}">
-      <a class="page-link" href="{{ url_for('acompanhar', page=page+1) }}">Próxima</a>
+      <a class="page-link" href="{{ url_for('acompanhar', page=page+1) }}"
+        >Próxima</a
+      >
     </li>
   </ul>
 </nav>
-<br>
+<br />
 {% endif %}
 
 <script>
-function showToast(message, type='success', timeout=4000, icon='') {
-    const toast = document.getElementById('toastNotificacao');
-    const toastBody = document.getElementById('toastNotificacaoBody');
-    toast.className = `toast align-items-center text-bg-${type} border-0`;
-    toastBody.innerHTML = icon + message;
-    const bsToast = new bootstrap.Toast(toast, { delay: timeout });
-    bsToast.show();
-}
+  function showToast(message, type='success', timeout=4000, icon='') {
+      const toast = document.getElementById('toastNotificacao');
+      const toastBody = document.getElementById('toastNotificacaoBody');
+      toast.className = `toast align-items-center text-bg-${type} border-0`;
+      toastBody.innerHTML = icon + message;
+      const bsToast = new bootstrap.Toast(toast, { delay: timeout });
+      bsToast.show();
+  }
 
-document.addEventListener('DOMContentLoaded', function() {
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                showToast({{ message|tojson }},
-                    {% if category == 'success' %}'success'
-                    {% elif category == 'warning' %}'warning'
-                    {% elif category == 'danger' %}'danger'
-                    {% else %}'info'{% endif %},
-                    4000,
-                    {% if category == 'success' %}'<i class="bi bi-check-circle-fill me-2"></i>'
-                    {% elif category == 'warning' %}'<i class="bi bi-exclamation-triangle-fill me-2"></i>'
-                    {% elif category == 'danger' %}'<i class="bi bi-x-circle-fill me-2"></i>'
-                    {% else %}''{% endif %}
-                );
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-});
+  document.addEventListener('DOMContentLoaded', function() {
+      {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+              {% for category, message in messages %}
+                  showToast({{ message|tojson }},
+                      {% if category == 'success' %}'success'
+                      {% elif category == 'warning' %}'warning'
+                      {% elif category == 'danger' %}'danger'
+                      {% else %}'info'{% endif %},
+                      4000,
+                      {% if category == 'success' %}'<i class="bi bi-check-circle-fill me-2"></i>'
+                      {% elif category == 'warning' %}'<i class="bi bi-exclamation-triangle-fill me-2"></i>'
+                      {% elif category == 'danger' %}'<i class="bi bi-x-circle-fill me-2"></i>'
+                      {% else %}''{% endif %}
+                  );
+              {% endfor %}
+          {% endif %}
+      {% endwith %}
+  });
 </script>
 
 <script>
-function abrirModalRemover(id_aluno) {
-    const form = document.getElementById('formRemoverAcompanhamento');
-    form.action = '/remover_acompanhamento/' + id_aluno;
-    var modal = new bootstrap.Modal(document.getElementById('modalRemoverAcompanhamento'));
+  function abrirModalRemover(id_aluno) {
+    const form = document.getElementById("formRemoverAcompanhamento");
+    form.action = "/remover_acompanhamento/" + id_aluno;
+    var modal = new bootstrap.Modal(
+      document.getElementById("modalRemoverAcompanhamento")
+    );
     modal.show();
-}
+  }
 </script>
 
 {% endblock %}

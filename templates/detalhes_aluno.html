@@ -1,219 +1,288 @@
-{% extends 'base.html' %}
-{% set hide_navbar = False %}
-
-{% block title %}Detalhes do Aluno - {{ aluno.nome_jovem }}{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/detalhes_aluno.css') }}">
-{% endblock %}
-
-{% block body %}
+{% extends 'base.html' %} {% set hide_navbar = False %} {% block title
+%}Detalhes do Aluno - {{ aluno.nome_jovem }}{% endblock %} {% block extra_css %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/detalhes_aluno.css') }}"
+/>
+{% endblock %} {% block body %}
 <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4 position-relative">
-            <a href="{{ url_for('instituicao_ensino') }}" class="back-circle position-absolute start-0">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" class="bi bi-arrow-left" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd" d="M15 8a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 7.5H14.5a.5.5 0 0 1 .5.5z"/>
-                </svg>
-            </a>
-            <h1 class="m-0 w-100 text-center title-responsive">Detalhes do Aluno</h1>
+  <div
+    class="d-flex justify-content-between align-items-center mb-4 position-relative"
+  >
+    <a
+      href="{{ url_for('instituicao_ensino') }}"
+      class="back-circle position-absolute start-0"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="20"
+        height="20"
+        fill="white"
+        class="bi bi-arrow-left"
+        viewBox="0 0 16 16"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M15 8a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 7.5H14.5a.5.5 0 0 1 .5.5z"
+        />
+      </svg>
+    </a>
+    <h1 class="m-0 w-100 text-center title-responsive">Detalhes do Aluno</h1>
+  </div>
+
+  <ul class="list-group">
+    <li class="list-group-item">
+      <strong>Nome:</strong> {{ aluno.nome_jovem }}
+    </li>
+    <li class="list-group-item">
+      <strong>Data de Nascimento: </strong>{{
+      aluno.data_nascimento.strftime('%d/%m/%Y') if aluno.data_nascimento else
+      '' }}
+    </li>
+    <li class="list-group-item"><strong>Curso:</strong> {{ aluno.curso }}</li>
+    <li class="list-group-item">
+      <strong>Periodo:</strong> {{ aluno.periodo }}
+    </li>
+    <li class="list-group-item">
+      <strong>Formações:</strong> {{ aluno.formacao }}
+    </li>
+  </ul>
+
+  <div class="row mt-4">
+    <div class="col-12 col-md-6 d-flex flex-column align-items-center">
+      <h5 class="mb-2">Hard Skills</h5>
+      {% if hard_labels %}
+      <div class="w-100">
+        <canvas id="graficoHard" style="height: 300px"></canvas>
+      </div>
+      {% else %}
+      <p><em>Sem dados de hard skills disponíveis.</em></p>
+      {% endif %}
     </div>
-
-    <ul class="list-group">
-        <li class="list-group-item"><strong>Nome:</strong> {{ aluno.nome_jovem }}</li>
-        <li class="list-group-item"><strong>Data de Nascimento: </strong>{{ aluno.data_nascimento.strftime('%d/%m/%Y') if aluno.data_nascimento else '' }}</li>
-        <li class="list-group-item"><strong>Curso:</strong> {{ aluno.curso }}</li>
-        <li class="list-group-item"><strong>Periodo:</strong> {{ aluno.periodo }}</li>
-        <li class="list-group-item"><strong>Formações:</strong> {{ aluno.formacao }}</li>
-    </ul>
-
-    <div class="row mt-4">
-        <div class="col-12 col-md-6 d-flex flex-column align-items-center">
-            <h5 class="mb-2">Hard Skills</h5>
-            {% if hard_labels %}
-                <div class="w-100">
-                    <canvas id="graficoHard" style="height: 300px;"></canvas>
-                </div>
-            {% else %}
-                <p><em>Sem dados de hard skills disponíveis.</em></p>
-            {% endif %}
-        </div>
-        <div class="col-12 col-md-6 d-flex flex-column align-items-center">
-            <h5 class="mb-2">Soft Skills</h5>
-            {% if soft_labels %}
-                <div class="w-100">
-                    <canvas id="graficoSoft" style="height: 300px;"></canvas>
-                </div>
-            {% else %}
-                <p><em>Sem dados de soft skills disponíveis.</em></p>
-            {% endif %}
-        </div>
+    <div class="col-12 col-md-6 d-flex flex-column align-items-center">
+      <h5 class="mb-2">Soft Skills</h5>
+      {% if soft_labels %}
+      <div class="w-100">
+        <canvas id="graficoSoft" style="height: 300px"></canvas>
+      </div>
+      {% else %}
+      <p><em>Sem dados de soft skills disponíveis.</em></p>
+      {% endif %}
     </div>
+  </div>
 
-
-    <div class="mt-4">
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#contatoModal">Ver Contato</button>
-        <button class="btn btn-warning" id="acompanharAlunoBtn">Acompanhar</button>
-        <script>
-        document.getElementById('acompanharAlunoBtn').onclick = function() {
-            fetch('{{ url_for("acompanhar_aluno", id_aluno=aluno.id_aluno) }}', {
-                method: 'POST'
-            }).then(r => r.json()).then(data => {
-                alert(data.message || data.error);
-            });
-        };
-        </script>
-        <a href="{{ previous_url }}" class="btn btn-secondary">Voltar</a>
-    </div>
+  <div class="mt-4">
+    <button
+      class="btn btn-primary"
+      data-bs-toggle="modal"
+      data-bs-target="#contatoModal"
+    >
+      Ver Contato
+    </button>
+    <button class="btn btn-warning" id="acompanharAlunoBtn">Acompanhar</button>
+    <script>
+      // CSRF: envia token via cabeçalho X-CSRFToken nas requisições POST
+      document.getElementById("acompanharAlunoBtn").onclick = function () {
+        const token = document.cookie
+          .split("; ")
+          .find((c) => c.startsWith("csrf_token="))
+          ?.split("=")[1];
+        fetch('{{ url_for("acompanhar_aluno", id_aluno=aluno.id_aluno) }}', {
+          method: "POST",
+          headers: { "X-CSRFToken": token },
+        })
+          .then((r) => r.json())
+          .then((data) => {
+            alert(data.message || data.error);
+          });
+      };
+    </script>
+    <a href="{{ previous_url }}" class="btn btn-secondary">Voltar</a>
+  </div>
 </div>
 
 <!-- Modal (Pop-up) -->
-<div class="modal fade" id="contatoModal" tabindex="-1" aria-labelledby="contatoModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="contatoModalLabel">Informações de Contato</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p><strong>Contato:</strong> {{ aluno.contato_jovem }}</p>
-                <p><strong>E-mail:</strong> {{ aluno.email }}</p>
-                <p><strong>Endereço:</strong> {{ aluno.endereco_jovem }}</p>
-            </div>
-            <div class="modal-footer">
-                <a type="button" data-bs-dismiss="modal" class="btn btn-secondary">Voltar</a>
-                <button type="button" class="btn btn-success" id="indicarAlunoBtn">Indicar</button>
-            </div>
-        </div>
+<div
+  class="modal fade"
+  id="contatoModal"
+  tabindex="-1"
+  aria-labelledby="contatoModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="contatoModalLabel">
+          Informações de Contato
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>Contato:</strong> {{ aluno.contato_jovem }}</p>
+        <p><strong>E-mail:</strong> {{ aluno.email }}</p>
+        <p><strong>Endereço:</strong> {{ aluno.endereco_jovem }}</p>
+      </div>
+      <div class="modal-footer">
+        <a type="button" data-bs-dismiss="modal" class="btn btn-secondary"
+          >Voltar</a
+        >
+        <button type="button" class="btn btn-success" id="indicarAlunoBtn">
+          Indicar
+        </button>
+      </div>
     </div>
+  </div>
 </div>
 
 <!-- Modal de Mensagem Customizada -->
 <!-- Toasts de Notificação -->
 <div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
-  <div id="toastNotificacao" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+  <div
+    id="toastNotificacao"
+    class="toast align-items-center text-bg-success border-0"
+    role="alert"
+    aria-live="assertive"
+    aria-atomic="true"
+  >
     <div class="d-flex">
       <div class="toast-body" id="toastNotificacaoBody">
         <!-- Mensagem via JS -->
       </div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
+      <button
+        type="button"
+        class="btn-close btn-close-white me-2 m-auto"
+        data-bs-dismiss="toast"
+        aria-label="Fechar"
+      ></button>
     </div>
   </div>
 </div>
-<br>
+<br />
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-{% if hard_labels %}
-    new Chart(document.getElementById('graficoHard').getContext('2d'), {
-    type: 'bar',
-    data: {
-        labels: {{ hard_labels|tojson }},
-        datasets: [{
-            label: 'Hard Skills',
-            data: {{ hard_values|tojson }},
-            backgroundColor: 'rgba(54, 162, 235, 0.7)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1,
-            barThickness: 30 // controla a espessura das barras
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-            y: {
-                beginAtZero: true,
-                min: 0,
-                max: 10,
-                ticks: { stepSize: 1 }
+  {% if hard_labels %}
+      new Chart(document.getElementById('graficoHard').getContext('2d'), {
+      type: 'bar',
+      data: {
+          labels: {{ hard_labels|tojson }},
+          datasets: [{
+              label: 'Hard Skills',
+              data: {{ hard_values|tojson }},
+              backgroundColor: 'rgba(54, 162, 235, 0.7)',
+              borderColor: 'rgba(54, 162, 235, 1)',
+              borderWidth: 1,
+              barThickness: 30 // controla a espessura das barras
+          }]
+      },
+      options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+              y: {
+                  beginAtZero: true,
+                  min: 0,
+                  max: 10,
+                  ticks: { stepSize: 1 }
+              }
+          }
+      }
+  });
+  {% endif %}
+
+  {% if soft_labels %}
+      new Chart(document.getElementById('graficoSoft').getContext('2d'), {
+      type: 'bar',
+      data: {
+          labels: {{ soft_labels|tojson }},
+          datasets: [{
+              label: 'Soft Skills',
+              data: {{ soft_values|tojson }},
+              backgroundColor: 'rgba(255, 99, 132, 0.7)',
+              borderColor: 'rgba(255, 99, 132, 1)',
+              borderWidth: 1,
+              barThickness: 30
+          }]
+      },
+      options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+              y: {
+                  beginAtZero: true,
+                  min: 0,
+                  max: 10,
+                  ticks: { stepSize: 1 }
+              }
+          }
+      }
+  });
+  {% endif %}
+
+
+  function showToast(mensagem, cor='success', tempo=2500, icone='') {
+      const toast = document.getElementById('toastNotificacao');
+      const toastBody = document.getElementById('toastNotificacaoBody');
+      toast.className = `toast align-items-center text-bg-${cor} border-0`;
+      toastBody.innerHTML = icone + mensagem;
+      const bsToast = new bootstrap.Toast(toast, { delay: tempo });
+      bsToast.show();
+  }
+
+  // Indicar aluno
+  document.getElementById('indicarAlunoBtn').addEventListener('click', function () {
+      const token = document.cookie.split('; ').find(c => c.startsWith('csrf_token='))?.split('=')[1];
+      fetch('{{ url_for("indicar_aluno", id_aluno=aluno.id_aluno) }}', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': token },
+          body: JSON.stringify({ id_aluno: {{ aluno.id_aluno }} })
+      }).then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                // Já indicado ou erro
+                showToast(data.error, 'warning', 3000, '<i class="bi bi-x-circle-fill me-2"></i>');
+            } else {
+                // Sucesso
+                showToast('Aluno indicado com sucesso!', 'success', 2000, '<i class="bi bi-check-circle-fill me-2"></i>');
+                // Fecha o modal de contato
+                const modal = bootstrap.Modal.getInstance(document.getElementById('contatoModal'));
+                modal.hide();
             }
-        }
-    }
-});
-{% endif %}
+        }).catch(error => {
+            showToast('Ocorreu um erro ao tentar indicar o aluno.', 'danger', 3000, '<i class="bi bi-exclamation-triangle-fill me-2"></i>');
+        });
+  });
 
-{% if soft_labels %}
-    new Chart(document.getElementById('graficoSoft').getContext('2d'), {
-    type: 'bar',
-    data: {
-        labels: {{ soft_labels|tojson }},
-        datasets: [{
-            label: 'Soft Skills',
-            data: {{ soft_values|tojson }},
-            backgroundColor: 'rgba(255, 99, 132, 0.7)',
-            borderColor: 'rgba(255, 99, 132, 1)',
-            borderWidth: 1,
-            barThickness: 30
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-            y: {
-                beginAtZero: true,
-                min: 0,
-                max: 10,
-                ticks: { stepSize: 1 }
-            }
-        }
-    }
-});
-{% endif %}
-
-    
-function showToast(mensagem, cor='success', tempo=2500, icone='') {
-    const toast = document.getElementById('toastNotificacao');
-    const toastBody = document.getElementById('toastNotificacaoBody');
-    toast.className = `toast align-items-center text-bg-${cor} border-0`;
-    toastBody.innerHTML = icone + mensagem;
-    const bsToast = new bootstrap.Toast(toast, { delay: tempo });
-    bsToast.show();
-}
-
-// Indicar aluno
-document.getElementById('indicarAlunoBtn').addEventListener('click', function () {
-    fetch('{{ url_for("indicar_aluno", id_aluno=aluno.id_aluno) }}', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id_aluno: {{ aluno.id_aluno }} })
-    }).then(response => response.json())
-      .then(data => {
-          if (data.error) {
-              // Já indicado ou erro
+  // Acompanhar aluno
+  document.getElementById('acompanharAlunoBtn').onclick = function() {
+      const token = document.cookie.split('; ').find(c => c.startsWith('csrf_token='))?.split('=')[1];
+      fetch('{{ url_for("acompanhar_aluno", id_aluno=aluno.id_aluno) }}', {
+          method: 'POST',
+          headers: { 'X-CSRFToken': token }
+      }).then(r => r.json()).then(data => {
+          if (data.message) {
+              showToast(data.message, 'success', 2000, '<i class="bi bi-check-circle-fill me-2"></i>');
+          } else if (data.error) {
               showToast(data.error, 'warning', 3000, '<i class="bi bi-x-circle-fill me-2"></i>');
           } else {
-              // Sucesso
-              showToast('Aluno indicado com sucesso!', 'success', 2000, '<i class="bi bi-check-circle-fill me-2"></i>');
-              // Fecha o modal de contato
-              const modal = bootstrap.Modal.getInstance(document.getElementById('contatoModal'));
-              modal.hide();
+              showToast('Ocorreu um erro ao tentar acompanhar o aluno.', 'danger', 3000, '<i class="bi bi-exclamation-triangle-fill me-2"></i>');
           }
-      }).catch(error => {
-          showToast('Ocorreu um erro ao tentar indicar o aluno.', 'danger', 3000, '<i class="bi bi-exclamation-triangle-fill me-2"></i>');
+      }).catch(() => {
+          showToast('Ocorreu um erro ao tentar acompanhar o aluno.', 'danger', 3000, '<i class="bi bi-exclamation-triangle-fill me-2"></i>');
       });
-});
-
-// Acompanhar aluno
-document.getElementById('acompanharAlunoBtn').onclick = function() {
-    fetch('{{ url_for("acompanhar_aluno", id_aluno=aluno.id_aluno) }}', {
-        method: 'POST'
-    }).then(r => r.json()).then(data => {
-        if (data.message) {
-            showToast(data.message, 'success', 2000, '<i class="bi bi-check-circle-fill me-2"></i>');
-        } else if (data.error) {
-            showToast(data.error, 'warning', 3000, '<i class="bi bi-x-circle-fill me-2"></i>');
-        } else {
-            showToast('Ocorreu um erro ao tentar acompanhar o aluno.', 'danger', 3000, '<i class="bi bi-exclamation-triangle-fill me-2"></i>');
-        }
-    }).catch(() => {
-        showToast('Ocorreu um erro ao tentar acompanhar o aluno.', 'danger', 3000, '<i class="bi bi-exclamation-triangle-fill me-2"></i>');
-    });
-};
+  };
 </script>
 
 <!-- Bootstrap Icons CDN para ícones de visto e erro -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+/>
 {% endblock %}

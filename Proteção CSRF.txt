@@ -1,0 +1,51 @@
+Proteção contra CSRF (Cross-Site Request Forgery)
+
+1) O que é CSRF e por que é importante
+- CSRF é um ataque em que um site malicioso faz um usuário logado realizar ações sem querer em outro site, usando a sessão/cookies do usuário.
+- Sem proteção, é possível forçar ações como alterar dados, enviar formulários, etc., sem o consentimento do usuário.
+- A proteção é simples e reduz muito esse risco em rotas que alteram dados (POST/PUT/PATCH/DELETE).
+
+2) O que implementamos no projeto
+- Ativação global de CSRF com Flask-WTF.
+- Geração de token CSRF por requisição e envio como cookie (modelo “double submit cookie”).
+- Inclusão do token CSRF:
+  - Em formulários HTML (campo hidden).
+  - Em requisições JavaScript (fetch) via cabeçalho X-CSRFToken.
+- Endurecimento de cookies de sessão: SameSite=Lax e opção Secure (para produção com HTTPS).
+
+3) Onde foram feitas as mudanças
+- Backend (academic_project/app.py):
+  - Injeção do token nos templates (context_processor).
+  - Criação do cookie "csrf_token" no after_request.
+  - Configuração de cookies de sessão com SameSite e opção Secure (ajustar para True em produção com HTTPS).
+- Templates (academic_project/templates/*):
+  - Inclusão do campo hidden com o token CSRF em formulários POST.
+  - Ajuste das chamadas fetch POST para enviar X-CSRFToken lendo o cookie "csrf_token".
+
+4) Como funciona (explicação simples)
+- O servidor cria um token CSRF imprevisível e o envia para o navegador (na página e em um cookie).
+- Quando você envia um formulário POST ou faz um fetch POST, esse token volta para o servidor.
+- O servidor confere o token. Se não for válido, a requisição é bloqueada.
+- Isso impede que outro site use apenas o seu cookie de sessão para enganar o servidor.
+
+5) Como testar
+- Formulário HTML (POST):
+  - Envie normalmente: deve funcionar (200/302).
+  - Remova o campo hidden "csrf_token" no DevTools e tente enviar: o servidor deve recusar (400/403).
+- Requisição fetch (POST):
+  - Com cabeçalho X-CSRFToken: deve funcionar.
+  - Remova o cabeçalho X-CSRFToken e reenvie: o servidor deve recusar (400/403).
+
+6) Boas práticas para produção
+- Usar HTTPS e definir:
+  - SESSION_COOKIE_SECURE=True
+  - secure=True ao definir o cookie do token CSRF
+- Manter SESSION_COOKIE_SAMESITE="Lax" (ou "Strict" se o fluxo permitir).
+- Manter uma SECRET_KEY forte no ambiente (FLASK_SECRET_KEY).
+
+7) Arquivos alterados (visão geral)
+- academic_project/app.py: CSRF habilitado, injeção do token, cookie CSRF, configurações de cookies de sessão.
+- academic_project/templates/*: tokens CSRF nos formulários POST e cabeçalho X-CSRFToken em fetch POST.
+
+8) Benefício alcançado
+- Reduzimos significativamente o risco de ataques CSRF com mudanças mínimas e sem alterar os fluxos existentes do sistema.

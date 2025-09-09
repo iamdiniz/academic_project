@@ -25,6 +25,8 @@
     <div class="text-center"><p>Veja e gerencie aqui os alunos vinculados à sua instituição.</p></div><br>
 
     <form method="POST" class="row g-2 align-items-end mb-4">
+    <!-- CSRF: campo hidden para proteção contra Cross-Site Request Forgery -->
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="col-md-4">
         <select name="curso" class="form-select form-select-sm">
             <option value="">Todos os Cursos</option>
@@ -189,6 +191,8 @@
                 <button type="button" class="btn-close bg-light" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
             <form action="{{ url_for('cadastrar_aluno') }}" method="POST">
+                <!-- CSRF: campo hidden para proteção contra Cross-Site Request Forgery -->
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="modal-body">
                     <h5>Informações do Aluno</h5>
                     <div class="row g-3">

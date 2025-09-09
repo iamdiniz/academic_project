@@ -20,6 +20,7 @@ import json
 import pytz
 import os
 import time
+from flask_wtf.csrf import generate_csrf
 
 
 load_dotenv()
@@ -1837,6 +1838,38 @@ def logout():
     session.clear()
     flash('Você saiu com sucesso.', 'success')
     return redirect(url_for('login'))
+
+
+# ================================
+# Implementação da mudança solicitada:
+# Proteção CSRF + endurecimento de cookies de sessão
+# Observação: Ajuste as flags `secure=True` em produção com HTTPS
+# ================================
+app.config.update(
+    SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_COOKIE_SECURE=False  # Ajuste para True em produção com HTTPS
+)
+
+
+@app.context_processor
+def inject_csrf_token():
+    return dict(csrf_token=generate_csrf)
+
+
+@app.after_request
+def set_csrf_cookie(response):
+    try:
+        csrf_token_value = generate_csrf()
+        response.set_cookie(
+            "csrf_token",
+            csrf_token_value,
+            secure=False,  # Ajuste para True em produção com HTTPS
+            samesite="Lax",
+            path="/"
+        )
+    except Exception:
+        pass
+    return response
 
 
 if __name__ == "__main__":
