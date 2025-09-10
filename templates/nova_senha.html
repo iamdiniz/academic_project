@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% set hide_navbar = True %}
+
+{% block title %}Nova Senha - DashTalent{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/esqueceu_senha.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="container-login mt-4" role="main" aria-label="Definir nova senha">
+    <section class="left-side" aria-label="Informações sobre nova senha">
+        <div class="feature">
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+                <circle cx="32" cy="32" r="30" fill="#ffd166"/>
+                <path fill="#6a4c93" d="M32 20c-6.6 0-12 5.4-12 12s5.4 12 12 12 12-5.4 12-12-5.4-12-12-12zm0 18c-3.3 0-6-2.7-6-6s2.7-6 6-6 6 2.7 6 6-2.7 6-6 6z"/>
+            </svg>
+            <div class="feature-text">
+                <h3>Senha Segura</h3>
+                <p>Use pelo menos 6 caracteres para maior segurança.</p>
+            </div>
+        </div>
+
+        <div class="feature">
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+                <rect width="64" height="64" fill="#ffd166" rx="32"/>
+                <path fill="#6a4c93" d="M32 16l8 8h-6v16h-4V24h-6l8-8z"/>
+            </svg>
+            <div class="feature-text">
+                <h3>Criptografia</h3>
+                <p>Sua senha é protegida com criptografia avançada.</p>
+            </div>
+        </div>
+
+        <div class="feature">
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+                <circle cx="32" cy="32" r="30" fill="#ffd166"/>
+                <path fill="#6a4c93" d="M32 20c-6.6 0-12 5.4-12 12s5.4 12 12 12 12-5.4 12-12-5.4-12-12-12zm-2 18l-6-6 2.8-2.8L30 32.4l7.2-7.2L40 28l-10 10z"/>
+            </svg>
+            <div class="feature-text">
+                <h3>Acesso Imediato</h3>
+                <p>Após definir, faça login imediatamente.</p>
+            </div>
+        </div>
+
+        <div class="feature">
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+                <circle cx="32" cy="32" r="30" fill="#ffd166"/>
+                <path fill="#6a4c93" d="M28 20h8v8h-8z M28 32h8v12h-8z"/>
+            </svg>
+            <div class="feature-text">
+                <h3>Suporte</h3>
+                <p>Problemas? Nossa equipe está aqui para ajudar.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="right-side" aria-label="Formulário de nova senha">
+        <a href="{{url_for('carousel')}}">
+            <h2 class="text-center">DashTalent</h2>
+        </a>
+        <br>
+        <div class="welcome-text" tabindex="0">Nova Senha</div>
+        <p class="subtitle">Defina uma nova senha para sua conta</p>
+        
+        <form method="POST" action="{{ url_for('nova_senha') }}" class="form-box">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            
+            <div class="mb-3">
+                <label for="nova_senha" class="form-label">Nova Senha</label>
+                <input type="password" id="nova_senha" name="nova_senha" class="form-control" 
+                       placeholder="Digite sua nova senha" minlength="6" required>
+                <small class="form-text text-muted">Mínimo de 6 caracteres</small>
+            </div>
+            
+            <div class="mb-4">
+                <label for="confirmar_senha" class="form-label">Confirmar Senha</label>
+                <input type="password" id="confirmar_senha" name="confirmar_senha" class="form-control" 
+                       placeholder="Confirme sua nova senha" minlength="6" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary w-100">Alterar Senha</button>
+            
+            <div class="mt-3 text-center">
+                <a href="{{ url_for('login') }}" class="login-link">Voltar ao Login</a>
+            </div>
+        </form>
+    </section>
+</div>
+
+<!-- Toast de Notificação -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
+  <div id="toastNotificacao" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body" id="toastNotificacaoBody"></div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Validação em tempo real
+document.getElementById('confirmar_senha').addEventListener('input', function() {
+    const novaSenha = document.getElementById('nova_senha').value;
+    const confirmarSenha = this.value;
+    
+    if (novaSenha && confirmarSenha && novaSenha !== confirmarSenha) {
+        this.setCustomValidity('As senhas não coincidem');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+
+window.showToast = function(mensagem, cor='success', tempo=2500, icone='') {
+    const toast = document.getElementById('toastNotificacao');
+    const toastBody = document.getElementById('toastNotificacaoBody');
+    toast.className = `toast align-items-center text-bg-${cor} border-0`;
+    toastBody.innerHTML = icone + mensagem;
+    const bsToast = new bootstrap.Toast(toast, { delay: tempo });
+    bsToast.show();
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                showToast({{ message|tojson }},
+                          "{{ 'success' if category == 'success' else ('warning' if category == 'warning' else 'danger') }}");
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+});
+</script>
+{% endblock %}

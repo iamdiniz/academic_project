@@ -18,6 +18,12 @@ DATABASE_URL=mysql+pymysql://root:jonas1385@db:3306/educ_invest?charset=utf8mb4
 # Chave secreta do Flask (GERE UMA CHAVE ÚNICA E SEGURA!)
 FLASK_SECRET_KEY=sua-chave-secreta-super-segura-aqui-123456789
 
+# Configurações de Email para Recuperação de Senha
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=seu-email-aqui@gmail.com
+SMTP_PASSWORD=sua-senha-ou-app-password-aqui
+
 # ========================================
 # INSTRUÇÕES:
 # 1. Renomeie este arquivo para .env

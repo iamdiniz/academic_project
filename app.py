@@ -21,6 +21,12 @@ import pytz
 import os
 import time
 from flask_wtf.csrf import generate_csrf
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import secrets
+import string
+from datetime import datetime, timedelta
 
 
 load_dotenv()
@@ -360,6 +366,19 @@ class TwoFactor(db.Model):
     __table_args__ = (
         db.UniqueConstraint('user_type', 'user_id', name='uix_2fa_user'),
     )
+
+
+class ResetarSenha(db.Model):
+    __tablename__ = 'resetar_senha'
+    
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    email = db.Column(db.String(255), nullable=False)
+    codigo = db.Column(db.String(6), nullable=False)
+    user_type = db.Column(db.String(20), nullable=False)  # 'chefe' ou 'instituicao'
+    user_id = db.Column(db.Integer, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    used = db.Column(db.Boolean, default=False)
+    tentativas = db.Column(db.Integer, default=0)
 
 
 with app.app_context():
@@ -1869,6 +1888,221 @@ def set_csrf_cookie(response):
     except Exception:
         pass
     return response
+
+
+def gerar_codigo_verificacao():
+    """Gera um código de 6 dígitos para verificação"""
+    return ''.join(secrets.choice(string.digits) for _ in range(6))
+
+
+def enviar_email(email_destino, assunto, corpo):
+    """Função genérica e segura para envio de emails"""
+    try:
+        smtp_server = os.getenv('SMTP_SERVER', 'smtp.gmail.com')
+        smtp_port = int(os.getenv('SMTP_PORT', '587'))
+        smtp_user = os.getenv('SMTP_USER')
+        smtp_password = os.getenv('SMTP_PASSWORD')
+
+        if not smtp_user or not smtp_password:
+            raise RuntimeError("Credenciais SMTP não configuradas no .env")
+
+        # Montar mensagem
+        msg = MIMEMultipart()
+        msg['From'] = smtp_user
+        msg['To'] = email_destino
+        msg['Subject'] = assunto
+        msg.attach(MIMEText(corpo, 'plain'))
+
+        # Enviar email
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()
+            server.login(smtp_user, smtp_password)
+            server.send_message(msg)
+
+        return True, "Email enviado com sucesso"
+
+    except Exception as e:
+        print(f"[ERRO SMTP] {e}")
+        return False, f"Erro ao enviar email: {str(e)}"
+
+
+@app.route('/esqueceu-senha', methods=['GET', 'POST'])
+def esqueceu_senha():
+    if request.method == 'POST':
+        email = request.form['email'].strip().lower()
+        
+        if not email:
+            flash("Por favor, informe seu email.", "danger")
+            return render_template('esqueceu_senha.html')
+        
+        # Verificar se o email existe (chefe ou instituição)
+        chefe = Chefe.query.filter_by(email=email).first()
+        instituicao = InstituicaodeEnsino.query.filter_by(email=email).first()
+        
+        if not chefe and not instituicao:
+            flash("Email não cadastrado no sistema.", "danger")
+            return render_template('esqueceu_senha.html')
+        
+        # Rate limiting - verificar se já foi enviado código recentemente
+        codigo_recente = ResetarSenha.query.filter_by(
+            email=email,
+            used=False
+        ).filter(ResetarSenha.created_at > datetime.now() - timedelta(minutes=2)).first()
+        
+        if codigo_recente:
+            flash("Um código já foi enviado recentemente. Aguarde 2 minutos.", "warning")
+            return render_template('esqueceu_senha.html')
+        
+        # Gerar código de 6 dígitos
+        codigo = ''.join(secrets.choice(string.digits) for _ in range(6))
+        
+        # Determinar tipo de usuário e ID
+        if chefe:
+            user_type = 'chefe'
+            user_id = chefe.id_chefe
+            nome_usuario = chefe.nome
+        else:
+            user_type = 'instituicao'
+            user_id = instituicao.id_instituicao
+            nome_usuario = instituicao.nome_instituicao
+        
+        # Salvar no banco
+        reset_request = ResetarSenha(
+            email=email,
+            codigo=codigo,
+            user_type=user_type,
+            user_id=user_id,
+            created_at=datetime.now()
+        )
+        
+        db.session.add(reset_request)
+        db.session.commit()
+        
+        # Enviar email real
+        corpo = f"""
+        Olá {nome_usuario},
+
+        Você solicitou a recuperação de senha no DashTalent.
+        Seu código de verificação é: {codigo}
+
+        Este código expira em 15 minutos.
+        Se você não solicitou esta recuperação, ignore este email.
+
+        Atenciosamente,
+        Equipe DashTalent
+        """
+
+        ok, msg = enviar_email(email, "Código de Recuperação de Senha - DashTalent", corpo)
+
+        if ok:
+            flash("Código de verificação enviado para seu email.", "success")
+            return redirect(url_for('verificar_codigo', email=email))
+        else:
+            flash(msg, "danger")
+            return render_template('esqueceu_senha.html')
+        
+    return render_template('esqueceu_senha.html')
+
+
+@app.route('/verificar-codigo')
+def verificar_codigo():
+    email = request.args.get('email')
+    if not email:
+        return redirect(url_for('esqueceu_senha'))
+    return render_template('verificar_codigo.html', email=email)
+
+
+@app.route('/verificar-codigo', methods=['POST'])
+def verificar_codigo_post():
+    email = request.form['email']
+    codigo = request.form['codigo']
+    
+    if not email or not codigo:
+        flash("Email e código são obrigatórios.", "danger")
+        return render_template('verificar_codigo.html', email=email)
+    
+    # Buscar código válido
+    reset_request = ResetarSenha.query.filter_by(
+        email=email,
+        codigo=codigo,
+        used=False
+    ).filter(ResetarSenha.created_at > datetime.now() - timedelta(minutes=15)).first()
+    
+    if not reset_request:
+        flash("Código inválido ou expirado.", "danger")
+        return render_template('verificar_codigo.html', email=email)
+    
+    # Verificar tentativas
+    if reset_request.tentativas >= 5:
+        flash("Muitas tentativas. Solicite um novo código.", "danger")
+        return redirect(url_for('esqueceu_senha'))
+    
+    # Incrementar tentativas se código incorreto
+    if reset_request.codigo != codigo:
+        reset_request.tentativas += 1
+        db.session.commit()
+        flash("Código incorreto.", "danger")
+        return render_template('verificar_codigo.html', email=email)
+    
+    # Código correto - salvar na sessão
+    session['reset_token'] = reset_request.id
+    return redirect(url_for('nova_senha'))
+
+
+@app.route('/nova-senha', methods=['GET', 'POST'])
+def nova_senha():
+    if 'reset_token' not in session:
+        flash("Sessão inválida. Inicie o processo novamente.", "danger")
+        return redirect(url_for('esqueceu_senha'))
+    
+    reset_request = ResetarSenha.query.get(session['reset_token'])
+    if not reset_request or reset_request.used:
+        flash("Token inválido ou já utilizado.", "danger")
+        session.pop('reset_token', None)
+        return redirect(url_for('esqueceu_senha'))
+    
+    if request.method == 'POST':
+        nova_senha = request.form['nova_senha']
+        confirmar_senha = request.form['confirmar_senha']
+        
+        # Validações
+        if not nova_senha or not confirmar_senha:
+            flash("Todos os campos são obrigatórios.", "danger")
+            return render_template('nova_senha.html')
+        
+        if len(nova_senha) < 6:
+            flash("A senha deve ter pelo menos 6 caracteres.", "danger")
+            return render_template('nova_senha.html')
+        
+        if nova_senha != confirmar_senha:
+            flash("As senhas não coincidem.", "danger")
+            return render_template('nova_senha.html')
+        
+        # Atualizar senha do usuário
+        senha_hash = generate_password_hash(nova_senha)
+        
+        try:
+            if reset_request.user_type == 'chefe':
+                user = Chefe.query.get(reset_request.user_id)
+                user.senha = senha_hash
+            else:
+                user = InstituicaodeEnsino.query.get(reset_request.user_id)
+                user.senha = senha_hash
+            
+            # Marcar código como usado
+            reset_request.used = True
+            
+            db.session.commit()
+            session.pop('reset_token', None)
+            
+            flash("Senha alterada com sucesso! Faça login com sua nova senha.", "success")
+            return redirect(url_for('login'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash("Erro ao alterar senha. Tente novamente.", "danger")
+    
+    return render_template('nova_senha.html')
 
 
 if __name__ == "__main__":
