@@ -1985,7 +1985,7 @@ def esqueceu_senha():
         Você solicitou a recuperação de senha no DashTalent.
         Seu código de verificação é: {codigo}
 
-        Este código expira em 15 minutos.
+        Este código expira em 10 minutos.
         Se você não solicitou esta recuperação, ignore este email.
 
         Atenciosamente,
@@ -2021,31 +2021,45 @@ def verificar_codigo_post():
         flash("Email e código são obrigatórios.", "danger")
         return render_template('verificar_codigo.html', email=email)
     
-    # Buscar código válido
-    reset_request = ResetarSenha.query.filter_by(
+    # Buscar todos os códigos válidos para o email (não usados e dentro do prazo)
+    reset_requests = ResetarSenha.query.filter_by(
         email=email,
-        codigo=codigo,
         used=False
-    ).filter(ResetarSenha.created_at > datetime.now() - timedelta(minutes=15)).first()
+    ).filter(ResetarSenha.created_at > datetime.now() - timedelta(minutes=10)).all()
     
-    if not reset_request:
+    if not reset_requests:
         flash("Código inválido ou expirado.", "danger")
         return render_template('verificar_codigo.html', email=email)
     
-    # Verificar tentativas
-    if reset_request.tentativas >= 5:
+    # Procurar o código digitado entre os códigos válidos
+    reset_request = None
+    for rr in reset_requests:
+        if rr.codigo == codigo:
+            reset_request = rr
+            break
+    
+    # Se não encontrou o código correto, incrementar tentativas no código mais recente
+    if not reset_request:
+        # Pega o código mais recente para incrementar tentativas
+        reset_request = max(reset_requests, key=lambda r: r.created_at)
+        reset_request.tentativas += 1
+        db.session.commit()
+        
+        if reset_request.tentativas >= 3:
+            flash("Muitas tentativas. Solicite um novo código.", "danger")
+            return redirect(url_for('esqueceu_senha'))
+        else:
+            flash("Código incorreto.", "danger")
+            return render_template('verificar_codigo.html', email=email)
+    
+    # Código correto encontrado - verificar tentativas
+    if reset_request.tentativas >= 3:
         flash("Muitas tentativas. Solicite um novo código.", "danger")
         return redirect(url_for('esqueceu_senha'))
     
-    # Incrementar tentativas se código incorreto
-    if reset_request.codigo != codigo:
-        reset_request.tentativas += 1
-        db.session.commit()
-        flash("Código incorreto.", "danger")
-        return render_template('verificar_codigo.html', email=email)
-    
-    # Código correto - salvar na sessão
+    # Código correto e tentativas < 3 - sucesso
     session['reset_token'] = reset_request.id
+    flash("Código verificado com sucesso!", "success")
     return redirect(url_for('nova_senha'))
 
 
