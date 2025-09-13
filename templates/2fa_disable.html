@@ -65,20 +65,5 @@
   </div>
 </div>
 
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          const toast = document.getElementById('toastNotificacao');
-          const toastBody = document.getElementById('toastNotificacaoBody');
-          toast.className = `toast align-items-center text-bg-{{ 'success' if category == 'success' else ('warning' if category == 'warning' else 'danger') }} border-0`;
-          toastBody.innerHTML = {{ message|tojson }};
-          const bsToast = new bootstrap.Toast(toast, { delay: 3000 });
-          bsToast.show();
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
-  });
-</script>
+<script src="{{ url_for('static', filename='js/2fa.js') }}"></script>
 {% endblock %}

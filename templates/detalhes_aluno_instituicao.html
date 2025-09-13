@@ -157,15 +157,7 @@ function renderHardSkillsFields() {
 cursoSelect.addEventListener('change', renderHardSkillsFields);
 document.addEventListener('DOMContentLoaded', renderHardSkillsFields);
 
-// Função showToast (não alterada, mas incluída para completude)
-function showToast(message, type='danger', timeout=4000, icon='') {
-    const toast = document.getElementById('toastNotificacao');
-    const toastBody = document.getElementById('toastNotificacaoBody');
-    toast.className = `toast align-items-center text-bg-${type} border-0`;
-    toastBody.innerHTML = icon + message;
-    const bsToast = new bootstrap.Toast(toast, { delay: timeout });
-    bsToast.show();
-}
+// showToast está definido em base.js
 
 // Event listener para aplicar máscara de telefone e outras validações de input em tempo real
 document.addEventListener('input', function(e) {

@@ -227,14 +227,7 @@
   {% endif %}
 
 
-  function showToast(mensagem, cor='success', tempo=2500, icone='') {
-      const toast = document.getElementById('toastNotificacao');
-      const toastBody = document.getElementById('toastNotificacaoBody');
-      toast.className = `toast align-items-center text-bg-${cor} border-0`;
-      toastBody.innerHTML = icone + mensagem;
-      const bsToast = new bootstrap.Toast(toast, { delay: tempo });
-      bsToast.show();
-  }
+  // showToast está definido em base.js
 
   // Indicar aluno
   document.getElementById('indicarAlunoBtn').addEventListener('click', function () {

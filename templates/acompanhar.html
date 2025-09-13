@@ -210,19 +210,7 @@
   </div>
 </div>
 
-<script>
-  function abrirStatus(id_aluno) {
-    fetch("/status_aluno/" + id_aluno)
-      .then((response) => response.text())
-      .then((html) => {
-        document.getElementById("statusBody").innerHTML = html;
-        var myModal = new bootstrap.Modal(
-          document.getElementById("statusModal")
-        );
-        myModal.show();
-      });
-  }
-</script>
+<script src="{{ url_for('static', filename='js/acompanhar.js') }}"></script>
 
 <!-- Modal de confirmação de remoção -->
 <div
@@ -251,8 +239,14 @@
       <div class="modal-footer">
         <form id="formRemoverAcompanhamento" method="post">
           <!-- CSRF: campo hidden para proteção contra Cross-Site Request Forgery -->
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancelar
+          </button>
           <button type="submit" class="btn btn-danger">Remover</button>
         </form>
       </div>
@@ -305,48 +299,4 @@
   </ul>
 </nav>
 <br />
-{% endif %}
-
-<script>
-  function showToast(message, type='success', timeout=4000, icon='') {
-      const toast = document.getElementById('toastNotificacao');
-      const toastBody = document.getElementById('toastNotificacaoBody');
-      toast.className = `toast align-items-center text-bg-${type} border-0`;
-      toastBody.innerHTML = icon + message;
-      const bsToast = new bootstrap.Toast(toast, { delay: timeout });
-      bsToast.show();
-  }
-
-  document.addEventListener('DOMContentLoaded', function() {
-      {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-              {% for category, message in messages %}
-                  showToast({{ message|tojson }},
-                      {% if category == 'success' %}'success'
-                      {% elif category == 'warning' %}'warning'
-                      {% elif category == 'danger' %}'danger'
-                      {% else %}'info'{% endif %},
-                      4000,
-                      {% if category == 'success' %}'<i class="bi bi-check-circle-fill me-2"></i>'
-                      {% elif category == 'warning' %}'<i class="bi bi-exclamation-triangle-fill me-2"></i>'
-                      {% elif category == 'danger' %}'<i class="bi bi-x-circle-fill me-2"></i>'
-                      {% else %}''{% endif %}
-                  );
-              {% endfor %}
-          {% endif %}
-      {% endwith %}
-  });
-</script>
-
-<script>
-  function abrirModalRemover(id_aluno) {
-    const form = document.getElementById("formRemoverAcompanhamento");
-    form.action = "/remover_acompanhamento/" + id_aluno;
-    var modal = new bootstrap.Modal(
-      document.getElementById("modalRemoverAcompanhamento")
-    );
-    modal.show();
-  }
-</script>
-
-{% endblock %}
+{% endif %} {% endblock %}

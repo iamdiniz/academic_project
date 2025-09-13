@@ -246,16 +246,18 @@
                     <h5>Skills do Aluno</h5>
                     <div class="row g-3">
                         <div class="col-md-12">
-                            <label>Hard Skills do Curso</label>
+                            <label><strong>Hard Skills do Curso</strong></label>
                             <div id="hardSkillsFields" class="row g-3"></div>
                         </div>
-                    <label>Soft Skills</label>
+                        <div class="col-md-12">
+                            <label><strong>Soft Skills</strong></label>
+                        </div>
                         {% for soft in SOFT_SKILLS %}
-                    <div class="col-md-6">
-                        <label>{{ soft }}</label>
-                        <input name="{{ soft.lower().replace(' ', '_') }}" type="number" class="form-control skill-input" min="0" max="10" step="1" placeholder="Digite de 1 a 10 (Números naturais)" required>
-                    </div>
-                    {% endfor %}
+                        <div class="col-md-6">
+                            <label>{{ soft }}</label>
+                            <input name="{{ soft.lower().replace(' ', '_') }}" type="number" class="form-control skill-input" min="0" max="10" step="1" placeholder="Digite de 1 a 10 (Números naturais)" required>
+                        </div>
+                        {% endfor %}
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -300,296 +302,28 @@
   </div>
 </div>
 
+<!-- Script para passar dados do backend para o JavaScript -->
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Seleciona todos os inputs de skills do modal de cadastro
-    const skillInputs = document.querySelectorAll('#cadastroModal .skill-input');
-    skillInputs.forEach(function(input) {
-        input.addEventListener('keydown', function(e) {
-            // Permite teclas de controle
-            if (
-                e.key === "Backspace" || e.key === "Tab" || e.key === "Delete" ||
-                e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === "Home" || e.key === "End"
-            ) {
-                return;
-            }
-            // Permite apenas números de 0 a 9
-            if (!/^[0-9]$/.test(e.key)) {
-                e.preventDefault();
-            }
-            // Impede digitar mais de dois dígitos
-            if (this.value.length >= 2 && this.selectionStart === this.selectionEnd) {
-                e.preventDefault();
-            }
-        });
-        input.addEventListener('input', function() {
-            let value = this.value.replace(/[^0-9]/g, '');
-            if (value.length > 2) value = value.slice(0, 2);
-            if (parseInt(value) > 10) value = '10';
-            this.value = value;
-        });
-    });
+    // Passa os dados das hard skills para o JavaScript
+    window.hardSkillsPorCurso = {{ HARD_SKILLS_POR_CURSO | tojson }};
+</script>
 
-    // Função para exibir toast
-    window.showToast = function(mensagem, cor='success', tempo=2500, icone='') {
-        const toast = document.getElementById('toastNotificacao');
-        const toastBody = document.getElementById('toastNotificacaoBody');
-        toast.className = `toast align-items-center text-bg-${cor} border-0`;
-        toastBody.innerHTML = icone + mensagem;
-        const bsToast = new bootstrap.Toast(toast, { delay: tempo });
-        bsToast.show();
-    };
+<script src="{{ url_for('static', filename='js/alunos_instituicao.js') }}"></script>
 
-    // Exibe toast para mensagens flash do Flask
+<!-- Script para exibir toasts após carregar base.js -->
+<script>
+    // Exibe toasts para mensagens flash do Flask
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
-                showToast({{ message|tojson }},
-                    {% if category == 'success' %}'success'
-                    {% elif category == 'warning' %}'warning'
-                    {% elif category == 'danger' %}'danger'
-                    {% else %}'info'{% endif %},
-                    3000,
-                    {% if category == 'success' %}'<i class="bi bi-check-circle-fill me-2"></i>'
-                    {% elif category == 'warning' %}'<i class="bi bi-exclamation-triangle-fill me-2"></i>'
-                    {% elif category == 'danger' %}'<i class="bi bi-x-circle-fill me-2"></i>'
-                    {% else %}''{% endif %}
-                );
+                let corToast = 'success';
+                if ('{{category}}' === 'error' || '{{category}}' === 'danger') corToast = 'danger';
+                else if ('{{category}}' === 'warning') corToast = 'warning';
+
+                showToast({{ message|tojson }}, corToast, 4000);
             {% endfor %}
         {% endif %}
     {% endwith %}
-});
-</script>
-
-<script>
-const hardSkillsPorCurso = {{ HARD_SKILLS_POR_CURSO | tojson }};
-const cadastroModal = document.getElementById('cadastroModal');
-
-function renderHardSkillsFields() {
-    const cursoSelect = document.querySelector('#cadastroModal select[name="curso"]');
-    const hardSkillsFields = document.getElementById('hardSkillsFields');
-    if (!cursoSelect || !hardSkillsFields) return;
-    const curso = cursoSelect.value;
-    const hardSkills = hardSkillsPorCurso[curso] || [];
-    hardSkillsFields.innerHTML = '';
-    hardSkills.forEach(skill => {
-        const fieldName = 'hard_' + skill.toLowerCase().replace(/ /g, '_');
-        hardSkillsFields.innerHTML += `
-            <div class="col-md-6">
-                <label>${skill}</label>
-                <input name="${fieldName}" type="number" class="form-control skill-input" min="0" max="10" step="1" required>
-            </div>
-        `;
-    });
-    applySkillInputValidation();
-}
-
-// Garante que ao abrir o modal, os campos estejam corretos
-cadastroModal.addEventListener('shown.bs.modal', renderHardSkillsFields);
-
-// Também atualiza ao trocar o curso
-document.addEventListener('change', function(e) {
-    if (e.target && e.target.matches('#cadastroModal select[name="curso"]')) {
-        renderHardSkillsFields();
-    }
-});
-
-// Validação dos campos
-function applySkillInputValidation() {
-    const skillInputs = document.querySelectorAll('#cadastroModal .skill-input');
-    skillInputs.forEach(function(input) {
-        input.addEventListener('keydown', function(e) {
-            if (
-                e.key === "Backspace" || e.key === "Tab" || e.key === "Delete" ||
-                e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === "Home" || e.key === "End"
-            ) {
-                return;
-            }
-            if (!/^[0-9]$/.test(e.key)) {
-                e.preventDefault();
-            }
-            if (this.value.length >= 2 && this.selectionStart === this.selectionEnd) {
-                e.preventDefault();
-            }
-        });
-        input.addEventListener('input', function() {
-            let value = this.value.replace(/[^0-9]/g, '');
-            if (value.length > 2) value = value.slice(0, 2);
-            if (parseInt(value) > 10) value = '10';
-            this.value = value;
-        });
-    });
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('#cadastroModal form');
-    if (!form) return;
-
-    const nomeInput = form.querySelector('[name="nome_jovem"]');
-    const dataInput = form.querySelector('[name="data_nascimento"]');
-    const enderecoInput = form.querySelector('[name="endereco_jovem"]');
-    const emailInput = form.querySelector('[name="email"]');
-    const formacaoInput = form.querySelector('[name="formacao"]');
-    const periodoInput = form.querySelector('[name="periodo"]');
-
-    //= APLICA LIMITES DIRETOS NOS INPUTS=
-    nomeInput.maxLength = 30;
-    emailInput.maxLength = 50;
-    formacaoInput.maxLength = 80;
-    enderecoInput.maxLength = 150;
-
-    // Impede números no nome
-    nomeInput.addEventListener('input', function() {
-        this.value = this.value.replace(/[^A-Za-zÀ-ú\s]/g, '').slice(0, 30);
-        toggleFieldError(this, this.value.trim() === '', "Nome obrigatório.");
-    });
-
-    // Restringe número de 1 a 20 no período
-    periodoInput.addEventListener('input', function() {
-        let val = this.value.replace(/[^0-9]/g, '');
-        if (val) {
-            let num = parseInt(val, 10);
-            if (num > 20) num = 20;
-            if (num < 1) num = 1;
-            this.value = num;
-        } else {
-            this.value = '';
-        }
-    });
-
-    // Restringe idade mínima e máxima no campo data
-    const hoje = new Date();
-    const minDate = new Date(hoje.getFullYear() - 70, hoje.getMonth(), hoje.getDate()).toISOString().split('T')[0];
-    const maxDate = new Date(hoje.getFullYear() - 17, hoje.getMonth(), hoje.getDate()).toISOString().split('T')[0];
-    dataInput.setAttribute('min', minDate);
-    dataInput.setAttribute('max', maxDate);
-
-    function toggleFieldError(input, condition, message) {
-        const feedback = input.nextElementSibling;
-        if (condition) {
-            input.classList.add('is-invalid');
-            if (feedback) feedback.textContent = message;
-        } else {
-            input.classList.remove('is-invalid');
-            if (feedback) feedback.textContent = '';
-        }
-    }
-
-    form.addEventListener('submit', function(e) {
-        let valido = true;
-
-        // Validação nome
-        if (!nomeInput.value.trim()) {
-            toggleFieldError(nomeInput, true, "Nome obrigatório.");
-            valido = false;
-        } else if (!/^[A-Za-zÀ-ú\s]+$/.test(nomeInput.value)) {
-            toggleFieldError(nomeInput, true, "Nome só pode conter letras.");
-            valido = false;
-        } else {
-            toggleFieldError(nomeInput, false);
-        }
-
-        // Validação data de nascimento
-        const dataVal = new Date(dataInput.value);
-        if (!dataInput.value || dataVal < new Date(minDate) || dataVal > new Date(maxDate)) {
-            toggleFieldError(dataInput, true, "Data de nascimento inválida.");
-            valido = false;
-        } else {
-            toggleFieldError(dataInput, false);
-        }
-
-        // Endereço
-        if (!enderecoInput.value.trim()) {
-            toggleFieldError(enderecoInput, true, "Endereço obrigatório.");
-            valido = false;
-        } else {
-            toggleFieldError(enderecoInput, false);
-        }
-
-        // Contato
-        const contatoLimpo = contatoInput.value.replace(/\D/g, '');
-        if (contatoLimpo.length !== 11) {
-            toggleFieldError(contatoInput, true, "Contato deve ter 11 dígitos no formato (00) 00000-0000.");
-            valido = false;
-        } else {
-            toggleFieldError(contatoInput, false);
-        }
-
-        // Email
-        if (!emailInput.value.trim() || !emailInput.value.includes('@') || !emailInput.value.includes('.')) {
-            toggleFieldError(emailInput, true, "Email inválido.");
-            valido = false;
-        } else {
-            toggleFieldError(emailInput, false);
-        }
-
-        // Formação
-        if (!formacaoInput.value.trim()) {
-            toggleFieldError(formacaoInput, true, "Formação obrigatória.");
-            valido = false;
-        } else {
-            toggleFieldError(formacaoInput, false);
-        }
-
-        // Período
-        const periodoVal = parseInt(periodoInput.value);
-        if (!periodoVal || periodoVal < 1 || periodoVal > 20) {
-            toggleFieldError(periodoInput, true, "Período deve ser entre 1 e 20.");
-            valido = false;
-        } else {
-            toggleFieldError(periodoInput, false);
-        }
-
-        // Hard skills e soft skills (se tiver)
-        const hardInputs = form.querySelectorAll('#hardSkillsFields input');
-        hardInputs.forEach(input => {
-            if (input.value === '' || isNaN(input.value) || input.value < 0 || input.value > 10) {
-                toggleFieldError(input, true, "Nota deve ser de 0 a 10.");
-                valido = false;
-            } else {
-                toggleFieldError(input, false);
-            }
-        });
-
-        const softInputs = form.querySelectorAll('.skill-input');
-        softInputs.forEach(input => {
-            if (input.value === '' || isNaN(input.value) || input.value < 0 || input.value > 10) {
-                toggleFieldError(input, true, "Nota deve ser de 0 a 10.");
-                valido = false;
-            } else {
-                toggleFieldError(input, false);
-            }
-        });
-
-        if (!valido) {
-            e.preventDefault();
-            window.showToast("Por favor, corrija os campos destacados em vermelho.", "danger", 3500, '<i class="bi bi-x-circle-fill me-2"></i>');
-        }
-    });
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-    const contatoInput = document.getElementById('contato_jovem');
-    if (contatoInput) {
-        contatoInput.addEventListener('input', function() {
-            // Remove tudo que não for número
-            this.value = this.value.replace(/\D/g, '').slice(0, 11);
-        });
-        contatoInput.addEventListener('keydown', function(e) {
-            // Permite teclas de controle
-            if (
-                e.key === "Backspace" || e.key === "Tab" || e.key === "Delete" ||
-                e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === "Home" || e.key === "End"
-            ) {
-                return;
-            }
-            // Permite apenas números
-            if (!/^[0-9]$/.test(e.key)) {
-                e.preventDefault();
-            }
-        });
-    }
-});
 </script>
 
 <!-- Bootstrap Icons CDN para ícones -->

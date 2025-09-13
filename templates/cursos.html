@@ -7,7 +7,8 @@
 {% endblock %} {% block body %}
 <div class="container mt-4">
   <div
-    class="d-flex justify-content-between align-items-center mb-4 position-relative">
+    class="d-flex justify-content-between align-items-center mb-4 position-relative"
+  >
     <a
       href="{{ url_for('home') }}"
       class="back-circle position-absolute start-0"
@@ -47,7 +48,8 @@
     <button
       class="btn btn-success"
       data-bs-toggle="modal"
-      data-bs-target="#cadastroCursosModal">
+      data-bs-target="#cadastroCursosModal"
+    >
       Cadastrar Novo Curso
     </button>
   </div>
@@ -123,55 +125,7 @@
   </div>
   <br />
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.querySelector('#cadastroCursosModal form');
-        const selectCurso = document.getElementById('curso');
-        // Lista de cursos já cadastrados (passada pelo backend)
-        const cursosAdicionados = [
-            {% for curso in cursos %}
-                {{ curso.nome|tojson }}{% if not loop.last %},{% endif %}
-            {% endfor %}
-        ];
-
-        form.addEventListener('submit', function(e) {
-            const cursoSelecionado = selectCurso.value;
-            if (cursosAdicionados.includes(cursoSelecionado)) {
-                showToast('Este curso já foi cadastrado!', 'warning', 3000, '<i class="bi bi-exclamation-triangle-fill me-2"></i>');
-                e.preventDefault();
-            }
-        });
-
-        // Função para exibir toast
-        window.showToast = function(mensagem, cor='success', tempo=2500, icone='') {
-            const toast = document.getElementById('toastNotificacao');
-            const toastBody = document.getElementById('toastNotificacaoBody');
-            toast.className = `toast align-items-center text-bg-${cor} border-0`;
-            toastBody.innerHTML = icone + mensagem;
-            const bsToast = new bootstrap.Toast(toast, { delay: tempo });
-            bsToast.show();
-        };
-
-        // Exibe toast para mensagens flash do Flask
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    showToast({{ message|tojson }},
-                        {% if category == 'success' %}'success'
-                        {% elif category == 'warning' %}'warning'
-                        {% elif category == 'danger' %}'danger'
-                        {% else %}'info'{% endif %},
-                        3000,
-                        {% if category == 'success' %}'<i class="bi bi-check-circle-fill me-2"></i>'
-                        {% elif category == 'warning' %}'<i class="bi bi-exclamation-triangle-fill me-2"></i>'
-                        {% elif category == 'danger' %}'<i class="bi bi-x-circle-fill me-2"></i>'
-                        {% else %}''{% endif %}
-                    );
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-    });
-  </script>
+  <script src="{{ url_for('static', filename='js/cursos.js') }}"></script>
   <!-- Bootstrap Icons CDN para ícones -->
   <link
     rel="stylesheet"
