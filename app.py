@@ -12,7 +12,7 @@ import pyotp
 import base64
 import io
 import qrcode
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask_wtf import CSRFProtect
 import csv
 import re
@@ -26,7 +26,6 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import secrets
 import string
-from datetime import datetime, timedelta
 
 
 load_dotenv()
@@ -62,86 +61,142 @@ csrf = CSRFProtect(app)
 # SISTEMA DE RATE LIMITING PARA LOGIN - PROTEÇÃO CONTRA FORÇA BRUTA
 # =============================================================================
 # Este sistema protege contra ataques de força bruta limitando tentativas de login
-# por endereço IP. É uma medida de segurança essencial que implementa o OWASP #7.
+# por email. É uma medida de segurança essencial que implementa o OWASP #7.
 
-# Dicionário para armazenar tentativas de login por IP
-# Estrutura: {ip: {'count': número_tentativas, 'last_attempt': timestamp, 'blocked_until': timestamp}}
+# Dicionário para armazenar tentativas de login por email
+# Estrutura: {email: {'count': número_tentativas, 'last_attempt': timestamp, 'blocked_until': timestamp, 'fase': 1 ou 2}}
 rate_limit_attempts = {}
 
+# Lista de emails bloqueados permanentemente (por redefinir senha)
+usuarios_bloqueados = set()
+
 # Configurações do rate limiting
-MAX_LOGIN_ATTEMPTS = 5  # Máximo de tentativas permitidas
-BLOCK_DURATION = 300    # Duração do bloqueio em segundos (5 minutos)
-WARNING_THRESHOLD = 4   # Aviso na penúltima tentativa
+MAX_LOGIN_ATTEMPTS = 3  # Máximo de tentativas permitidas por fase
+# Duração do bloqueio temporário em segundos (5 minutos)
+BLOCK_DURATION = 300
+WARNING_THRESHOLD = 3   # Aviso na 3ª tentativa (última antes do bloqueio)
 
 
-def verificar_rate_limit(ip):
+def verificar_rate_limit(email):
     """
-    Verifica se o IP está dentro do limite de tentativas de login.
+    Verifica se o email está dentro do limite de tentativas de login.
 
-    Analogia: É como um segurança de boate que conta quantas vezes
-    uma pessoa tenta entrar com documento falso. Após 5 tentativas,
-    a pessoa fica "na lista negra" por 5 minutos.
+    SISTEMA DE DUAS FASES:
+
+    FASE 1 (Primeiras 3 tentativas):
+    - 1ª e 2ª tentativa: Acesso normal
+    - 3ª tentativa: Aviso "Última tentativa antes do bloqueio temporário"
+    - 4ª tentativa: Bloqueio temporário de 5 minutos
+
+    FASE 2 (Após desbloqueio temporário):
+    - 1ª e 2ª tentativa: Acesso normal (com aviso de que está na fase 2)
+    - 3ª tentativa: Aviso "Última tentativa antes do bloqueio permanente"
+    - 4ª tentativa: Bloqueio permanente (até redefinir senha)
 
     Args:
-        ip (str): Endereço IP do usuário
+        email (str): Email do usuário
 
     Returns:
         tuple: (permitido: bool, mensagem: str, tentativas_restantes: int)
     """
     agora = time.time()
 
-    # Se é a primeira tentativa deste IP, inicializa o contador
-    if ip not in rate_limit_attempts:
-        rate_limit_attempts[ip] = {
+    # Se é a primeira tentativa deste email, inicializa o contador na FASE 1
+    if email not in rate_limit_attempts:
+        rate_limit_attempts[email] = {
             'count': 0,
             'last_attempt': agora,
-            'blocked_until': 0
+            'blocked_until': 0,
+            'fase': 1
         }
 
-    dados_ip = rate_limit_attempts[ip]
+    dados_email = rate_limit_attempts[email]
 
-    # Verifica se o IP ainda está bloqueado
-    if dados_ip['blocked_until'] > agora:
-        tempo_restante = int(dados_ip['blocked_until'] - agora)
+    # Verifica se o email ainda está bloqueado temporariamente
+    if dados_email['blocked_until'] > agora:
+        tempo_restante = int(dados_email['blocked_until'] - agora)
         return False, f"Muitas tentativas de login. Tente novamente em {tempo_restante} segundos.", 0
 
-    # Se passou o tempo de bloqueio, reseta o contador
-    if agora - dados_ip['last_attempt'] > BLOCK_DURATION:
-        dados_ip['count'] = 0
-        dados_ip['blocked_until'] = 0
+    # Se passou o tempo de bloqueio temporário, avança para FASE 2
+    if dados_email['blocked_until'] > 0 and agora > dados_email['blocked_until']:
+        dados_email['count'] = 0
+        dados_email['blocked_until'] = 0
+        dados_email['fase'] = 2  # Avança para FASE 2
 
     # Incrementa o contador de tentativas
-    dados_ip['count'] += 1
-    dados_ip['last_attempt'] = agora
+    dados_email['count'] += 1
+    dados_email['last_attempt'] = agora
 
-    # Verifica se excedeu o limite
-    if dados_ip['count'] > MAX_LOGIN_ATTEMPTS:
-        dados_ip['blocked_until'] = agora + BLOCK_DURATION
-        return False, f"Muitas tentativas de login. Bloqueado por {BLOCK_DURATION//60} minutos.", 0
+    # Verifica se excedeu o limite (4ª tentativa = bloqueio)
+    if dados_email['count'] > MAX_LOGIN_ATTEMPTS:
+        if dados_email['fase'] == 1:
+            # FASE 1: Bloqueio temporário
+            dados_email['blocked_until'] = agora + BLOCK_DURATION
+            return False, f"Muitas tentativas de login. Bloqueado por {BLOCK_DURATION//60} minutos.", 0
+        else:
+            # FASE 2: Bloqueio permanente
+            bloquear_usuario_permanentemente(email)
+            return False, "Muitas tentativas de login. Sua conta foi bloqueada permanentemente. Redefina a senha para continuar.", 0
 
     # Calcula tentativas restantes
-    tentativas_restantes = MAX_LOGIN_ATTEMPTS - dados_ip['count']
+    tentativas_restantes = MAX_LOGIN_ATTEMPTS - dados_email['count']
 
-    # Mensagem de aviso na penúltima tentativa
-    if dados_ip['count'] == WARNING_THRESHOLD:
-        return True, f"Última tentativa antes do bloqueio. Restam {tentativas_restantes} tentativas.", tentativas_restantes
+    # Mensagens de aviso baseadas na fase
+    if dados_email['count'] == WARNING_THRESHOLD:
+        if dados_email['fase'] == 1:
+            return True, "Última tentativa antes do bloqueio temporário.", tentativas_restantes
+        else:
+            return True, "Última tentativa antes do bloqueio permanente.", tentativas_restantes
+
+    # Mensagens padrão para tentativas 1 e 2
+    if dados_email['count'] <= 2:
+        if dados_email['fase'] == 2:
+            return True, "E-mail ou senha inválidos.", tentativas_restantes
+        else:
+            return True, "E-mail ou senha inválidos.", tentativas_restantes
 
     return True, "", tentativas_restantes
 
 
-def resetar_rate_limit(ip):
+def resetar_rate_limit(email):
     """
-    Reseta o contador de tentativas para um IP específico.
+    Reseta o contador de tentativas para um email específico.
     Usado quando o login é bem-sucedido.
 
-    Analogia: É como limpar o "histórico de problemas" de uma pessoa
-    quando ela consegue entrar corretamente na boate.
+    IMPORTANTE: Se o usuário estava na FASE 2, volta para FASE 1 após login bem-sucedido.
     """
-    if ip in rate_limit_attempts:
-        rate_limit_attempts[ip] = {
+    if email in rate_limit_attempts:
+        rate_limit_attempts[email] = {
             'count': 0,
             'last_attempt': time.time(),
-            'blocked_until': 0
+            'blocked_until': 0,
+            'fase': 1  # Volta para FASE 1 após login bem-sucedido
+        }
+
+
+def bloquear_usuario_permanentemente(email):
+    """
+    Adiciona um email à lista de bloqueio permanente.
+    Usado para bloquear contas comprometidas ou suspeitas.
+    """
+    usuarios_bloqueados.add(email)
+
+
+def desbloquear_usuario(email):
+    """
+    Remove um email da lista de bloqueio permanente.
+    Usado para desbloquear contas após verificação de segurança.
+
+    IMPORTANTE: Também reseta o sistema de fases para FASE 1.
+    """
+    usuarios_bloqueados.discard(email)
+    # Reseta o sistema de fases para FASE 1
+    if email in rate_limit_attempts:
+        rate_limit_attempts[email] = {
+            'count': 0,
+            'last_attempt': time.time(),
+            'blocked_until': 0,
+            'fase': 1
         }
 
 # =============================================================================
@@ -370,11 +425,12 @@ class TwoFactor(db.Model):
 
 class ResetarSenha(db.Model):
     __tablename__ = 'resetar_senha'
-    
+
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     email = db.Column(db.String(255), nullable=False)
     codigo = db.Column(db.String(6), nullable=False)
-    user_type = db.Column(db.String(20), nullable=False)  # 'chefe' ou 'instituicao'
+    # 'chefe' ou 'instituicao'
+    user_type = db.Column(db.String(20), nullable=False)
     user_id = db.Column(db.Integer, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     used = db.Column(db.Boolean, default=False)
@@ -533,78 +589,77 @@ def index():
 def login():
     if request.method == 'POST':
         # =============================================================================
-        # VERIFICAÇÃO DE RATE LIMITING - PROTEÇÃO CONTRA FORÇA BRUTA
-        # =============================================================================
-        # Obtém o IP do usuário (considera proxies e load balancers)
-        ip_usuario = request.environ.get(
-            'HTTP_X_FORWARDED_FOR', request.environ.get('REMOTE_ADDR', '127.0.0.1'))
-        if ',' in ip_usuario:  # Se há múltiplos IPs (proxy), pega o primeiro
-            ip_usuario = ip_usuario.split(',')[0].strip()
-
-        # Verifica se o IP está dentro do limite de tentativas
-        permitido, mensagem_rate_limit, tentativas_restantes = verificar_rate_limit(
-            ip_usuario)
-
-        if not permitido:
-            # IP bloqueado por excesso de tentativas
-            flash(mensagem_rate_limit, "danger")
-            return render_template('login.html')
-
-        # =============================================================================
-        # PROCESSO NORMAL DE LOGIN (CÓDIGO ORIGINAL MANTIDO)
+        # OBTÉM DADOS DO USUÁRIO
         # =============================================================================
         email = request.form['email']
         senha = request.form['senha']
 
-        # Verifica se o usuário é um chefe
+        # =============================================================================
+        # VERIFICAÇÃO DE BLOQUEIO PERMANENTE
+        # =============================================================================
+        if email in usuarios_bloqueados:
+            flash(
+                "Sua conta foi bloqueada permanentemente. Redefina a senha para continuar.", "danger")
+            return render_template('login.html')
+
+        # =============================================================================
+        # VERIFICAÇÃO DE RATE LIMITING - FASE 1 E 2
+        # =============================================================================
+        permitido, mensagem_rate_limit, _ = verificar_rate_limit(
+            email)
+        if not permitido:
+            flash(mensagem_rate_limit, "danger")
+            return render_template('login.html')
+
+        # =============================================================================
+        # LOGIN BEM-SUCEDIDO
+        # =============================================================================
         chefe = Chefe.query.filter_by(email=email).first()
-        if chefe and check_password_hash(chefe.senha, senha):
-            # =============================================================================
-            # LOGIN BEM-SUCEDIDO - RESETA O RATE LIMITING
-            # =============================================================================
-            # Limpa o histórico de tentativas falhadas
-            resetar_rate_limit(ip_usuario)
-
-            tf = TwoFactor.query.filter_by(
-                user_type='chefe', user_id=chefe.id_chefe, enabled=True).first()
-            if tf:
-                session['pending_user'] = {
-                    'tipo': 'chefe', 'id': chefe.id_chefe}
-                return redirect(url_for('two_factor_verify'))
-            else:
-                session['user_id'] = chefe.id_chefe
-                session['tipo_usuario'] = 'chefe'
-                login_user(chefe)
-                registrar_log('login', chefe.nome, chefe.cargo, 'chefe')
-                return redirect(url_for('home'))
-
-        # Verifica se o usuário é uma instituição de ensino
         instituicao = InstituicaodeEnsino.query.filter_by(email=email).first()
-        if instituicao and check_password_hash(instituicao.senha, senha):
-            # =============================================================================
-            # LOGIN BEM-SUCEDIDO - RESETA O RATE LIMITING
-            # =============================================================================
-            # Limpa o histórico de tentativas falhadas
-            resetar_rate_limit(ip_usuario)
 
+        usuario_valido = None
+        tipo_usuario = None
+
+        if chefe and check_password_hash(chefe.senha, senha):
+            usuario_valido = chefe
+            tipo_usuario = 'chefe'
+        elif instituicao and check_password_hash(instituicao.senha, senha):
+            usuario_valido = instituicao
+            tipo_usuario = 'instituicao'
+
+        if usuario_valido:
+            # Reseta histórico de tentativas após login correto
+            resetar_rate_limit(email)
+
+            # Verifica 2FA
             tf = TwoFactor.query.filter_by(
-                user_type='instituicao', user_id=instituicao.id_instituicao, enabled=True).first()
+                user_type=tipo_usuario,
+                user_id=usuario_valido.id_chefe if tipo_usuario == 'chefe' else usuario_valido.id_instituicao,
+                enabled=True
+            ).first()
+
             if tf:
                 session['pending_user'] = {
-                    'tipo': 'instituicao', 'id': instituicao.id_instituicao}
+                    'tipo': tipo_usuario,
+                    'id': usuario_valido.id_chefe if tipo_usuario == 'chefe' else usuario_valido.id_instituicao
+                }
                 return redirect(url_for('two_factor_verify'))
             else:
-                session['user_id'] = instituicao.id_instituicao
-                session['tipo_usuario'] = 'instituicao'
-                login_user(instituicao)
-                registrar_log('login', instituicao.nome_instituicao,
-                              'reitor', 'instituicao')
+                session['user_id'] = usuario_valido.id_chefe if tipo_usuario == 'chefe' else usuario_valido.id_instituicao
+                session['tipo_usuario'] = tipo_usuario
+                login_user(usuario_valido)
+                registrar_log(
+                    'login',
+                    usuario_valido.nome if tipo_usuario == 'chefe' else usuario_valido.nome_instituicao,
+                    'chefe' if tipo_usuario == 'chefe' else 'reitor',
+                    tipo_usuario
+                )
                 return redirect(url_for('home'))
 
         # =============================================================================
-        # LOGIN FALHADO - EXIBE MENSAGEM COM INFORMAÇÕES DO RATE LIMITING
+        # LOGIN FALHADO - EXIBE MENSAGEM DE RATE LIMITING
         # =============================================================================
-        if mensagem_rate_limit:  # Se há aviso de rate limiting
+        if mensagem_rate_limit:
             flash(
                 f"E-mail ou senha inválidos. {mensagem_rate_limit}", "warning")
         else:
@@ -1930,32 +1985,32 @@ def enviar_email(email_destino, assunto, corpo):
 def esqueceu_senha():
     if request.method == 'POST':
         email = request.form['email'].strip().lower()
-        
+
         if not email:
             flash("Por favor, informe seu email.", "danger")
             return render_template('esqueceu_senha.html')
-        
+
         # Verificar se o email existe (chefe ou instituição)
         chefe = Chefe.query.filter_by(email=email).first()
         instituicao = InstituicaodeEnsino.query.filter_by(email=email).first()
-        
+
         if not chefe and not instituicao:
             flash("Email não cadastrado no sistema.", "danger")
             return render_template('esqueceu_senha.html')
-        
+
         # Rate limiting - verificar se já foi enviado código recentemente
         codigo_recente = ResetarSenha.query.filter_by(
             email=email,
             used=False
         ).filter(ResetarSenha.created_at > datetime.now() - timedelta(minutes=2)).first()
-        
+
         if codigo_recente:
             flash("Um código já foi enviado recentemente. Aguarde 2 minutos.", "warning")
             return render_template('esqueceu_senha.html')
-        
+
         # Gerar código de 6 dígitos
         codigo = ''.join(secrets.choice(string.digits) for _ in range(6))
-        
+
         # Determinar tipo de usuário e ID
         if chefe:
             user_type = 'chefe'
@@ -1965,7 +2020,7 @@ def esqueceu_senha():
             user_type = 'instituicao'
             user_id = instituicao.id_instituicao
             nome_usuario = instituicao.nome_instituicao
-        
+
         # Salvar no banco
         reset_request = ResetarSenha(
             email=email,
@@ -1974,10 +2029,10 @@ def esqueceu_senha():
             user_id=user_id,
             created_at=datetime.now()
         )
-        
+
         db.session.add(reset_request)
         db.session.commit()
-        
+
         # Enviar email real
         corpo = f"""
         Olá {nome_usuario},
@@ -1992,7 +2047,8 @@ def esqueceu_senha():
         Equipe DashTalent
         """
 
-        ok, msg = enviar_email(email, "Código de Recuperação de Senha - DashTalent", corpo)
+        ok, msg = enviar_email(
+            email, "Código de Recuperação de Senha - DashTalent", corpo)
 
         if ok:
             flash("Código de verificação enviado para seu email.", "success")
@@ -2000,7 +2056,7 @@ def esqueceu_senha():
         else:
             flash(msg, "danger")
             return render_template('esqueceu_senha.html')
-        
+
     return render_template('esqueceu_senha.html')
 
 
@@ -2016,47 +2072,47 @@ def verificar_codigo():
 def verificar_codigo_post():
     email = request.form['email']
     codigo = request.form['codigo']
-    
+
     if not email or not codigo:
         flash("Email e código são obrigatórios.", "danger")
         return render_template('verificar_codigo.html', email=email)
-    
+
     # Buscar todos os códigos válidos para o email (não usados e dentro do prazo)
     reset_requests = ResetarSenha.query.filter_by(
         email=email,
         used=False
     ).filter(ResetarSenha.created_at > datetime.now() - timedelta(minutes=10)).all()
-    
+
     if not reset_requests:
         flash("Código inválido ou expirado.", "danger")
         return render_template('verificar_codigo.html', email=email)
-    
+
     # Procurar o código digitado entre os códigos válidos
     reset_request = None
     for rr in reset_requests:
         if rr.codigo == codigo:
             reset_request = rr
             break
-    
+
     # Se não encontrou o código correto, incrementar tentativas no código mais recente
     if not reset_request:
         # Pega o código mais recente para incrementar tentativas
         reset_request = max(reset_requests, key=lambda r: r.created_at)
         reset_request.tentativas += 1
         db.session.commit()
-        
+
         if reset_request.tentativas >= 3:
             flash("Muitas tentativas. Solicite um novo código.", "danger")
             return redirect(url_for('esqueceu_senha'))
         else:
             flash("Código incorreto.", "danger")
             return render_template('verificar_codigo.html', email=email)
-    
+
     # Código correto encontrado - verificar tentativas
     if reset_request.tentativas >= 3:
         flash("Muitas tentativas. Solicite um novo código.", "danger")
         return redirect(url_for('esqueceu_senha'))
-    
+
     # Código correto e tentativas < 3 - sucesso
     session['reset_token'] = reset_request.id
     flash("Código verificado com sucesso!", "success")
@@ -2068,33 +2124,33 @@ def nova_senha():
     if 'reset_token' not in session:
         flash("Sessão inválida. Inicie o processo novamente.", "danger")
         return redirect(url_for('esqueceu_senha'))
-    
+
     reset_request = ResetarSenha.query.get(session['reset_token'])
     if not reset_request or reset_request.used:
         flash("Token inválido ou já utilizado.", "danger")
         session.pop('reset_token', None)
         return redirect(url_for('esqueceu_senha'))
-    
+
     if request.method == 'POST':
         nova_senha = request.form['nova_senha']
         confirmar_senha = request.form['confirmar_senha']
-        
+
         # Validações
         if not nova_senha or not confirmar_senha:
             flash("Todos os campos são obrigatórios.", "danger")
             return render_template('nova_senha.html')
-        
+
         if len(nova_senha) < 6:
             flash("A senha deve ter pelo menos 6 caracteres.", "danger")
             return render_template('nova_senha.html')
-        
+
         if nova_senha != confirmar_senha:
             flash("As senhas não coincidem.", "danger")
             return render_template('nova_senha.html')
-        
+
         # Atualizar senha do usuário
         senha_hash = generate_password_hash(nova_senha)
-        
+
         try:
             if reset_request.user_type == 'chefe':
                 user = Chefe.query.get(reset_request.user_id)
@@ -2102,21 +2158,78 @@ def nova_senha():
             else:
                 user = InstituicaodeEnsino.query.get(reset_request.user_id)
                 user.senha = senha_hash
-            
+
             # Marcar código como usado
             reset_request.used = True
-            
+
             db.session.commit()
             session.pop('reset_token', None)
-            
+
+            # Liberar usuário do bloqueio permanente e resetar para FASE 1
+            desbloquear_usuario(reset_request.email)
+
             flash("Senha alterada com sucesso! Faça login com sua nova senha.", "success")
             return redirect(url_for('login'))
-            
+
         except Exception as e:
             db.session.rollback()
             flash("Erro ao alterar senha. Tente novamente.", "danger")
-    
+
     return render_template('nova_senha.html')
+
+
+# =============================================================================
+# ROTAS ADMINISTRATIVAS PARA GERENCIAMENTO DE BLOQUEIOS
+# =============================================================================
+# Estas rotas são apenas para demonstração e devem ser protegidas adequadamente
+# em um ambiente de produção
+
+@app.route('/admin/bloquear-usuario', methods=['POST'])
+@login_required
+def admin_bloquear_usuario():
+    """
+    Rota administrativa para bloquear um usuário permanentemente.
+    ATENÇÃO: Esta rota deve ser protegida adequadamente em produção!
+    """
+    email = request.form.get('email', '').strip().lower()
+
+    if not email:
+        flash("Email é obrigatório.", "danger")
+        return redirect(url_for('configuracoes'))
+
+    # Verificar se o email existe no sistema
+    chefe = Chefe.query.filter_by(email=email).first()
+    instituicao = InstituicaodeEnsino.query.filter_by(email=email).first()
+
+    if not chefe and not instituicao:
+        flash("Email não encontrado no sistema.", "danger")
+        return redirect(url_for('configuracoes'))
+
+    # Bloquear o usuário
+    bloquear_usuario_permanentemente(email)
+
+    flash(f"Usuário {email} bloqueado permanentemente.", "success")
+    return redirect(url_for('configuracoes'))
+
+
+@app.route('/admin/desbloquear-usuario', methods=['POST'])
+@login_required
+def admin_desbloquear_usuario():
+    """
+    Rota administrativa para desbloquear um usuário.
+    ATENÇÃO: Esta rota deve ser protegida adequadamente em produção!
+    """
+    email = request.form.get('email', '').strip().lower()
+
+    if not email:
+        flash("Email é obrigatório.", "danger")
+        return redirect(url_for('configuracoes'))
+
+    # Desbloquear o usuário
+    desbloquear_usuario(email)
+
+    flash(f"Usuário {email} desbloqueado.", "success")
+    return redirect(url_for('configuracoes'))
 
 
 if __name__ == "__main__":
