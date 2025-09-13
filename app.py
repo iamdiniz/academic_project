@@ -60,9 +60,6 @@ csrf = CSRFProtect(app)
 # =============================================================================
 # SISTEMA DE RATE LIMITING PARA LOGIN - PROTEÇÃO CONTRA FORÇA BRUTA
 # =============================================================================
-# Este sistema protege contra ataques de força bruta limitando tentativas de login
-# por email. É uma medida de segurança essencial que implementa o OWASP #7.
-
 # Dicionário para armazenar tentativas de login por email
 # Estrutura: {email: {'count': número_tentativas, 'last_attempt': timestamp, 'blocked_until': timestamp, 'fase': 1 ou 2}}
 rate_limit_attempts = {}
@@ -78,27 +75,6 @@ WARNING_THRESHOLD = 3   # Aviso na 3ª tentativa (última antes do bloqueio)
 
 
 def verificar_rate_limit(email):
-    """
-    Verifica se o email está dentro do limite de tentativas de login.
-
-    SISTEMA DE DUAS FASES:
-
-    FASE 1 (Primeiras 3 tentativas):
-    - 1ª e 2ª tentativa: Acesso normal
-    - 3ª tentativa: Aviso "Última tentativa antes do bloqueio temporário"
-    - 4ª tentativa: Bloqueio temporário de 5 minutos
-
-    FASE 2 (Após desbloqueio temporário):
-    - 1ª e 2ª tentativa: Acesso normal (com aviso de que está na fase 2)
-    - 3ª tentativa: Aviso "Última tentativa antes do bloqueio permanente"
-    - 4ª tentativa: Bloqueio permanente (até redefinir senha)
-
-    Args:
-        email (str): Email do usuário
-
-    Returns:
-        tuple: (permitido: bool, mensagem: str, tentativas_restantes: int)
-    """
     agora = time.time()
 
     # Se é a primeira tentativa deste email, inicializa o contador na FASE 1
@@ -320,13 +296,11 @@ class Aluno(db.Model):
     contato_jovem = db.Column(db.String(255))
     email = db.Column(db.String(255), unique=True)
     endereco_jovem = db.Column(db.String(255))
-    id_instituicao = db.Column(db.Integer, db.ForeignKey(
-        'instituicao_de_ensino.id_instituicao'))
+    id_instituicao = db.Column(db.Integer, db.ForeignKey('instituicao_de_ensino.id_instituicao'))
     curso = db.Column(db.String(255))
     formacao = db.Column(db.String(255))
     periodo = db.Column(db.Integer)
-    indicado_por = db.Column(db.Integer, db.ForeignKey(
-        'chefe.id_chefe'))  # Relacionamento com Chefe
+    indicado_por = db.Column(db.Integer, db.ForeignKey('chefe.id_chefe'))  # Relacionamento com Chefe
 
     # Relacionamento reverso
     chefe = db.relationship('Chefe', backref='alunos_indicados')
@@ -350,39 +324,31 @@ class Chefe(db.Model, UserMixin):
 class SkillsDoAluno(db.Model):
     __tablename__ = 'skills_do_aluno'
 
-    id_aluno = db.Column(db.Integer, db.ForeignKey(
-        'alunos.id_aluno'), primary_key=True)
+    id_aluno = db.Column(db.Integer, db.ForeignKey('alunos.id_aluno'), primary_key=True)
     # Hard skills dinâmicas por curso (JSON)
     hard_skills_json = db.Column(db.Text)
     soft_skills_json = db.Column(db.Text)  # Soft skills detalhadas (JSON)
-    aluno = db.relationship(
-        'Aluno', backref=db.backref('skills', uselist=False))
+    aluno = db.relationship('Aluno', backref=db.backref('skills', uselist=False))
 
 
 class Acompanhamento(db.Model):
     __tablename__ = 'acompanhamento'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    id_chefe = db.Column(db.Integer, db.ForeignKey(
-        'chefe.id_chefe'), nullable=False)
-    id_aluno = db.Column(db.Integer, db.ForeignKey(
-        'alunos.id_aluno'), nullable=False)
+    id_chefe = db.Column(db.Integer, db.ForeignKey('chefe.id_chefe'), nullable=False)
+    id_aluno = db.Column(db.Integer, db.ForeignKey('alunos.id_aluno'), nullable=False)
     data_acompanhamento = db.Column(db.DateTime, server_default=db.func.now())
 
     chefe = db.relationship('Chefe', backref='acompanhamentos')
     aluno = db.relationship('Aluno', backref='acompanhamentos')
 
-    __table_args__ = (
-        db.UniqueConstraint('id_chefe', 'id_aluno', name='uix_chefe_aluno'),
-    )
+    __table_args__ = (db.UniqueConstraint('id_chefe', 'id_aluno', name='uix_chefe_aluno'),)
 
 
 class SkillsHistorico(db.Model):
     __tablename__ = 'skills_historico'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    id_aluno = db.Column(db.Integer, db.ForeignKey(
-        'alunos.id_aluno'), nullable=False)
-    id_chefe = db.Column(db.Integer, db.ForeignKey(
-        'chefe.id_chefe'), nullable=False)
+    id_aluno = db.Column(db.Integer, db.ForeignKey('alunos.id_aluno'), nullable=False)
+    id_chefe = db.Column(db.Integer, db.ForeignKey('chefe.id_chefe'), nullable=False)
     data = db.Column(db.DateTime, server_default=db.func.now())
     hard_skills_json = db.Column(db.Text)
     soft_skills_json = db.Column(db.Text)
@@ -394,19 +360,14 @@ class SkillsHistorico(db.Model):
 class Indicacao(db.Model):
     __tablename__ = 'indicacoes'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    id_chefe = db.Column(db.Integer, db.ForeignKey(
-        'chefe.id_chefe'), nullable=False)
-    id_aluno = db.Column(db.Integer, db.ForeignKey(
-        'alunos.id_aluno'), nullable=False)
+    id_chefe = db.Column(db.Integer, db.ForeignKey('chefe.id_chefe'), nullable=False)
+    id_aluno = db.Column(db.Integer, db.ForeignKey('alunos.id_aluno'), nullable=False)
     data_indicacao = db.Column(db.DateTime, server_default=db.func.now())
 
     chefe = db.relationship('Chefe', backref='indicacoes')
     aluno = db.relationship('Aluno', backref='indicacoes')
 
-    __table_args__ = (
-        db.UniqueConstraint('id_chefe', 'id_aluno',
-                            name='uix_chefe_aluno_indicacao'),
-    )
+    __table_args__ = (db.UniqueConstraint('id_chefe', 'id_aluno',name='uix_chefe_aluno_indicacao'),)
 
 
 class TwoFactor(db.Model):
@@ -418,9 +379,7 @@ class TwoFactor(db.Model):
     otp_secret = db.Column(db.String(64), nullable=False)
     enabled = db.Column(db.Boolean, default=False, nullable=False)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
-    __table_args__ = (
-        db.UniqueConstraint('user_type', 'user_id', name='uix_2fa_user'),
-    )
+    __table_args__ = (db.UniqueConstraint('user_type', 'user_id', name='uix_2fa_user'),)
 
 
 class ResetarSenha(db.Model):
