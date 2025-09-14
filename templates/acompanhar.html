@@ -212,6 +212,22 @@
 
 <script src="{{ url_for('static', filename='js/acompanhar.js') }}"></script>
 
+<!-- Script para exibir toasts após carregar base.js -->
+<script>
+    // Exibe toasts para mensagens flash do Flask
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                let corToast = 'success';
+                if ('{{category}}' === 'error' || '{{category}}' === 'danger') corToast = 'danger';
+                else if ('{{category}}' === 'warning') corToast = 'warning';
+
+                showToast({{ message|tojson }}, corToast, 4000);
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</script>
+
 <!-- Modal de confirmação de remoção -->
 <div
   class="modal fade"
