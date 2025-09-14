@@ -575,16 +575,7 @@ def login():
             return render_template('login.html')
 
         # =============================================================================
-        # VERIFICAÇÃO DE RATE LIMITING - FASE 1 E 2
-        # =============================================================================
-        permitido, mensagem_rate_limit, _ = verificar_rate_limit(
-            email)
-        if not permitido:
-            flash(mensagem_rate_limit, "danger")
-            return render_template('login.html')
-
-        # =============================================================================
-        # LOGIN BEM-SUCEDIDO
+        # VERIFICAÇÃO DE CREDENCIAIS PRIMEIRO
         # =============================================================================
         chefe = Chefe.query.filter_by(email=email).first()
         instituicao = InstituicaodeEnsino.query.filter_by(email=email).first()
@@ -599,6 +590,9 @@ def login():
             usuario_valido = instituicao
             tipo_usuario = 'instituicao'
 
+        # =============================================================================
+        # LOGIN BEM-SUCEDIDO - RESETA RATE LIMITING
+        # =============================================================================
         if usuario_valido:
             # Reseta histórico de tentativas após login correto
             resetar_rate_limit(email)
@@ -629,9 +623,14 @@ def login():
                 return redirect(url_for('home'))
 
         # =============================================================================
-        # LOGIN FALHADO - EXIBE MENSAGEM DE RATE LIMITING
+        # LOGIN FALHADO - VERIFICA RATE LIMITING E EXIBE MENSAGEM
         # =============================================================================
-        if mensagem_rate_limit:
+        # Só verifica rate limiting quando o login falha
+        permitido, mensagem_rate_limit, _ = verificar_rate_limit(email)
+
+        if not permitido:
+            flash(mensagem_rate_limit, "danger")
+        elif mensagem_rate_limit:
             flash(
                 f"E-mail ou senha inválidos. {mensagem_rate_limit}", "warning")
         else:
@@ -1789,6 +1788,14 @@ def two_factor_verify():
                 login_user(user)
                 registrar_log('login', user.nome_instituicao,
                               'reitor', 'instituicao')
+
+            # Reseta histórico de tentativas após login bem-sucedido com 2FA
+            # Obtém o email do usuário para resetar o rate limiting
+            if tipo == 'chefe':
+                email_usuario = user.email
+            else:
+                email_usuario = user.email
+            resetar_rate_limit(email_usuario)
 
             session.pop('pending_user', None)
             return redirect(url_for('home'))
