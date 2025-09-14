@@ -804,7 +804,7 @@ def remover_aluno(id_aluno):
         db.session.rollback()
         flash("Erro ao remover aluno.", "danger")
 
-    return redirect(url_for('alunos'))
+    return redirect(url_for('alunos_instituicao'))
 
 
 @app.route('/ver_alunos_por_curso', methods=['GET'])
@@ -1345,7 +1345,7 @@ def detalhes_aluno_instituicao(id_aluno):
             flash("Erro ao salvar histórico das skills.", "danger")
 
         flash("Informações do aluno atualizadas com sucesso!", "success")
-        return redirect(url_for('alunos_instituicao'))
+        return redirect(url_for('detalhes_aluno_instituicao', id_aluno=id_aluno))
 
     return render_template(
         'detalhes_aluno_instituicao.html',
@@ -1398,6 +1398,7 @@ def perfil():
             try:
                 db.session.commit()
                 flash("Perfil atualizado com sucesso!", "success")
+                return redirect(url_for('perfil'))
             except IntegrityError:
                 db.session.rollback()
                 flash("Já existe um chefe cadastrado com este e-mail.", "danger")
@@ -1454,6 +1455,7 @@ def perfil():
             try:
                 db.session.commit()
                 flash("Perfil atualizado com sucesso!", "success")
+                return redirect(url_for('perfil'))
             except IntegrityError:
                 db.session.rollback()
                 flash("Já existe uma instituição cadastrada com este e-mail.", "danger")
@@ -1568,14 +1570,17 @@ def acompanhar():
 @login_required
 @bloquear_instituicao
 def remover_acompanhamento(id_aluno):
+    print(f"DEBUG: Removendo acompanhamento do aluno {id_aluno}")  # Debug log
     chefe_id = current_user.id_chefe
     ac = Acompanhamento.query.filter_by(
         id_chefe=chefe_id, id_aluno=id_aluno).first()
     if ac:
         db.session.delete(ac)
         db.session.commit()
+        print("DEBUG: Aluno removido com sucesso")  # Debug log
         flash("Aluno removido do acompanhamento.", "success")
     else:
+        print("DEBUG: Acompanhamento não encontrado")  # Debug log
         flash("Acompanhamento não encontrado.", "danger")
     return redirect(url_for('acompanhar'))
 

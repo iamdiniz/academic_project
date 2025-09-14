@@ -312,18 +312,43 @@
 
 <!-- Script para exibir toasts após carregar base.js -->
 <script>
-    // Exibe toasts para mensagens flash do Flask
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                let corToast = 'success';
-                if ('{{category}}' === 'error' || '{{category}}' === 'danger') corToast = 'danger';
-                else if ('{{category}}' === 'warning') corToast = 'warning';
+    // Aguarda o carregamento completo da página para garantir que base.js foi carregado
+    document.addEventListener('DOMContentLoaded', function() {
+        // Aguarda um pouco mais para garantir que base.js foi carregado
+        setTimeout(function() {
+            // Exibe toasts para mensagens flash do Flask
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    console.log("Mensagens flash recebidas:", {{ messages|tojson }});
+                    {% for category, message in messages %}
+                        let corToast = 'success';
+                        if ('{{category}}' === 'error' || '{{category}}' === 'danger') corToast = 'danger';
+                        else if ('{{category}}' === 'warning') corToast = 'warning';
 
-                showToast({{ message|tojson }}, corToast, 4000);
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+                        // Verifica se showToast está disponível antes de chamar
+                        if (typeof showToast === 'function') {
+                            console.log("Exibindo toast:", {{ message|tojson }}, corToast);
+                            showToast({{ message|tojson }}, corToast, 4000);
+                        } else {
+                            console.error('showToast não está disponível');
+                        }
+                    {% endfor %}
+                {% else %}
+                    console.log("Nenhuma mensagem flash para exibir.");
+                {% endif %}
+            {% endwith %}
+        }, 100);
+        
+        // Teste manual da função showToast (remover após debug)
+        setTimeout(function() {
+            if (typeof showToast === 'function') {
+                console.log("Teste: showToast está disponível");
+                // showToast("Teste de toast", "success", 3000);
+            } else {
+                console.error("Teste: showToast NÃO está disponível");
+            }
+        }, 200);
+    });
 </script>
 
 <!-- Bootstrap Icons CDN para ícones -->
