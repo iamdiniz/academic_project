@@ -1,8 +1,7 @@
 from functools import wraps
 from flask import Flask, render_template, url_for, request, redirect, session, flash, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
-from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from sqlalchemy.exc import IntegrityError
 from unidecode import unidecode
 from urllib.parse import unquote
@@ -26,7 +25,26 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import secrets
 import string
-
+from models import (
+    db,
+    Chefe,
+    InstituicaodeEnsino,
+    Curso,
+    Aluno,
+    SkillsDoAluno,
+    SkillsHistorico,
+    Acompanhamento,
+    Indicacao,
+    TwoFactor,
+    ResetarSenha,
+    LogAcesso,
+)
+from models.base import (
+    CURSOS_PADRAO,
+    db,
+    HARD_SKILLS_POR_CURSO,
+    SOFT_SKILLS
+)
 
 load_dotenv()
 
@@ -48,7 +66,7 @@ if database_url.startswith("mysql://"):
 
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
-db = SQLAlchemy(app)
+db.init_app(app)
 
 
 login_manager = LoginManager()
@@ -178,235 +196,6 @@ def desbloquear_usuario(email):
 # =============================================================================
 # FIM DO SISTEMA DE RATE LIMITING
 # =============================================================================
-
-
-CURSOS_PADRAO = [
-    "Administração", "Agronomia", "Arquitetura", "Biologia", "Ciência da Computação",
-    "Direito", "Educação Física", "Enfermagem", "Engenharia", "Farmácia", "Física",
-    "Matemática", "Medicina", "Pedagogia", "Psicologia", "Química", "Sistemas de Informação",
-]
-
-
-HARD_SKILLS_POR_CURSO = {
-    "Administração": [
-        "Gestão de Pessoas", "Finanças", "Marketing", "Empreendedorismo", "Planejamento Estratégico"
-    ],
-    "Agronomia": [
-        "Manejo de Solo", "Fitotecnia", "Irrigação", "Agroquímica", "Topografia"
-    ],
-    "Arquitetura": [
-        "Desenho Técnico", "AutoCAD", "Maquetes", "Projetos Estruturais", "História da Arquitetura"
-    ],
-    "Biologia": [
-        "Genética", "Microbiologia", "Ecologia", "Botânica", "Zoologia"
-    ],
-    "Ciência da Computação": [
-        "Algoritmos", "Estruturas de Dados", "Programação", "Banco de Dados", "Redes de Computadores"
-    ],
-    "Direito": [
-        "Direito Constitucional", "Direito Civil", "Direito Penal", "Processo Civil", "Processo Penal"
-    ],
-    "Educação Física": [
-        "Fisiologia do Exercício", "Biomecânica", "Treinamento Esportivo", "Avaliação Física", "Primeiros Socorros"
-    ],
-    "Enfermagem": [
-        "Procedimentos de Enfermagem", "Farmacologia", "Saúde Pública", "Cuidados Intensivos", "Primeiros Socorros"
-    ],
-    "Engenharia": [
-        "Cálculo", "Física", "Desenho Técnico", "Materiais de Construção", "Gestão de Projetos"
-    ],
-    "Farmácia": [
-        "Farmacologia", "Análises Clínicas", "Química Farmacêutica", "Microbiologia", "Toxicologia"
-    ],
-    "Física": [
-        "Mecânica", "Eletromagnetismo", "Óptica", "Termodinâmica", "Física Moderna"
-    ],
-    "Matemática": [
-        "Álgebra", "Geometria", "Cálculo", "Estatística", "Matemática Discreta"
-    ],
-    "Medicina": [
-        "Anatomia", "Fisiologia", "Patologia", "Clínica Médica", "Cirurgia"
-    ],
-    "Pedagogia": [
-        "Didática", "Psicologia da Educação", "Planejamento Escolar", "Avaliação Educacional", "Gestão Escolar"
-    ],
-    "Psicologia": [
-        "Psicologia Clínica", "Psicologia Organizacional", "Psicopatologia", "Psicologia do Desenvolvimento", "Psicoterapia"
-    ],
-    "Química": [
-        "Química Orgânica", "Química Inorgânica", "Fisico-Química", "Análises Químicas", "Bioquímica"
-    ],
-    "Sistemas de Informação": [
-        "Java", "Python", "DevOps", "API", "Banco de Dados"
-    ]
-}
-
-
-SOFT_SKILLS = [
-    "Participação", "Comunicação", "Proatividade",
-    "Criatividade", "Trabalho em Equipe"
-]
-
-
-class LogAcesso(db.Model):
-    __tablename__ = 'log_acesso'
-    id = db.Column(db.Integer, primary_key=True)
-    usuario_nome = db.Column(db.String(100), nullable=False)
-    cargo = db.Column(db.String(50), nullable=False)
-    tipo_usuario = db.Column(db.String(30), nullable=False)
-    acao = db.Column(db.String(20), nullable=False)  # login ou logout
-    data_hora = db.Column(db.DateTime, default=datetime.now)
-
-
-class InstituicaodeEnsino(db.Model, UserMixin):
-    __tablename__ = 'instituicao_de_ensino'
-
-    id_instituicao = db.Column(db.Integer, primary_key=True)
-    nome_instituicao = db.Column(db.String(100), nullable=False)
-    endereco_instituicao = db.Column(db.String(255), nullable=False)
-    email = db.Column(db.String(255), nullable=False)
-    senha = db.Column(db.String(255), nullable=False)
-    infraestrutura = db.Column(db.Text, nullable=False)
-    nota_mec = db.Column(db.Numeric, nullable=False)
-    areas_de_formacao = db.Column(db.Text, nullable=False)
-    modalidades = db.Column(db.String(255), nullable=False)
-    quantidade_de_alunos = db.Column(db.Integer, nullable=False)
-    reitor = db.Column(db.String(255), nullable=False)
-
-    def get_id(self):
-        return str(self.id_instituicao)
-
-
-class Curso(db.Model):
-    __tablename__ = 'cursos'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    nome = db.Column(db.String(255), nullable=False)
-    id_instituicao = db.Column(db.Integer, db.ForeignKey(
-        'instituicao_de_ensino.id_instituicao'), nullable=False)
-
-    instituicao = db.relationship('InstituicaodeEnsino', backref='cursos')
-
-
-class Aluno(db.Model):
-    __tablename__ = 'alunos'
-
-    id_aluno = db.Column(db.Integer, primary_key=True)
-    nome_jovem = db.Column(db.String(255), nullable=False)
-    data_nascimento = db.Column(db.Date)
-    contato_jovem = db.Column(db.String(255))
-    email = db.Column(db.String(255), unique=True)
-    endereco_jovem = db.Column(db.String(255))
-    id_instituicao = db.Column(db.Integer, db.ForeignKey(
-        'instituicao_de_ensino.id_instituicao'))
-    curso = db.Column(db.String(255))
-    formacao = db.Column(db.String(255))
-    periodo = db.Column(db.Integer)
-    indicado_por = db.Column(db.Integer, db.ForeignKey(
-        'chefe.id_chefe'))  # Relacionamento com Chefe
-
-    # Relacionamento reverso
-    chefe = db.relationship('Chefe', backref='alunos_indicados')
-
-
-class Chefe(db.Model, UserMixin):
-    __tablename__ = 'chefe'
-
-    id_chefe = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    nome = db.Column(db.String(100), nullable=False)
-    cargo = db.Column(db.String(50), nullable=False)
-    # Pode ser nulo, mas deve ser único se fornecido
-    email = db.Column(db.String(100), unique=True)
-    senha = db.Column(db.String(255), nullable=False)
-    nome_empresa = db.Column(db.String(100))
-
-    def get_id(self):
-        return str(self.id_chefe)
-
-
-class SkillsDoAluno(db.Model):
-    __tablename__ = 'skills_do_aluno'
-
-    id_aluno = db.Column(db.Integer, db.ForeignKey(
-        'alunos.id_aluno'), primary_key=True)
-    # Hard skills dinâmicas por curso (JSON)
-    hard_skills_json = db.Column(db.Text)
-    soft_skills_json = db.Column(db.Text)  # Soft skills detalhadas (JSON)
-    aluno = db.relationship(
-        'Aluno', backref=db.backref('skills', uselist=False))
-
-
-class Acompanhamento(db.Model):
-    __tablename__ = 'acompanhamento'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    id_chefe = db.Column(db.Integer, db.ForeignKey(
-        'chefe.id_chefe'), nullable=False)
-    id_aluno = db.Column(db.Integer, db.ForeignKey(
-        'alunos.id_aluno'), nullable=False)
-    data_acompanhamento = db.Column(db.DateTime, server_default=db.func.now())
-
-    chefe = db.relationship('Chefe', backref='acompanhamentos')
-    aluno = db.relationship('Aluno', backref='acompanhamentos')
-
-    __table_args__ = (db.UniqueConstraint(
-        'id_chefe', 'id_aluno', name='uix_chefe_aluno'),)
-
-
-class SkillsHistorico(db.Model):
-    __tablename__ = 'skills_historico'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    id_aluno = db.Column(db.Integer, db.ForeignKey(
-        'alunos.id_aluno'), nullable=False)
-    id_chefe = db.Column(db.Integer, db.ForeignKey(
-        'chefe.id_chefe'), nullable=False)
-    data = db.Column(db.DateTime, server_default=db.func.now())
-    hard_skills_json = db.Column(db.Text)
-    soft_skills_json = db.Column(db.Text)
-
-    aluno = db.relationship('Aluno', backref='historicos')
-    chefe = db.relationship('Chefe', backref='historicos')
-
-
-class Indicacao(db.Model):
-    __tablename__ = 'indicacoes'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    id_chefe = db.Column(db.Integer, db.ForeignKey(
-        'chefe.id_chefe'), nullable=False)
-    id_aluno = db.Column(db.Integer, db.ForeignKey(
-        'alunos.id_aluno'), nullable=False)
-    data_indicacao = db.Column(db.DateTime, server_default=db.func.now())
-
-    chefe = db.relationship('Chefe', backref='indicacoes')
-    aluno = db.relationship('Aluno', backref='indicacoes')
-
-    __table_args__ = (db.UniqueConstraint(
-        'id_chefe', 'id_aluno', name='uix_chefe_aluno_indicacao'),)
-
-
-class TwoFactor(db.Model):
-    __tablename__ = 'two_factor'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    # 'chefe' ou 'instituicao'
-    user_type = db.Column(db.String(20), nullable=False)
-    user_id = db.Column(db.Integer, nullable=False)
-    otp_secret = db.Column(db.String(64), nullable=False)
-    enabled = db.Column(db.Boolean, default=False, nullable=False)
-    created_at = db.Column(db.DateTime, server_default=db.func.now())
-    __table_args__ = (db.UniqueConstraint(
-        'user_type', 'user_id', name='uix_2fa_user'),)
-
-
-class ResetarSenha(db.Model):
-    __tablename__ = 'resetar_senha'
-
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    email = db.Column(db.String(255), nullable=False)
-    codigo = db.Column(db.String(6), nullable=False)
-    # 'chefe' ou 'instituicao'
-    user_type = db.Column(db.String(20), nullable=False)
-    user_id = db.Column(db.Integer, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    used = db.Column(db.Boolean, default=False)
-    tentativas = db.Column(db.Integer, default=0)
 
 
 with app.app_context():
