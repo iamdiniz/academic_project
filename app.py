@@ -13,18 +13,14 @@ import io
 import qrcode
 from datetime import datetime, timedelta
 from flask_wtf import CSRFProtect
-import csv
 import re
 import json
 import pytz
 import os
 import time
-from flask_wtf.csrf import generate_csrf
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 import secrets
 import string
+from flask_wtf.csrf import generate_csrf
 from domain import (
     db,
     Chefe,

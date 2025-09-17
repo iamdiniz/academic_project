@@ -18,8 +18,8 @@ from models import (
     LogAcesso,
 )
 
-# Re-exportar constantes da estrutura antiga
-from models.base import (
+# Re-exportar constantes do domínio
+from .constants import (
     CURSOS_PADRAO,
     HARD_SKILLS_POR_CURSO,
     SOFT_SKILLS
