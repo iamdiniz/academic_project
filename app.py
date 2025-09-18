@@ -47,7 +47,22 @@ from services import (
     gerar_codigo_verificacao,
     _get_or_create_2fa_record,
     _generate_qr_data_uri,
-    registrar_log
+    registrar_log,
+    paginate_items,
+    validar_email_formato,
+    validar_periodo_formato,
+    validar_contato_formato,
+    validar_skill_valor,
+    validar_senha_minima,
+    validar_confirmacao_senha,
+    validar_campos_obrigatorios_instituicao,
+    validar_campos_obrigatorios_chefe,
+    validar_campos_obrigatorios_aluno,
+    validar_campos_obrigatorios_aluno_edicao,
+    validar_skills_por_curso,
+    load_user,
+    bloquear_chefe,
+    bloquear_instituicao
 )
 from services.rate_limit_service import usuarios_bloqueados
 
@@ -97,35 +112,8 @@ with app.app_context():
 
 
 @login_manager.user_loader
-def load_user(user_id):
-    tipo_usuario = session.get('tipo_usuario')
-    if tipo_usuario == 'chefe':
-        return Chefe.query.get(int(user_id))
-    elif tipo_usuario == 'instituicao':
-        return InstituicaodeEnsino.query.get(int(user_id))
-    return None
-
-
-def bloquear_chefe(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if session.get('tipo_usuario') == 'chefe':
-            flash("Acesso não permitido para o perfil chefe.", "danger")
-            # Redireciona para a página inicial
-            return redirect(url_for('home'))
-        return f(*args, **kwargs)
-    return decorated_function
-
-
-def bloquear_instituicao(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if session.get('tipo_usuario') == 'instituicao':
-            flash("Acesso não permitido para o perfil instituição de ensino.", "danger")
-            # Redireciona para a página inicial
-            return redirect(url_for('home'))
-        return f(*args, **kwargs)
-    return decorated_function
+def load_user_wrapper(user_id):
+    return load_user(user_id)
 
 
 @app.route('/cadastro', methods=['GET', 'POST'])
@@ -138,11 +126,11 @@ def cadastro():
         confirmar_senha = request.form.get('confirmar_senha')
 
         # Validação: senha mínima de 8 caracteres
-        if not senha or len(senha) < 8:
+        if validar_senha_minima(senha):
             flash('A senha deve ter no mínimo 8 caracteres.', 'danger')
             return redirect(url_for('cadastro'))
 
-        if senha != confirmar_senha:
+        if validar_confirmacao_senha(senha, confirmar_senha):
             flash('As senhas não coincidem!')
             return redirect(url_for('cadastro'))
 
@@ -154,7 +142,7 @@ def cadastro():
             modalidades = request.form.get('modalidades')
             cursos_selecionados = request.form.getlist('cursos_selecionados')
 
-            if not nome or not email or not senha or not instituicao_nome or not endereco or not cursos_selecionados:
+            if validar_campos_obrigatorios_instituicao(nome, email, senha, instituicao_nome, endereco, cursos_selecionados):
                 flash(
                     'Todos os campos obrigatórios para Instituição de Ensino devem ser preenchidos!')
                 return redirect(url_for('cadastro'))
@@ -200,7 +188,7 @@ def cadastro():
             empresa_nome = request.form.get('empresa_nome')
             cargo = request.form.get('cargo')
 
-            if not nome or not email or not senha or not empresa_nome or not cargo:
+            if validar_campos_obrigatorios_chefe(nome, email, senha, empresa_nome, cargo):
                 flash('Todos os campos obrigatórios para Chefe devem ser preenchidos!')
                 return redirect(url_for('cadastro'))
 
@@ -257,7 +245,17 @@ def login():
             return render_template('login.html')
 
         # =============================================================================
-        # VERIFICAÇÃO DE CREDENCIAIS PRIMEIRO
+        # VERIFICAÇÃO DE RATE LIMITING ANTES DAS CREDENCIAIS
+        # =============================================================================
+        # Verifica rate limiting ANTES de verificar credenciais
+        permitido, mensagem_rate_limit, _ = verificar_rate_limit(email)
+
+        if not permitido:
+            flash(mensagem_rate_limit, "danger")
+            return render_template('login.html')
+
+        # =============================================================================
+        # VERIFICAÇÃO DE CREDENCIAIS
         # =============================================================================
         chefe = Chefe.query.filter_by(email=email).first()
         instituicao = InstituicaodeEnsino.query.filter_by(email=email).first()
@@ -305,14 +303,10 @@ def login():
                 return redirect(url_for('home'))
 
         # =============================================================================
-        # LOGIN FALHADO - VERIFICA RATE LIMITING E EXIBE MENSAGEM
+        # LOGIN FALHADO - EXIBE MENSAGEM
         # =============================================================================
-        # Só verifica rate limiting quando o login falha
-        permitido, mensagem_rate_limit, _ = verificar_rate_limit(email)
-
-        if not permitido:
-            flash(mensagem_rate_limit, "danger")
-        elif mensagem_rate_limit:
+        # Rate limiting já foi verificado antes das credenciais
+        if mensagem_rate_limit:
             flash(
                 f"E-mail ou senha inválidos. {mensagem_rate_limit}", "warning")
         else:
@@ -359,19 +353,14 @@ def instituicao_ensino():
 
     # Paginação
     page = request.args.get('page', 1, type=int)
-    per_page = 12
-    total = len(instituicoes)
-    total_pages = ceil(total / per_page)
-    start = (page - 1) * per_page
-    end = start + per_page
-    instituicoes_paginadas = instituicoes[start:end]
+    pagination_result = paginate_items(instituicoes, page)
 
     return render_template(
         'instituicaoEnsino.html',
-        instituicoes=instituicoes_paginadas,
+        instituicoes=pagination_result['items'],
         cursos_por_instituicao=cursos_por_instituicao,
-        page=page,
-        total_pages=total_pages
+        page=pagination_result['page'],
+        total_pages=pagination_result['total_pages']
     )
 
 
@@ -431,18 +420,13 @@ def minhas_selecoes():
 
     # Paginação
     page = request.args.get('page', 1, type=int)
-    per_page = 12
-    total = len(alunos_com_skills)
-    total_pages = ceil(total / per_page)
-    start = (page - 1) * per_page
-    end = start + per_page
-    alunos_paginados = alunos_com_skills[start:end]
+    pagination_result = paginate_items(alunos_com_skills, page)
 
     return render_template(
         'minhas_selecoes.html',
-        alunos=alunos_paginados,
-        page=page,
-        total_pages=total_pages
+        alunos=pagination_result['items'],
+        page=pagination_result['page'],
+        total_pages=pagination_result['total_pages']
     )
 
 
@@ -691,26 +675,6 @@ def cursos():
     return render_template('cursos.html', cursos=cursos, CURSOS_PADRAO=CURSOS_PADRAO)
 
 
-def validar_skills_por_curso(curso, hard_skills_dict, soft_skills_dict):
-    # Curso deve ser válido
-    if curso not in HARD_SKILLS_POR_CURSO:
-        return False, f"Curso '{curso}' não é permitido."
-    # Hard skills: 5, nomes exatos, valores entre 0 e 10
-    hard_labels = HARD_SKILLS_POR_CURSO[curso]
-    if set(hard_skills_dict.keys()) != set(hard_labels):
-        return False, f"As hard skills devem ser exatamente: {', '.join(hard_labels)}."
-    for valor in hard_skills_dict.values():
-        if not isinstance(valor, int) or valor < 0 or valor > 10:
-            return False, "Todas as hard skills devem ser números inteiros de 0 a 10."
-    # Soft skills: 5, nomes exatos, valores entre 0 e 10
-    if set(soft_skills_dict.keys()) != set(SOFT_SKILLS):
-        return False, f"As soft skills devem ser exatamente: {', '.join(SOFT_SKILLS)}."
-    for valor in soft_skills_dict.values():
-        if not isinstance(valor, int) or valor < 0 or valor > 10:
-            return False, "Todas as soft skills devem ser números inteiros de 0 a 10."
-    return True, ""
-
-
 @app.route('/cadastrar_aluno', methods=['POST'])
 @login_required
 @bloquear_chefe
@@ -730,22 +694,22 @@ def cadastrar_aluno():
         return redirect(url_for('alunos_instituicao'))
 
     # Validação dos campos obrigatórios
-    if not nome_jovem or not data_nascimento or not endereco_jovem or not contato_jovem or not email or not curso or not formacao or not periodo:
+    if validar_campos_obrigatorios_aluno(nome_jovem, data_nascimento, endereco_jovem, contato_jovem, email, curso, formacao, periodo):
         flash("Preencha todos os campos obrigatórios!", "error")
         return redirect(url_for('alunos_instituicao'))
 
     # Validação do e-mail
-    if '@' not in email or '.' not in email:
+    if validar_email_formato(email):
         flash("E-mail inválido!", "danger")
         return redirect(url_for('alunos_instituicao'))
 
     # Validação do período (agora obrigatório)
-    if not periodo.isdigit() or int(periodo) < 1 or int(periodo) > 20:
+    if validar_periodo_formato(periodo):
         flash("Período deve ser um número entre 1 e 20.", "danger")
         return redirect(url_for('alunos_instituicao'))
 
     # Validação do contato (exemplo simples, pode ser melhorado)
-    if not contato_jovem.isdigit() or len(contato_jovem) < 8:
+    if validar_contato_formato(contato_jovem):
         flash("Contato deve conter apenas números e ter pelo menos 11 dígitos.", "danger")
         return redirect(url_for('alunos_instituicao'))
 
@@ -754,7 +718,7 @@ def cadastrar_aluno():
     for label in HARD_SKILLS_POR_CURSO.get(curso, []):
         field_name = f"hard_{label.lower().replace(' ', '_')}"
         valor = request.form.get(field_name)
-        if valor is None or not valor.isdigit() or int(valor) < 0 or int(valor) > 10:
+        if validar_skill_valor(valor):
             flash(
                 f"Preencha corretamente a hard skill '{label}' (0 a 10).", "danger")
             return redirect(url_for('alunos_instituicao'))
@@ -865,23 +829,18 @@ def alunos_instituicao():
 
     # PAGINAÇÃO
     page = request.args.get('page', 1, type=int)
-    per_page = 12
-    total = len(alunos_com_skills)
-    total_pages = ceil(total / per_page)
-    start = (page - 1) * per_page
-    end = start + per_page
-    alunos_paginados = alunos_com_skills[start:end]
+    pagination_result = paginate_items(alunos_com_skills, page)
 
     return render_template(
         'alunos_instituicao.html',
-        alunos=alunos_paginados,
+        alunos=pagination_result['items'],
         cursos=cursos,
         filtro_curso=filtro_curso,
         cursos_disponiveis=cursos_disponiveis,
         HARD_SKILLS_POR_CURSO=HARD_SKILLS_POR_CURSO,
         SOFT_SKILLS=SOFT_SKILLS,
-        page=page,
-        total_pages=total_pages
+        page=pagination_result['page'],
+        total_pages=pagination_result['total_pages']
     )
 
 
@@ -933,23 +892,23 @@ def detalhes_aluno_instituicao(id_aluno):
         if email_existente:
             flash("Já existe um aluno cadastrado com este e-mail.", "danger")
 
-        if not nome_jovem or not data_nascimento or not contato_jovem or not email or not endereco_jovem or not formacao or not periodo:
+        if validar_campos_obrigatorios_aluno_edicao(nome_jovem, data_nascimento, contato_jovem, email, endereco_jovem, formacao, periodo):
             flash("Preencha todos os campos obrigatórios!", "danger")
             return redirect(request.url)
 
         # Validação do e-mail
-        if '@' not in email or '.' not in email:
+        if validar_email_formato(email):
             flash("E-mail inválido!", "danger")
             return redirect(request.url)
 
         # Validação do contato
-        if not contato_jovem.isdigit() or len(contato_jovem) < 8:
+        if validar_contato_formato(contato_jovem):
             flash(
                 "Contato deve conter apenas números e ter pelo menos 11 dígitos.", "danger")
             return redirect(request.url)
 
         # Validação do período
-        if not periodo.isdigit() or int(periodo) < 1 or int(periodo) > 20:
+        if validar_periodo_formato(periodo):
             flash("Período deve ser um número inteiro entre 1 e 20.", "danger")
             return redirect(request.url)
 
@@ -1073,7 +1032,7 @@ def perfil():
             chefe.email = novo_email
             senha_nova = request.form.get('senha', '')
             if senha_nova:
-                if len(senha_nova) < 8:
+                if validar_senha_minima(senha_nova):
                     flash("A senha deve ter no mínimo 8 caracteres.", "danger")
                     return redirect(url_for('perfil'))
                 chefe.senha = generate_password_hash(senha_nova)
@@ -1130,7 +1089,7 @@ def perfil():
             instituicao.email = novo_email
             senha_nova = request.form.get('senha', '')
             if senha_nova:
-                if len(senha_nova) < 8:
+                if validar_senha_minima(senha_nova):
                     flash("A senha deve ter no mínimo 8 caracteres.", "danger")
                     return redirect(url_for('perfil'))
                 instituicao.senha = generate_password_hash(senha_nova)
@@ -1233,18 +1192,13 @@ def acompanhar():
 
     # Paginação
     page = request.args.get('page', 1, type=int)
-    per_page = 12
-    total = len(alunos_com_skills)
-    total_pages = ceil(total / per_page)
-    start = (page - 1) * per_page
-    end = start + per_page
-    alunos_paginados = alunos_com_skills[start:end]
+    pagination_result = paginate_items(alunos_com_skills, page)
 
     return render_template(
         'acompanhar.html',
-        alunos=alunos_paginados,
-        page=page,
-        total_pages=total_pages
+        alunos=pagination_result['items'],
+        page=pagination_result['page'],
+        total_pages=pagination_result['total_pages']
     )
 
 
@@ -1457,7 +1411,7 @@ def two_factor_verify():
             if tipo == 'chefe':
                 email_usuario = user.email
             else:
-             email_usuario = user.email
+                email_usuario = user.email
             resetar_rate_limit(email_usuario)
 
             session.pop('pending_user', None)
@@ -1737,7 +1691,7 @@ def nova_senha():
             flash("A senha deve ter pelo menos 6 caracteres.", "danger")
             return render_template('nova_senha.html')
 
-        if nova_senha != confirmar_senha:
+        if validar_confirmacao_senha(nova_senha, confirmar_senha):
             flash("As senhas não coincidem.", "danger")
             return render_template('nova_senha.html')
 

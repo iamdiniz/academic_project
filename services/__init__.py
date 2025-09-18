@@ -16,6 +16,25 @@ from .two_factor_service import (
 from .audit_log_service import (
     registrar_log
 )
+from .pagination_service import (
+    paginate_items, get_pagination_data
+)
+from .validation_service import (
+    validar_email_formato, validar_periodo_formato, validar_contato_formato,
+    validar_skill_valor, validar_nome_formato, validar_cargo_formato,
+    validar_senha_formato, validar_nota_mec_formato, validar_modalidade_formato
+)
+from .password_validation_service import (
+    validar_senha_minima, validar_confirmacao_senha,
+    validar_campos_obrigatorios_instituicao, validar_campos_obrigatorios_chefe,
+    validar_campos_obrigatorios_aluno, validar_campos_obrigatorios_aluno_edicao
+)
+from .skills_service import (
+    validar_skills_por_curso
+)
+from .auth_service import (
+    load_user, bloquear_chefe, bloquear_instituicao
+)
 
 __all__ = [
     # Rate Limit Service
@@ -25,5 +44,19 @@ __all__ = [
     # Two Factor Service
     '_get_or_create_2fa_record', '_generate_qr_data_uri',
     # Audit Log Service
-    'registrar_log'
+    'registrar_log',
+    # Pagination Service
+    'paginate_items', 'get_pagination_data',
+    # Validation Service
+    'validar_email_formato', 'validar_periodo_formato', 'validar_contato_formato',
+    'validar_skill_valor', 'validar_nome_formato', 'validar_cargo_formato',
+    'validar_senha_formato', 'validar_nota_mec_formato', 'validar_modalidade_formato',
+    # Password Validation Service
+    'validar_senha_minima', 'validar_confirmacao_senha',
+    'validar_campos_obrigatorios_instituicao', 'validar_campos_obrigatorios_chefe',
+    'validar_campos_obrigatorios_aluno', 'validar_campos_obrigatorios_aluno_edicao',
+    # Skills Service
+    'validar_skills_por_curso',
+    # Auth Service
+    'load_user', 'bloquear_chefe', 'bloquear_instituicao'
 ]
