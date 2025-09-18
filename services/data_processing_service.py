@@ -36,7 +36,7 @@ def processar_aluno_com_skills(aluno):
 
     return {
         "id_aluno": aluno.id_aluno,
-        "nome": aluno.nome_jovem,
+        "nome_jovem": aluno.nome_jovem,
         "data_nascimento": aluno.data_nascimento.strftime('%d/%m/%Y') if aluno.data_nascimento else 'N/A',
         "curso": aluno.curso,
         "periodo": aluno.periodo,
