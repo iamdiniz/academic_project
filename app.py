@@ -18,8 +18,6 @@ import json
 import pytz
 import os
 import time
-import secrets
-import string
 from flask_wtf.csrf import generate_csrf
 from domain import (
     db,
@@ -32,7 +30,6 @@ from domain import (
     Acompanhamento,
     Indicacao,
     TwoFactor,
-    ResetarSenha,
     LogAcesso,
     CURSOS_PADRAO,
     HARD_SKILLS_POR_CURSO,
@@ -62,7 +59,23 @@ from services import (
     validar_skills_por_curso,
     load_user,
     bloquear_chefe,
-    bloquear_instituicao
+    bloquear_instituicao,
+    processar_alunos_indicados_por_chefe,
+    processar_alunos_acompanhados_por_chefe,
+    processar_alunos_por_instituicao,
+    processar_skills_para_edicao,
+    calcular_total_skills_por_habilidades,
+    processar_aluno_com_skills,
+    criar_instituicao_ensino,
+    criar_chefe,
+    atualizar_perfil_chefe,
+    atualizar_perfil_instituicao,
+    verificar_email_duplicado_instituicao,
+    verificar_email_duplicado_chefe,
+    processar_solicitacao_recuperacao,
+    verificar_codigo_digitado,
+    processar_nova_senha,
+    validar_token_reset
 )
 from services.rate_limit_service import usuarios_bloqueados
 
@@ -148,40 +161,30 @@ def cadastro():
                 return redirect(url_for('cadastro'))
 
             # Validação: não permitir e-mail duplicado
-            if InstituicaodeEnsino.query.filter_by(email=email).first():
+            if verificar_email_duplicado_instituicao(email):
                 flash('Já existe uma instituição cadastrada com este e-mail.', 'danger')
                 return redirect(url_for('cadastro'))
 
-            try:
-                nova_instituicaodeEnsino = InstituicaodeEnsino(
-                    nome_instituicao=instituicao_nome,
-                    email=email,
-                    senha=generate_password_hash(senha),
-                    infraestrutura=infraestrutura,
-                    nota_mec=nota_mec,
-                    # Apenas para histórico, não para lógica
-                    areas_de_formacao=", ".join(cursos_selecionados),
-                    modalidades=modalidades,
-                    quantidade_de_alunos=0,
-                    reitor=nome,
-                    endereco_instituicao=endereco
-                )
-                db.session.add(nova_instituicaodeEnsino)
-                db.session.commit()
+            # Criar instituição usando o serviço
+            dados_formulario = {
+                'instituicao_nome': instituicao_nome,
+                'email': email,
+                'senha': senha,
+                'infraestrutura': infraestrutura,
+                'nota_mec': nota_mec,
+                'cursos_selecionados': cursos_selecionados,
+                'modalidades': modalidades,
+                'nome': nome,
+                'endereco': endereco
+            }
 
-                # Salva os cursos selecionados na tabela cursos
-                for nome_curso in cursos_selecionados:
-                    curso = Curso(
-                        nome=nome_curso, id_instituicao=nova_instituicaodeEnsino.id_instituicao)
-                    db.session.add(curso)
-                db.session.commit()
+            sucesso, mensagem, _ = criar_instituicao_ensino(dados_formulario)
 
-                flash(
-                    'Cadastro de Instituição realizado com sucesso! Faça login agora.', 'success')
+            if sucesso:
+                flash(mensagem, 'success')
                 return redirect(url_for('login'))
-            except IntegrityError:
-                db.session.rollback()
-                flash('Erro: E-mail ou instituição já cadastrados.', 'error')
+            else:
+                flash(mensagem, 'error')
                 return redirect(url_for('cadastro'))
 
         elif tipo_usuario == 'chefe':
@@ -197,22 +200,22 @@ def cadastro():
                 flash('Selecione um cargo válido!', 'danger')
                 return redirect(url_for('cadastro'))
 
-            try:
-                novo_chefe = Chefe(
-                    nome=nome,
-                    email=email,
-                    senha=generate_password_hash(senha),
-                    nome_empresa=empresa_nome,
-                    cargo=cargo
-                )
-                db.session.add(novo_chefe)
-                db.session.commit()
-                flash(
-                    'Cadastro de Chefe realizado com sucesso! Faça login agora.', 'success')
+            # Criar chefe usando o serviço
+            dados_formulario = {
+                'nome': nome,
+                'email': email,
+                'senha': senha,
+                'empresa_nome': empresa_nome,
+                'cargo': cargo
+            }
+
+            sucesso, mensagem, _ = criar_chefe(dados_formulario)
+
+            if sucesso:
+                flash(mensagem, 'success')
                 return redirect(url_for('login'))
-            except IntegrityError:
-                db.session.rollback()
-                flash('Erro: E-mail ou chefe já cadastrados.', 'error')
+            else:
+                flash(mensagem, 'error')
                 return redirect(url_for('cadastro'))
 
         else:
@@ -382,41 +385,8 @@ def minhas_selecoes():
 
     chefe_id = current_user.id_chefe
 
-    # Busca todos os alunos indicados por este chefe usando a tabela Indicacao
-    indicacoes = Indicacao.query.filter_by(id_chefe=chefe_id).all()
-    alunos = [indicacao.aluno for indicacao in indicacoes]
-
-    alunos_com_skills = []
-    for aluno in alunos:
-        skills = aluno.skills
-        hard_labels = []
-        hard_skills = []
-        soft_labels = []
-        soft_skills = []
-        if skills:
-            hard_dict = json.loads(
-                skills.hard_skills_json) if skills.hard_skills_json else {}
-            soft_dict = json.loads(
-                skills.soft_skills_json) if skills.soft_skills_json else {}
-
-            hard_labels = list(hard_dict.keys())
-            hard_skills = list(hard_dict.values())
-            soft_labels = list(soft_dict.keys())
-            soft_skills = list(soft_dict.values())
-
-        alunos_com_skills.append({
-            "id_aluno": aluno.id_aluno,
-            "nome": aluno.nome_jovem,
-            "data_nascimento": aluno.data_nascimento.strftime('%d/%m/%Y') if aluno.data_nascimento else 'N/A',
-            "curso": aluno.curso,
-            "periodo": aluno.periodo,
-            "contato_jovem": aluno.contato_jovem,
-            "email": aluno.email,
-            "hard_labels": hard_labels,
-            "hard_skills": hard_skills,
-            "soft_labels": soft_labels,
-            "soft_skills": soft_skills
-        })
+    # Processa todos os alunos indicados por este chefe
+    alunos_com_skills = processar_alunos_indicados_por_chefe(chefe_id)
 
     # Paginação
     page = request.args.get('page', 1, type=int)
@@ -504,55 +474,13 @@ def ver_alunos_por_curso():
     # Ordenação por múltiplas habilidades (hard e soft)
     if habilidade:
         def get_total_skills(aluno):
-            skills = aluno.skills
-            total = 0
-            if skills:
-                hard_dict = json.loads(
-                    skills.hard_skills_json) if skills.hard_skills_json else {}
-                soft_dict = json.loads(
-                    skills.soft_skills_json) if skills.soft_skills_json else {}
-                for hab in habilidade:
-                    if ':' in hab:
-                        tipo, nome = hab.split(':', 1)
-                        if tipo == 'hard':
-                            total += hard_dict.get(nome, 0)
-                        elif tipo == 'soft':
-                            total += soft_dict.get(nome, 0)
-            return total
+            return calcular_total_skills_por_habilidades(aluno, habilidade)
         alunos_filtrados = sorted(
             alunos_filtrados, key=get_total_skills, reverse=True)
 
     alunos_com_skills = []
     for aluno in alunos_filtrados:
-        skills = aluno.skills
-        hard_labels = []
-        hard_skills = []
-        soft_labels = []
-        soft_skills = []
-        if skills:
-            hard_dict = json.loads(
-                skills.hard_skills_json) if skills.hard_skills_json else {}
-            soft_dict = json.loads(
-                skills.soft_skills_json) if skills.soft_skills_json else {}
-
-            hard_labels = list(hard_dict.keys())
-            hard_skills = list(hard_dict.values())
-            soft_labels = list(soft_dict.keys())
-            soft_skills = list(soft_dict.values())
-
-        alunos_com_skills.append({
-            "id_aluno": aluno.id_aluno,
-            "nome": aluno.nome_jovem,
-            "data_nascimento": aluno.data_nascimento.strftime('%d/%m/%Y') if aluno.data_nascimento else 'N/A',
-            "curso": aluno.curso,
-            "periodo": aluno.periodo,
-            "contato_jovem": aluno.contato_jovem,
-            "email": aluno.email,
-            "hard_labels": hard_labels,
-            "hard_skills": hard_skills,
-            "soft_labels": soft_labels,
-            "soft_skills": soft_skills
-        })
+        alunos_com_skills.append(processar_aluno_com_skills(aluno))
 
     mensagem = None
     if not alunos_filtrados:
@@ -789,43 +717,9 @@ def alunos_instituicao():
     filtro_curso = request.form.get(
         'curso') if request.method == 'POST' else None
 
-    if filtro_curso:
-        alunos = Aluno.query.filter_by(
-            id_instituicao=instituicao_id, curso=filtro_curso).all()
-    else:
-        alunos = Aluno.query.filter_by(id_instituicao=instituicao_id).all()
-
-    alunos_com_skills = []
-    for aluno in alunos:
-        skills = aluno.skills
-        # Parse JSONs
-        hard_skills = []
-        hard_labels = []
-        soft_skills = []
-        soft_labels = []
-        if skills:
-            import json
-            hard_dict = json.loads(
-                skills.hard_skills_json) if skills.hard_skills_json else {}
-            soft_dict = json.loads(
-                skills.soft_skills_json) if skills.soft_skills_json else {}
-
-            hard_labels = list(hard_dict.keys())
-            hard_skills = list(hard_dict.values())
-            soft_labels = list(soft_dict.keys())
-            soft_skills = list(soft_dict.values())
-
-        alunos_com_skills.append({
-            "id_aluno": aluno.id_aluno,
-            "nome": aluno.nome_jovem,
-            "data_nascimento": aluno.data_nascimento.strftime('%d/%m/%Y') if aluno.data_nascimento else 'N/A',
-            "curso": aluno.curso,
-            "periodo": aluno.periodo,
-            "hard_labels": hard_labels,
-            "hard_skills": hard_skills,
-            "soft_labels": soft_labels,
-            "soft_skills": soft_skills
-        })
+    # Processa todos os alunos da instituição, opcionalmente filtrados por curso
+    alunos_com_skills = processar_alunos_por_instituicao(
+        instituicao_id, filtro_curso)
 
     # PAGINAÇÃO
     page = request.args.get('page', 1, type=int)
@@ -860,15 +754,8 @@ def detalhes_aluno_instituicao(id_aluno):
     hard_labels = HARD_SKILLS_POR_CURSO.get(aluno.curso, [])
     soft_labels = SOFT_SKILLS
 
-    # Carregue os valores atuais
-    skills = aluno.skills
-    hard_dict = {}
-    soft_dict = {}
-    if skills:
-        hard_dict = json.loads(
-            skills.hard_skills_json) if skills.hard_skills_json else {}
-        soft_dict = json.loads(
-            skills.soft_skills_json) if skills.soft_skills_json else {}
+    # Carregue os valores atuais das skills
+    hard_dict, soft_dict = processar_skills_para_edicao(aluno)
 
     if request.method == 'POST':
         # Validação do curso
@@ -952,6 +839,7 @@ def detalhes_aluno_instituicao(id_aluno):
                 return redirect(request.url)
 
         # Atualiza ou cria o registro de skills
+        skills = aluno.skills
         if not skills:
             skills = SkillsDoAluno(id_aluno=aluno.id_aluno)
             db.session.add(skills)
@@ -1010,97 +898,65 @@ def perfil():
         # Atualizar informações do chefe
         if tipo_usuario == 'chefe':
             chefe = Chefe.query.get_or_404(current_user.id_chefe)
-            nome = request.form['nome'].strip()
-            if not re.match(r'^[A-Za-zÀ-ÖØ-öø-ÿ\s]{2,30}$', nome):
-                flash(
-                    "O nome deve ter entre 2 e 30 letras e não pode conter números.", "danger")
+
+            # Validação da senha se fornecida
+            senha_nova = request.form.get('senha', '')
+            if senha_nova and validar_senha_minima(senha_nova):
+                flash("A senha deve ter no mínimo 8 caracteres.", "danger")
                 return redirect(url_for('perfil'))
 
-            novo_email = request.form['email']
-            email_existente = Chefe.query.filter(
-                Chefe.email == novo_email, Chefe.id_chefe != chefe.id_chefe).first()
-            if email_existente:
-                flash("Já existe um chefe cadastrado com este e-mail.", "danger")
-                return redirect(url_for('perfil'))
-            chefe.nome = request.form['nome']
-            cargo = request.form['cargo']
-            if cargo not in ['CEO', 'Gerente', 'Coordenador']:
-                flash("Selecione um cargo válido.", "danger")
-                return redirect(url_for('perfil'))
-            chefe.cargo = cargo
-            chefe.nome_empresa = request.form.get('nome_empresa')
-            chefe.email = novo_email
-            senha_nova = request.form.get('senha', '')
-            if senha_nova:
-                if validar_senha_minima(senha_nova):
-                    flash("A senha deve ter no mínimo 8 caracteres.", "danger")
-                    return redirect(url_for('perfil'))
-                chefe.senha = generate_password_hash(senha_nova)
-            try:
-                db.session.commit()
-                flash("Perfil atualizado com sucesso!", "success")
-                return redirect(url_for('perfil'))
-            except IntegrityError:
-                db.session.rollback()
-                flash("Já existe um chefe cadastrado com este e-mail.", "danger")
-                return redirect(url_for('perfil'))
+            # Preparar dados do formulário
+            dados_formulario = {
+                'nome': request.form['nome'],
+                'email': request.form['email'],
+                'cargo': request.form['cargo'],
+                'nome_empresa': request.form.get('nome_empresa', ''),
+                'senha': senha_nova
+            }
+
+            # Atualizar perfil usando o serviço
+            sucesso, mensagem = atualizar_perfil_chefe(chefe, dados_formulario)
+
+            if sucesso:
+                flash(mensagem, "success")
+            else:
+                flash(mensagem, "danger")
+
+            return redirect(url_for('perfil'))
 
         # Atualizar informações da instituição
         elif tipo_usuario == 'instituicao':
             instituicao = InstituicaodeEnsino.query.get_or_404(
                 current_user.id_instituicao)
-            nome_instituicao = request.form['nome_instituicao'].strip()
-            reitor = request.form['reitor'].strip()
 
-            if not re.match(r'^[A-Za-zÀ-ÖØ-öø-ÿ\s]{2,50}$', nome_instituicao):
-                flash(
-                    "O nome da instituição deve ter entre 2 e 50 letras e não pode conter números.", "danger")
-                return redirect(url_for('perfil'))
-            if not re.match(r'^[A-Za-zÀ-ÖØ-öø-ÿ\s]{2,30}$', reitor):
-                flash(
-                    "O nome do reitor deve ter entre 2 e 30 letras e não pode conter números.", "danger")
-                return redirect(url_for('perfil'))
-
-            novo_email = request.form['email']
-            email_existente = InstituicaodeEnsino.query.filter(
-                InstituicaodeEnsino.email == novo_email,
-                InstituicaodeEnsino.id_instituicao != instituicao.id_instituicao
-            ).first()
-            if email_existente:
-                flash("Já existe uma instituição cadastrada com este e-mail.", "danger")
-                return redirect(url_for('perfil'))
-            instituicao.nome_instituicao = request.form['nome_instituicao']
-            instituicao.endereco_instituicao = request.form['endereco_instituicao']
-            instituicao.reitor = request.form['reitor']
-            instituicao.infraestrutura = request.form['infraestrutura']
-
-            nota_mec = request.form['nota_mec']
-            if nota_mec not in ['1', '2', '3', '4', '5']:
-                flash("Nota MEC deve ser um valor entre 1 e 5.", "danger")
-                return redirect(url_for('perfil'))
-            instituicao.nota_mec = int(nota_mec)
-
-            modalidades = request.form['modalidades']
-            if modalidades not in ['Presencial', 'Hibrido', 'EAD']:
-                flash("Selecione uma modalidade válida.", "danger")
-                return redirect(url_for('perfil'))
-            instituicao.modalidades = modalidades
-
-            instituicao.email = novo_email
+            # Validação da senha se fornecida
             senha_nova = request.form.get('senha', '')
-            if senha_nova:
-                if validar_senha_minima(senha_nova):
-                    flash("A senha deve ter no mínimo 8 caracteres.", "danger")
-                    return redirect(url_for('perfil'))
-                instituicao.senha = generate_password_hash(senha_nova)
-            try:
-                db.session.commit()
-                flash("Perfil atualizado com sucesso!", "success")
+            if senha_nova and validar_senha_minima(senha_nova):
+                flash("A senha deve ter no mínimo 8 caracteres.", "danger")
                 return redirect(url_for('perfil'))
-            except IntegrityError:
-                db.session.rollback()
-                flash("Já existe uma instituição cadastrada com este e-mail.", "danger")
-                return redirect(url_for('perfil'))
+
+            # Preparar dados do formulário
+            dados_formulario = {
+                'nome_instituicao': request.form['nome_instituicao'],
+                'reitor': request.form['reitor'],
+                'email': request.form['email'],
+                'endereco_instituicao': request.form['endereco_instituicao'],
+                'infraestrutura': request.form['infraestrutura'],
+                'nota_mec': request.form['nota_mec'],
+                'modalidades': request.form['modalidades'],
+                'senha': senha_nova
+            }
+
+            # Atualizar perfil usando o serviço
+            sucesso, mensagem = atualizar_perfil_instituicao(
+                instituicao, dados_formulario)
+
+            if sucesso:
+                flash(mensagem, "success")
+            else:
+                flash(mensagem, "danger")
+
+            return redirect(url_for('perfil'))
 
     # Exibir informações do perfil
     if tipo_usuario == 'chefe':
@@ -1157,38 +1013,9 @@ def acompanhar_aluno(id_aluno):
 @bloquear_instituicao
 def acompanhar():
     chefe_id = current_user.id_chefe
-    acompanhamentos = Acompanhamento.query.filter_by(id_chefe=chefe_id).all()
-    alunos_com_skills = []
-    for ac in acompanhamentos:
-        aluno = ac.aluno
-        skills = aluno.skills
-        hard_labels = []
-        hard_skills = []
-        soft_labels = []
-        soft_skills = []
-        if skills:
-            hard_dict = json.loads(
-                skills.hard_skills_json) if skills.hard_skills_json else {}
-            soft_dict = json.loads(
-                skills.soft_skills_json) if skills.soft_skills_json else {}
 
-            hard_labels = list(hard_dict.keys())
-            hard_skills = list(hard_dict.values())
-            soft_labels = list(soft_dict.keys())
-            soft_skills = list(soft_dict.values())
-
-        alunos_com_skills.append({
-            "id_aluno": aluno.id_aluno,
-            "nome_jovem": aluno.nome_jovem,
-            "data_nascimento": aluno.data_nascimento.strftime('%d/%m/%Y') if aluno.data_nascimento else 'N/A',
-            "curso": aluno.curso,
-            "contato_jovem": aluno.contato_jovem,
-            "email": aluno.email,
-            "hard_labels": hard_labels,
-            "hard_skills": hard_skills,
-            "soft_labels": soft_labels,
-            "soft_skills": soft_skills
-        })
+    # Processa todos os alunos acompanhados por este chefe
+    alunos_com_skills = processar_alunos_acompanhados_por_chefe(chefe_id)
 
     # Paginação
     page = request.args.get('page', 1, type=int)
@@ -1537,71 +1364,15 @@ def esqueceu_senha():
             flash("Por favor, informe seu email.", "danger")
             return render_template('esqueceu_senha.html')
 
-        # Verificar se o email existe (chefe ou instituição)
-        chefe = Chefe.query.filter_by(email=email).first()
-        instituicao = InstituicaodeEnsino.query.filter_by(email=email).first()
+        # Processar solicitação usando o serviço
+        sucesso, mensagem, redirect_url = processar_solicitacao_recuperacao(
+            email)
 
-        if not chefe and not instituicao:
-            flash("Email não cadastrado no sistema.", "danger")
-            return render_template('esqueceu_senha.html')
-
-        # Rate limiting - verificar se já foi enviado código recentemente
-        codigo_recente = ResetarSenha.query.filter_by(
-            email=email,
-            used=False
-        ).filter(ResetarSenha.created_at > datetime.now() - timedelta(minutes=2)).first()
-
-        if codigo_recente:
-            flash("Um código já foi enviado recentemente. Aguarde 2 minutos.", "warning")
-            return render_template('esqueceu_senha.html')
-
-        # Gerar código de 6 dígitos
-        codigo = ''.join(secrets.choice(string.digits) for _ in range(6))
-
-        # Determinar tipo de usuário e ID
-        if chefe:
-            user_type = 'chefe'
-            user_id = chefe.id_chefe
-            nome_usuario = chefe.nome
+        if sucesso:
+            flash(mensagem, "success")
+            return redirect(url_for(redirect_url, email=email))
         else:
-            user_type = 'instituicao'
-            user_id = instituicao.id_instituicao
-            nome_usuario = instituicao.nome_instituicao
-
-        # Salvar no banco
-        reset_request = ResetarSenha(
-            email=email,
-            codigo=codigo,
-            user_type=user_type,
-            user_id=user_id,
-            created_at=datetime.now()
-        )
-
-        db.session.add(reset_request)
-        db.session.commit()
-
-        # Enviar email real
-        corpo = f"""
-        Olá {nome_usuario},
-
-        Você solicitou a recuperação de senha no DashTalent.
-        Seu código de verificação é: {codigo}
-
-        Este código expira em 10 minutos.
-        Se você não solicitou esta recuperação, ignore este email.
-
-        Atenciosamente,
-        Equipe DashTalent
-        """
-
-        ok, msg = enviar_email(
-            email, "Código de Recuperação de Senha - DashTalent", corpo)
-
-        if ok:
-            flash("Código de verificação enviado para seu email.", "success")
-            return redirect(url_for('verificar_codigo', email=email))
-        else:
-            flash(msg, "danger")
+            flash(mensagem, "danger" if "não cadastrado" in mensagem else "warning")
             return render_template('esqueceu_senha.html')
 
     return render_template('esqueceu_senha.html')
@@ -1624,57 +1395,29 @@ def verificar_codigo_post():
         flash("Email e código são obrigatórios.", "danger")
         return render_template('verificar_codigo.html', email=email)
 
-    # Buscar todos os códigos válidos para o email (não usados e dentro do prazo)
-    reset_requests = ResetarSenha.query.filter_by(
-        email=email,
-        used=False
-    ).filter(ResetarSenha.created_at > datetime.now() - timedelta(minutes=10)).all()
+    # Verificar código usando o serviço
+    sucesso, mensagem, reset_request, redirect_url = verificar_codigo_digitado(
+        email, codigo)
 
-    if not reset_requests:
-        flash("Código inválido ou expirado.", "danger")
-        return render_template('verificar_codigo.html', email=email)
-
-    # Procurar o código digitado entre os códigos válidos
-    reset_request = None
-    for rr in reset_requests:
-        if rr.codigo == codigo:
-            reset_request = rr
-            break
-
-    # Se não encontrou o código correto, incrementar tentativas no código mais recente
-    if not reset_request:
-        # Pega o código mais recente para incrementar tentativas
-        reset_request = max(reset_requests, key=lambda r: r.created_at)
-        reset_request.tentativas += 1
-        db.session.commit()
-
-        if reset_request.tentativas >= 3:
-            flash("Muitas tentativas. Solicite um novo código.", "danger")
-            return redirect(url_for('esqueceu_senha'))
+    if sucesso:
+        session['reset_token'] = reset_request.id
+        flash(mensagem, "success")
+        return redirect(url_for(redirect_url))
+    else:
+        if redirect_url:
+            return redirect(url_for(redirect_url))
         else:
-            flash("Código incorreto.", "danger")
+            flash(mensagem, "danger")
             return render_template('verificar_codigo.html', email=email)
-
-    # Código correto encontrado - verificar tentativas
-    if reset_request.tentativas >= 3:
-        flash("Muitas tentativas. Solicite um novo código.", "danger")
-        return redirect(url_for('esqueceu_senha'))
-
-    # Código correto e tentativas < 3 - sucesso
-    session['reset_token'] = reset_request.id
-    flash("Código verificado com sucesso!", "success")
-    return redirect(url_for('nova_senha'))
 
 
 @app.route('/nova-senha', methods=['GET', 'POST'])
 def nova_senha():
-    if 'reset_token' not in session:
-        flash("Sessão inválida. Inicie o processo novamente.", "danger")
-        return redirect(url_for('esqueceu_senha'))
-
-    reset_request = ResetarSenha.query.get(session['reset_token'])
-    if not reset_request or reset_request.used:
-        flash("Token inválido ou já utilizado.", "danger")
+    # Validar token usando o serviço
+    valido, reset_request, mensagem = validar_token_reset(
+        session.get('reset_token'))
+    if not valido:
+        flash(mensagem, "danger")
         session.pop('reset_token', None)
         return redirect(url_for('esqueceu_senha'))
 
@@ -1682,45 +1425,16 @@ def nova_senha():
         nova_senha = request.form['nova_senha']
         confirmar_senha = request.form['confirmar_senha']
 
-        # Validações
-        if not nova_senha or not confirmar_senha:
-            flash("Todos os campos são obrigatórios.", "danger")
-            return render_template('nova_senha.html')
+        # Processar nova senha usando o serviço
+        sucesso, mensagem, redirect_url = processar_nova_senha(
+            session.get('reset_token'), nova_senha, confirmar_senha)
 
-        if len(nova_senha) < 6:
-            flash("A senha deve ter pelo menos 6 caracteres.", "danger")
-            return render_template('nova_senha.html')
-
-        if validar_confirmacao_senha(nova_senha, confirmar_senha):
-            flash("As senhas não coincidem.", "danger")
-            return render_template('nova_senha.html')
-
-        # Atualizar senha do usuário
-        senha_hash = generate_password_hash(nova_senha)
-
-        try:
-            if reset_request.user_type == 'chefe':
-                user = Chefe.query.get(reset_request.user_id)
-                user.senha = senha_hash
-            else:
-                user = InstituicaodeEnsino.query.get(reset_request.user_id)
-                user.senha = senha_hash
-
-            # Marcar código como usado
-            reset_request.used = True
-
-            db.session.commit()
+        if sucesso:
             session.pop('reset_token', None)
-
-            # Liberar usuário do bloqueio permanente e resetar para FASE 1
-            desbloquear_usuario(reset_request.email)
-
-            flash("Senha alterada com sucesso! Faça login com sua nova senha.", "success")
-            return redirect(url_for('login'))
-
-        except Exception as e:
-            db.session.rollback()
-            flash("Erro ao alterar senha. Tente novamente.", "danger")
+            flash(mensagem, "success")
+            return redirect(url_for(redirect_url))
+        else:
+            flash(mensagem, "danger")
 
     return render_template('nova_senha.html')
 

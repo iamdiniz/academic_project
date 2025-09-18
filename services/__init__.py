@@ -35,6 +35,20 @@ from .skills_service import (
 from .auth_service import (
     load_user, bloquear_chefe, bloquear_instituicao
 )
+from .data_processing_service import (
+    processar_aluno_com_skills, processar_alunos_indicados_por_chefe,
+    processar_alunos_acompanhados_por_chefe, processar_alunos_por_instituicao,
+    processar_skills_para_edicao, calcular_total_skills_por_habilidades
+)
+from .user_service import (
+    criar_instituicao_ensino, criar_chefe, atualizar_perfil_chefe,
+    atualizar_perfil_instituicao, verificar_email_duplicado_instituicao,
+    verificar_email_duplicado_chefe
+)
+from .password_recovery_service import (
+    processar_solicitacao_recuperacao, verificar_codigo_digitado,
+    processar_nova_senha, validar_token_reset
+)
 
 __all__ = [
     # Rate Limit Service
@@ -58,5 +72,16 @@ __all__ = [
     # Skills Service
     'validar_skills_por_curso',
     # Auth Service
-    'load_user', 'bloquear_chefe', 'bloquear_instituicao'
+    'load_user', 'bloquear_chefe', 'bloquear_instituicao',
+    # Data Processing Service
+    'processar_aluno_com_skills', 'processar_alunos_indicados_por_chefe',
+    'processar_alunos_acompanhados_por_chefe', 'processar_alunos_por_instituicao',
+    'processar_skills_para_edicao', 'calcular_total_skills_por_habilidades',
+    # User Service
+    'criar_instituicao_ensino', 'criar_chefe', 'atualizar_perfil_chefe',
+    'atualizar_perfil_instituicao', 'verificar_email_duplicado_instituicao',
+    'verificar_email_duplicado_chefe',
+    # Password Recovery Service
+    'processar_solicitacao_recuperacao', 'verificar_codigo_digitado',
+    'processar_nova_senha', 'validar_token_reset'
 ]
