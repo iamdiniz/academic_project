@@ -8,6 +8,7 @@ import string
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash
 from sqlalchemy.exc import IntegrityError
+from flask import session, flash, redirect, url_for, request, render_template
 from domain import db, Chefe, InstituicaodeEnsino, ResetarSenha
 from .email_service import enviar_email
 from .rate_limit_service import desbloquear_usuario
@@ -119,7 +120,7 @@ def processar_solicitacao_recuperacao(email):
     # Enviar email
     ok, msg = enviar_email_recuperacao(email, nome_usuario, codigo)
     if ok:
-        return True, "Código de verificação enviado para seu email.", f"verificar_codigo?email={email}"
+        return True, "Código de verificação enviado para seu email.", "verificar_codigo"
     else:
         return False, msg, None
 
@@ -253,6 +254,102 @@ def processar_nova_senha(reset_token, nova_senha, confirmar_senha):
     # Atualizar senha
     sucesso, mensagem = atualizar_senha_usuario(reset_request, nova_senha)
     if sucesso:
-        return True, mensagem, "login"
+        return True, "Senha alterada com sucesso! Faça login com sua nova senha.", "login"
     else:
         return False, mensagem, None
+
+
+def processar_esqueceu_senha():
+    """
+    Processa a solicitação de recuperação de senha - código movido do app.py.
+    Mantém a lógica original exatamente igual.
+    """
+    if request.method == 'POST':
+        email = request.form['email'].strip().lower()
+
+        if not email:
+            flash("Por favor, informe seu email.", "danger")
+            return render_template('esqueceu_senha.html')
+
+        # Processar solicitação usando o serviço
+        sucesso, mensagem, redirect_url = processar_solicitacao_recuperacao(
+            email)
+
+        if sucesso:
+            flash(mensagem, "success")
+            return redirect(url_for(redirect_url, email=email))
+        else:
+            flash(mensagem, "danger" if "não cadastrado" in mensagem else "warning")
+            return render_template('esqueceu_senha.html')
+
+    return render_template('esqueceu_senha.html')
+
+
+def processar_verificar_codigo():
+    """
+    Processa a exibição da página de verificação de código - código movido do app.py.
+    Mantém a lógica original exatamente igual.
+    """
+    email = request.args.get('email')
+    if not email:
+        return redirect(url_for('esqueceu_senha'))
+    return render_template('verificar_codigo.html', email=email)
+
+
+def processar_verificar_codigo_post():
+    """
+    Processa a verificação do código digitado - código movido do app.py.
+    Mantém a lógica original exatamente igual.
+    """
+    email = request.form['email']
+    codigo = request.form['codigo']
+
+    if not email or not codigo:
+        flash("Email e código são obrigatórios.", "danger")
+        return render_template('verificar_codigo.html', email=email)
+
+    # Verificar código usando o serviço
+    sucesso, mensagem, reset_request, redirect_url = verificar_codigo_digitado(
+        email, codigo)
+
+    if sucesso:
+        session['reset_token'] = reset_request.id
+        flash(mensagem, "success")
+        return redirect(url_for(redirect_url))
+    else:
+        if redirect_url:
+            return redirect(url_for(redirect_url))
+        else:
+            flash(mensagem, "danger")
+            return render_template('verificar_codigo.html', email=email)
+
+
+def processar_nova_senha_page():
+    """
+    Processa a página de nova senha - código movido do app.py.
+    Mantém a lógica original exatamente igual.
+    """
+    # Validar token usando o serviço
+    valido, reset_request, mensagem = validar_token_reset(
+        session.get('reset_token'))
+    if not valido:
+        flash(mensagem, "danger")
+        session.pop('reset_token', None)
+        return redirect(url_for('esqueceu_senha'))
+
+    if request.method == 'POST':
+        nova_senha = request.form['nova_senha']
+        confirmar_senha = request.form['confirmar_senha']
+
+        # Processar nova senha usando o serviço
+        sucesso, mensagem, redirect_url = processar_nova_senha(
+            session.get('reset_token'), nova_senha, confirmar_senha)
+
+        if sucesso:
+            session.pop('reset_token', None)
+            flash(mensagem, "success")
+            return redirect(url_for(redirect_url))
+        else:
+            flash(mensagem, "danger")
+
+    return render_template('nova_senha.html')

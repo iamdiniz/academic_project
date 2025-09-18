@@ -11,7 +11,8 @@ from .email_service import (
     enviar_email, gerar_codigo_verificacao
 )
 from .two_factor_service import (
-    _get_or_create_2fa_record, _generate_qr_data_uri
+    _get_or_create_2fa_record, _generate_qr_data_uri,
+    processar_two_factor_setup, processar_two_factor_verify, processar_two_factor_disable
 )
 from .audit_log_service import (
     registrar_log
@@ -33,7 +34,8 @@ from .skills_service import (
     validar_skills_por_curso
 )
 from .auth_service import (
-    load_user, bloquear_chefe, bloquear_instituicao
+    load_user, bloquear_chefe, bloquear_instituicao,
+    processar_cadastro, processar_login, processar_perfil
 )
 from .data_processing_service import (
     processar_aluno_com_skills, processar_alunos_indicados_por_chefe,
@@ -47,7 +49,28 @@ from .user_service import (
 )
 from .password_recovery_service import (
     processar_solicitacao_recuperacao, verificar_codigo_digitado,
-    processar_nova_senha, validar_token_reset
+    processar_nova_senha, validar_token_reset,
+    processar_esqueceu_senha, processar_verificar_codigo,
+    processar_verificar_codigo_post, processar_nova_senha_page
+)
+from .admin_service import (
+    admin_bloquear_usuario, admin_desbloquear_usuario
+)
+from .course_service import (
+    cadastrar_curso, obter_cursos_instituicao, obter_cursos_por_instituicao,
+    validar_curso_existe
+)
+from .indication_service import (
+    indicar_aluno, remover_indicacao, acompanhar_aluno, remover_acompanhamento,
+    obter_alunos_indicados, paginar_alunos_indicados
+)
+from .skills_history_service import (
+    obter_historico_aluno, criar_snapshot_skills_inicial,
+    salvar_historico_skills_atualizacao, obter_estatisticas_evolucao
+)
+from .student_service import (
+    cadastrar_aluno, remover_aluno, obter_detalhes_aluno, atualizar_aluno,
+    obter_alunos_por_curso, paginar_alunos_por_curso
 )
 
 __all__ = [
@@ -57,6 +80,7 @@ __all__ = [
     'enviar_email', 'gerar_codigo_verificacao',
     # Two Factor Service
     '_get_or_create_2fa_record', '_generate_qr_data_uri',
+    'processar_two_factor_setup', 'processar_two_factor_verify', 'processar_two_factor_disable',
     # Audit Log Service
     'registrar_log',
     # Pagination Service
@@ -73,6 +97,7 @@ __all__ = [
     'validar_skills_por_curso',
     # Auth Service
     'load_user', 'bloquear_chefe', 'bloquear_instituicao',
+    'processar_cadastro', 'processar_login', 'processar_perfil',
     # Data Processing Service
     'processar_aluno_com_skills', 'processar_alunos_indicados_por_chefe',
     'processar_alunos_acompanhados_por_chefe', 'processar_alunos_por_instituicao',
@@ -83,5 +108,21 @@ __all__ = [
     'verificar_email_duplicado_chefe',
     # Password Recovery Service
     'processar_solicitacao_recuperacao', 'verificar_codigo_digitado',
-    'processar_nova_senha', 'validar_token_reset'
+    'processar_nova_senha', 'validar_token_reset',
+    'processar_esqueceu_senha', 'processar_verificar_codigo',
+    'processar_verificar_codigo_post', 'processar_nova_senha_page',
+    # Admin Service
+    'admin_bloquear_usuario', 'admin_desbloquear_usuario',
+    # Course Service
+    'cadastrar_curso', 'obter_cursos_instituicao', 'obter_cursos_por_instituicao',
+    'validar_curso_existe',
+    # Indication Service
+    'indicar_aluno', 'remover_indicacao', 'acompanhar_aluno', 'remover_acompanhamento',
+    'obter_alunos_indicados', 'paginar_alunos_indicados',
+    # Skills History Service
+    'obter_historico_aluno', 'criar_snapshot_skills_inicial',
+    'salvar_historico_skills_atualizacao', 'obter_estatisticas_evolucao',
+    # Student Service
+    'cadastrar_aluno', 'remover_aluno', 'obter_detalhes_aluno', 'atualizar_aluno',
+    'obter_alunos_por_curso', 'paginar_alunos_por_curso'
 ]

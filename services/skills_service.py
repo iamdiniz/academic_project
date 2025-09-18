@@ -28,3 +28,6 @@ def validar_skills_por_curso(curso, hard_skills_dict, soft_skills_dict):
         if not isinstance(valor, int) or valor < 0 or valor > 10:
             return False, "Todas as soft skills devem ser números inteiros de 0 a 10."
     return True, ""
+
+
+

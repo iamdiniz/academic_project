@@ -1,186 +1,279 @@
-{% extends 'base.html' %}
-{% set hide_navbar = False %}
-
-{% block title %}Instituições de Ensino - DashTalent{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/instituicaoEnsino.css') }}">
-{% endblock %}
-
-{% block head %}
+{% extends 'base.html' %} {% set hide_navbar = False %} {% block title
+%}Instituições de Ensino - DashTalent{% endblock %} {% block extra_css %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/instituicaoEnsino.css') }}"
+/>
+{% endblock %} {% block head %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-{% endblock %}
-
-{% block body %}
+{% endblock %} {% block body %}
 <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4 position-relative">
-            <a href="{{ url_for('home') }}" class="back-circle position-absolute start-0">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" class="bi bi-arrow-left" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd" d="M15 8a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 7.5H14.5a.5.5 0 0 1 .5.5z"/>
-                </svg>
-            </a>
-            <h1 class="m-0 w-100 text-center title-responsive">Instituições de Ensino</h1>
-    </div>
+  <div
+    class="d-flex justify-content-between align-items-center mb-4 position-relative"
+  >
+    <a
+      href="{{ url_for('home') }}"
+      class="back-circle position-absolute start-0"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="20"
+        height="20"
+        fill="white"
+        class="bi bi-arrow-left"
+        viewBox="0 0 16 16"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M15 8a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 7.5H14.5a.5.5 0 0 1 .5.5z"
+        />
+      </svg>
+    </a>
+    <h1 class="m-0 w-100 text-center title-responsive">
+      Instituições de Ensino
+    </h1>
+  </div>
 
-    <div class="text-center"><p>Instituições de ensino que oferecem seus alunos!</p></div><br>
+  <div class="text-center">
+    <p>Instituições de ensino que oferecem seus alunos!</p>
+  </div>
+  <br />
 
-    <div class="row g-4">
-        {% for inst in instituicoes %}
-            <div class="col-md-4 d-flex">
-                <div class="card shadow-sm w-100 h-100">
-                    <h5 class="card-title">{{ inst.nome_instituicao }}</h5>
-                    <p><strong>Modalidades:</strong> {{ inst.modalidades }}</p>
-                    <p><strong>Reitor:</strong> {{ inst.reitor }}</p><br>
+  <div class="row g-4">
+    {% for inst in instituicoes %}
+    <div class="col-md-4 d-flex">
+      <div class="card shadow-sm w-100 h-100">
+        <h5 class="card-title">{{ inst.nome_instituicao }}</h5>
+        <p><strong>Modalidades:</strong> {{ inst.modalidades }}</p>
+        <p><strong>Reitor:</strong> {{ inst.reitor }}</p>
+        <br />
 
-                    <canvas id="grafico-nota-{{ loop.index }}" height="150"></canvas>
-                    <canvas id="grafico-alunos-{{ loop.index }}" height="150"></canvas>
+        <canvas id="grafico-nota-{{ loop.index }}" height="150"></canvas>
+        <canvas id="grafico-alunos-{{ loop.index }}" height="150"></canvas>
 
-                    <div class="mt-auto pt-3 d-flex justify-content-end gap-2">
-                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalCursos{{ inst.id_instituicao }}">Ver Alunos</button>
-                        <a href="{{ url_for('detalhes_instituicao', id_instituicao=inst.id_instituicao) }}" class="btn btn-primary btn-sm">Detalhes</a>
-                    </div>
+        <div class="mt-auto pt-3 d-flex justify-content-end gap-2">
+          <button
+            class="btn btn-primary btn-sm"
+            data-bs-toggle="modal"
+            data-bs-target="#modalCursos{{ inst.id_instituicao }}"
+          >
+            Ver Alunos
+          </button>
+          <a
+            href="{{ url_for('detalhes_instituicao', id_instituicao=inst.id_instituicao) }}"
+            class="btn btn-primary btn-sm"
+            >Detalhes</a
+          >
+        </div>
 
-                    <script>
-                        const ctxNota{{ loop.index }} = document.getElementById('grafico-nota-{{ loop.index }}').getContext('2d');
-                        new Chart(ctxNota{{ loop.index }}, {
-                            type: 'bar',
-                            data: {
-                                labels: ['Nota MEC'],
-                                datasets: [{
-                                    label: 'Nota MEC',
-                                    data: [{{ inst.nota_mec }}],
-                                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
-                                    borderColor: 'rgba(54, 162, 235, 1)',
-                                    borderWidth: 1
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                indexAxis: 'y', // Configuração para barras horizontais
-                                scales: {
-                                    x: {
-                                        beginAtZero: true,
-                                        max: 5,
-                                        ticks: {
-                                            stepSize: 1
-                                        }
-                                    }
-                                },
-                                plugins: {
-                                    legend: {
-                                        display: false
-                                    }
-                                }
-                            }
-                        });
+        <script>
+          const ctxNota{{ loop.index }} = document.getElementById('grafico-nota-{{ loop.index }}').getContext('2d');
+          new Chart(ctxNota{{ loop.index }}, {
+              type: 'bar',
+              data: {
+                  labels: ['Nota MEC'],
+                  datasets: [{
+                      label: 'Nota MEC',
+                      data: [{{ inst.nota_mec }}],
+                      backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                      borderColor: 'rgba(54, 162, 235, 1)',
+                      borderWidth: 1
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  indexAxis: 'y', // Configuração para barras horizontais
+                  scales: {
+                      x: {
+                          beginAtZero: true,
+                          max: 5,
+                          ticks: {
+                              stepSize: 1
+                          }
+                      }
+                  },
+                  plugins: {
+                      legend: {
+                          display: false
+                      }
+                  }
+              }
+          });
 
-                        const ctxAlunos{{ loop.index }} = document.getElementById('grafico-alunos-{{ loop.index }}').getContext('2d');
-                        new Chart(ctxAlunos{{ loop.index }}, {
-                            type: 'bar',
-                            data: {
-                                labels: ['Qtd Alunos'],
-                                datasets: [{
-                                    label: 'Qtd Alunos',
-                                    data: [{{ inst.quantidade_de_alunos }}],
-                                    backgroundColor: 'rgba(255, 99, 132, 0.6)',
-                                    borderColor: 'rgba(255, 99, 132, 1)',
-                                    borderWidth: 1
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                indexAxis: 'y', // Configuração para barras horizontais
-                                scales: {
-                                    x: {
-                                        beginAtZero: true,
-                                        suggestedMax: {{ inst.quantidade_de_alunos + 10 if inst.quantidade_de_alunos > 5 else 5 }}
-                                    }
-                                },
-                                plugins: {
-                                    legend: {
-                                        display: false
-                                    }
-                                }
-                            }
-                        });
-                    </script>
+          const ctxAlunos{{ loop.index }} = document.getElementById('grafico-alunos-{{ loop.index }}').getContext('2d');
+          new Chart(ctxAlunos{{ loop.index }}, {
+              type: 'bar',
+              data: {
+                  labels: ['Qtd Alunos'],
+                  datasets: [{
+                      label: 'Qtd Alunos',
+                      data: [{{ inst.quantidade_de_alunos }}],
+                      backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                      borderColor: 'rgba(255, 99, 132, 1)',
+                      borderWidth: 1
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  indexAxis: 'y', // Configuração para barras horizontais
+                  scales: {
+                      x: {
+                          beginAtZero: true,
+                          suggestedMax: {{ inst.quantidade_de_alunos + 10 if inst.quantidade_de_alunos > 5 else 5 }}
+                      }
+                  },
+                  plugins: {
+                      legend: {
+                          display: false
+                      }
+                  }
+              }
+          });
+        </script>
 
-                    <!-- Modal Cursos -->
-                    <div class="modal fade" id="modalCursos{{ inst.id_instituicao }}" tabindex="-1" aria-labelledby="modalLabel{{ inst.id_instituicao }}" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="modalLabel{{ inst.id_instituicao }}">Cursos de {{ inst.nome }}</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <form method="get" action="{{ url_for('ver_alunos_por_curso') }}">
-                                        <input type="hidden" name="inst_id" value="{{ inst.id_instituicao }}">
-                                        <div class="mb-3">
-                                            <label for="cursoSelect{{ inst.id_instituicao }}" class="form-label">Escolha o curso:</label>
-                                            <select class="form-select" id="cursoSelect{{ inst.id_instituicao }}" name="curso" required>
-                                                {% for curso in cursos_por_instituicao[inst.id_instituicao] %}
-                                                    <option value="{{ curso }}">{{ curso }}</option>
-                                                {% endfor %}
-                                            </select>
-                                        </div>
-                                        <div class="text-end">
-                                            <button type="submit" class="btn btn-success">Ver Alunos</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
+        <!-- Modal Cursos -->
+        <div
+          class="modal fade"
+          id="modalCursos{{ inst.id_instituicao }}"
+          tabindex="-1"
+          aria-labelledby="modalLabel{{ inst.id_instituicao }}"
+          aria-hidden="true"
+        >
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5
+                  class="modal-title"
+                  id="modalLabel{{ inst.id_instituicao }}"
+                >
+                  Cursos de {{ inst.nome }}
+                </h5>
+                <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Fechar"
+                ></button>
+              </div>
+              <div class="modal-body">
+                <form
+                  method="get"
+                  action="{{ url_for('ver_alunos_por_curso') }}"
+                >
+                  <input
+                    type="hidden"
+                    name="inst_id"
+                    value="{{ inst.id_instituicao }}"
+                  />
+                  <div class="mb-3">
+                    <label
+                      for="cursoSelect{{ inst.id_instituicao }}"
+                      class="form-label"
+                      >Escolha o curso:</label
+                    >
+                    <select
+                      class="form-select"
+                      id="cursoSelect{{ inst.id_instituicao }}"
+                      name="curso"
+                      required
+                    >
+                      {% if cursos_por_instituicao[inst.id_instituicao] %} {%
+                      for curso in cursos_por_instituicao[inst.id_instituicao]
+                      %}
+                      <option value="{{ curso }}">{{ curso }}</option>
+                      {% endfor %} {% else %}
+                      <option value="" disabled>Nenhum curso cadastrado</option>
+                      {% endif %}
+                    </select>
+                  </div>
+                  <div class="text-end">
+                    {% if cursos_por_instituicao[inst.id_instituicao] %}
+                    <button type="submit" class="btn btn-success">
+                      Ver Alunos
+                    </button>
+                    {% else %}
+                    <button type="button" class="btn btn-secondary" disabled>
+                      Ver Alunos
+                    </button>
+                    <small class="text-muted d-block mt-1"
+                      >Cadastre cursos primeiro</small
+                    >
+                    {% endif %}
+                  </div>
+                </form>
+              </div>
             </div>
-        {% endfor %}
+          </div>
+        </div>
+      </div>
     </div>
+    {% endfor %}
+  </div>
 </div>
-<br>
+<br />
 {% if total_pages > 1 %}
 <nav aria-label="Paginação de instituições">
   <ul class="pagination justify-content-center mt-4">
     <li class="page-item {% if page == 1 %}disabled{% endif %}">
-      <a class="page-link" href="{{ url_for('instituicao_ensino', page=page-1) }}">Anterior</a>
+      <a
+        class="page-link"
+        href="{{ url_for('instituicao_ensino', page=page-1) }}"
+        >Anterior</a
+      >
     </li>
     {% for p in range(1, total_pages+1) %}
-      <li class="page-item {% if p == page %}active{% endif %}">
-        <a class="page-link" href="{{ url_for('instituicao_ensino', page=p) }}">{{ p }}</a>
-      </li>
+    <li class="page-item {% if p == page %}active{% endif %}">
+      <a class="page-link" href="{{ url_for('instituicao_ensino', page=p) }}"
+        >{{ p }}</a
+      >
+    </li>
     {% endfor %}
     <li class="page-item {% if page == total_pages %}disabled{% endif %}">
-      <a class="page-link" href="{{ url_for('instituicao_ensino', page=page+1) }}">Próxima</a>
+      <a
+        class="page-link"
+        href="{{ url_for('instituicao_ensino', page=page+1) }}"
+        >Próxima</a
+      >
     </li>
   </ul>
 </nav>
-<br>
+<br />
 {% endif %}
 
 <!-- Toasts de Notificação -->
 <div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
-  <div id="toastNotificacao" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+  <div
+    id="toastNotificacao"
+    class="toast align-items-center text-bg-success border-0"
+    role="alert"
+    aria-live="assertive"
+    aria-atomic="true"
+  >
     <div class="d-flex">
       <div class="toast-body" id="toastNotificacaoBody"></div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
+      <button
+        type="button"
+        class="btn-close btn-close-white me-2 m-auto"
+        data-bs-dismiss="toast"
+        aria-label="Fechar"
+      ></button>
     </div>
   </div>
 </div>
 
 <!-- Script para exibir toasts após carregar base.js -->
 <script>
-    // Exibe toasts para mensagens flash do Flask
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                let corToast = 'success';
-                if ('{{category}}' === 'error' || '{{category}}' === 'danger') corToast = 'danger';
-                else if ('{{category}}' === 'warning') corToast = 'warning';
+  // Exibe toasts para mensagens flash do Flask
+  {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+          {% for category, message in messages %}
+              let corToast = 'success';
+              if ('{{category}}' === 'error' || '{{category}}' === 'danger') corToast = 'danger';
+              else if ('{{category}}' === 'warning') corToast = 'warning';
 
-                showToast({{ message|tojson }}, corToast, 4000);
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+              showToast({{ message|tojson }}, corToast, 4000);
+          {% endfor %}
+      {% endif %}
+  {% endwith %}
 </script>
 {% endblock %}
