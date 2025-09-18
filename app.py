@@ -144,9 +144,9 @@ csrf = CSRFProtect(app)
 
 
 # Comentado temporariamente para evitar erro de conexão
-# with app.app_context():
-#     db.create_all()  # Cria tabelas do banco
-#     print("Tabelas criadas com sucesso!")
+with app.app_context():
+   db.create_all()  # Cria tabelas do banco
+   print("Tabelas criadas com sucesso!")
 
 
 @login_manager.user_loader

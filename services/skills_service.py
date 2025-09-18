@@ -31,3 +31,4 @@ def validar_skills_por_curso(curso, hard_skills_dict, soft_skills_dict):
 
 
 
+
