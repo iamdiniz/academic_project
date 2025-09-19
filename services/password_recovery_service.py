@@ -292,7 +292,7 @@ def processar_verificar_codigo():
     """
     email = request.args.get('email')
     if not email:
-        return redirect(url_for('esqueceu_senha'))
+        return redirect(url_for('esquece.esqueceu_senha'))
     return render_template('verificar_codigo.html', email=email)
 
 
@@ -335,7 +335,7 @@ def processar_nova_senha_page():
     if not valido:
         flash(mensagem, "danger")
         session.pop('reset_token', None)
-        return redirect(url_for('esqueceu_senha'))
+        return redirect(url_for('esquece.esqueceu_senha'))
 
     if request.method == 'POST':
         nova_senha = request.form['nova_senha']

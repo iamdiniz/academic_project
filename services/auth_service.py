@@ -45,7 +45,7 @@ def bloquear_chefe(f):
         if session.get('tipo_usuario') == 'chefe':
             flash("Acesso não permitido para o perfil chefe.", "danger")
             # Redireciona para a página inicial
-            return redirect(url_for('home'))
+            return redirect(url_for('auth.home'))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -60,7 +60,7 @@ def bloquear_instituicao(f):
         if session.get('tipo_usuario') == 'instituicao':
             flash("Acesso não permitido para o perfil instituição de ensino.", "danger")
             # Redireciona para a página inicial
-            return redirect(url_for('home'))
+            return redirect(url_for('auth.home'))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -80,11 +80,11 @@ def processar_cadastro():
         # Validação: senha mínima de 8 caracteres
         if validar_senha_minima(senha):
             flash('A senha deve ter no mínimo 8 caracteres.', 'danger')
-            return redirect(url_for('cadastro'))
+            return redirect(url_for('auth.cadastro'))
 
         if validar_confirmacao_senha(senha, confirmar_senha):
             flash('As senhas não coincidem!')
-            return redirect(url_for('cadastro'))
+            return redirect(url_for('auth.cadastro'))
 
         if tipo_usuario == 'instituicao':
             instituicao_nome = request.form.get('instituicao_nome')
@@ -97,12 +97,12 @@ def processar_cadastro():
             if validar_campos_obrigatorios_instituicao(nome, email, senha, instituicao_nome, endereco, cursos_selecionados):
                 flash(
                     'Todos os campos obrigatórios para Instituição de Ensino devem ser preenchidos!')
-                return redirect(url_for('cadastro'))
+                return redirect(url_for('auth.cadastro'))
 
             # Validação: não permitir e-mail duplicado
             if verificar_email_duplicado_instituicao(email):
                 flash('Já existe uma instituição cadastrada com este e-mail.', 'danger')
-                return redirect(url_for('cadastro'))
+                return redirect(url_for('auth.cadastro'))
 
             # Criar instituição usando o serviço
             dados_formulario = {
@@ -121,10 +121,10 @@ def processar_cadastro():
 
             if sucesso:
                 flash(mensagem, 'success')
-                return redirect(url_for('login'))
+                return redirect(url_for('auth.login'))
             else:
                 flash(mensagem, 'error')
-                return redirect(url_for('cadastro'))
+                return redirect(url_for('auth.cadastro'))
 
         elif tipo_usuario == 'chefe':
             empresa_nome = request.form.get('empresa_nome')
@@ -132,12 +132,12 @@ def processar_cadastro():
 
             if validar_campos_obrigatorios_chefe(nome, email, senha, empresa_nome, cargo):
                 flash('Todos os campos obrigatórios para Chefe devem ser preenchidos!')
-                return redirect(url_for('cadastro'))
+                return redirect(url_for('auth.cadastro'))
 
             # Validação do cargo
             if cargo not in ['CEO', 'Gerente', 'Coordenador']:
                 flash('Selecione um cargo válido!', 'danger')
-                return redirect(url_for('cadastro'))
+                return redirect(url_for('auth.cadastro'))
 
             # Criar chefe usando o serviço
             dados_formulario = {
@@ -152,14 +152,14 @@ def processar_cadastro():
 
             if sucesso:
                 flash(mensagem, 'success')
-                return redirect(url_for('login'))
+                return redirect(url_for('auth.login'))
             else:
                 flash(mensagem, 'error')
-                return redirect(url_for('cadastro'))
+                return redirect(url_for('auth.cadastro'))
 
         else:
             flash('Tipo de usuário inválido!')
-            return redirect(url_for('cadastro'))
+            return redirect(url_for('auth.cadastro'))
 
     return render_template('cadastro.html', cursos_padrao=CURSOS_PADRAO)
 
@@ -229,7 +229,7 @@ def processar_login():
                     'tipo': tipo_usuario,
                     'id': usuario_valido.id_chefe if tipo_usuario == 'chefe' else usuario_valido.id_instituicao
                 }
-                return redirect(url_for('two_factor_verify'))
+                return redirect(url_for('two.two_factor_verify'))
             else:
                 session['user_id'] = usuario_valido.id_chefe if tipo_usuario == 'chefe' else usuario_valido.id_instituicao
                 session['tipo_usuario'] = tipo_usuario
@@ -240,7 +240,7 @@ def processar_login():
                     'chefe' if tipo_usuario == 'chefe' else 'reitor',
                     tipo_usuario
                 )
-                return redirect(url_for('home'))
+                return redirect(url_for('auth.home'))
 
         # =============================================================================
         # LOGIN FALHADO - EXIBE MENSAGEM
@@ -271,7 +271,7 @@ def processar_perfil():
             senha_nova = request.form.get('senha', '')
             if senha_nova and validar_senha_minima(senha_nova):
                 flash("A senha deve ter no mínimo 8 caracteres.", "danger")
-                return redirect(url_for('perfil'))
+                return redirect(url_for('users.perfil'))
 
             # Preparar dados do formulário
             dados_formulario = {
@@ -290,7 +290,7 @@ def processar_perfil():
             else:
                 flash(mensagem, "danger")
 
-            return redirect(url_for('perfil'))
+            return redirect(url_for('users.perfil'))
 
         # Atualizar informações da instituição
         elif tipo_usuario == 'instituicao':
@@ -301,7 +301,7 @@ def processar_perfil():
             senha_nova = request.form.get('senha', '')
             if senha_nova and validar_senha_minima(senha_nova):
                 flash("A senha deve ter no mínimo 8 caracteres.", "danger")
-                return redirect(url_for('perfil'))
+                return redirect(url_for('users.perfil'))
 
             # Preparar dados do formulário
             dados_formulario = {
@@ -324,7 +324,7 @@ def processar_perfil():
             else:
                 flash(mensagem, "danger")
 
-            return redirect(url_for('perfil'))
+            return redirect(url_for('users.perfil'))
 
     # Exibir informações do perfil
     if tipo_usuario == 'chefe':
@@ -337,6 +337,6 @@ def processar_perfil():
             current_user.id_instituicao)
     else:
         flash("Tipo de usuário inválido.", "danger")
-        return redirect(url_for('home'))
+        return redirect(url_for('auth.home'))
 
     return render_template('perfil.html', usuario=usuario, cursos_da_instituicao=cursos_da_instituicao)

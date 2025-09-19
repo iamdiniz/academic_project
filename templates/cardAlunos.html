@@ -20,7 +20,7 @@
         </div>
     {% endif %}
     <div class="d-flex justify-content-between align-items-center mb-4 position-relative">
-        <a href="{{ url_for('instituicao_ensino') }}" class="back-circle position-absolute start-0">
+        <a href="{{ url_for('chefe.instituicao_ensino') }}" class="back-circle position-absolute start-0">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" class="bi bi-arrow-left" viewBox="0 0 16 16">
                 <path fill-rule="evenodd" d="M15 8a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 7.5H14.5a.5.5 0 0 1 .5.5z"/>
             </svg>
@@ -29,7 +29,7 @@
     </div>
 
     <!-- Formulário de Filtro -->
-    <form method="get" class="row g-3 mb-4 align-items-end" action="{{ url_for('ver_alunos_por_curso') }}">
+    <form method="get" class="row g-3 mb-4 align-items-end" action="{{ url_for('chefe.ver_alunos_por_curso') }}">
         <input type="hidden" name="inst_id" value="{{ request.args.get('inst_id', '') }}">
         <input type="hidden" name="curso" value="{{ curso }}">
         <div class="col-12 mb-1">
@@ -246,7 +246,7 @@
                         {% endif %}
                     </div>
                     <div class="card-footer text-end">
-                        <a href="{{ url_for('detalhes_aluno', id_aluno=aluno.id_aluno, previous=request.full_path) }}" class="btn btn-primary btn-sm">Ver Detalhes</a>
+                        <a href="{{ url_for('chefe.detalhes_aluno', id_aluno=aluno.id_aluno, previous=request.full_path) }}" class="btn btn-primary btn-sm">Ver Detalhes</a>
                     </div>
                 </div>
             </div>
@@ -260,15 +260,15 @@
 <nav aria-label="Paginação de alunos">
   <ul class="pagination justify-content-center mt-4">
     <li class="page-item {% if page == 1 %}disabled{% endif %}">
-      <a class="page-link" href="{{ url_for('cardAlunos', page=page-1) }}" tabindex="-1">Anterior</a>
+      <a class="page-link" href="{{ url_for('chefe.cardAlunos', page=page-1) }}" tabindex="-1">Anterior</a>
     </li>
     {% for p in range(1, total_pages+1) %}
       <li class="page-item {% if p == page %}active{% endif %}">
-        <a class="page-link" href="{{ url_for('cardAlunos', page=p) }}">{{ p }}</a>
+        <a class="page-link" href="{{ url_for('chefe.cardAlunos', page=p) }}">{{ p }}</a>
       </li>
     {% endfor %}
     <li class="page-item {% if page == total_pages %}disabled{% endif %}">
-      <a class="page-link" href="{{ url_for('cardAlunos', page=page+1) }}">Próxima</a>
+      <a class="page-link" href="{{ url_for('chefe.cardAlunos', page=page+1) }}">Próxima</a>
     </li>
   </ul>
 </nav>

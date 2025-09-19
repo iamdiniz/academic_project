@@ -20,7 +20,7 @@
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4 position-relative">
-            <a href="{{ url_for('home') }}" class="back-circle position-absolute start-0">
+            <a href="{{ url_for('auth.home') }}" class="back-circle position-absolute start-0">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" class="bi bi-arrow-left" viewBox="0 0 16 16">
                     <path fill-rule="evenodd" d="M15 8a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 7.5H14.5a.5.5 0 0 1 .5.5z"/>
                 </svg>
@@ -28,7 +28,7 @@
             <h1 class="m-0 w-100 text-center title-responsive">Meu Perfil</h1>
     </div>
 
-    <form method="POST" action="{{ url_for('perfil') }}">
+    <form method="POST" action="{{ url_for('users.perfil') }}">
         <!-- CSRF: campo hidden para proteção contra Cross-Site Request Forgery -->
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         {% if session.get('tipo_usuario') == 'chefe' %}
@@ -91,7 +91,7 @@
                         <li class="list-group-item text-muted">Nenhum curso cadastrado.</li>
                     {% endfor %}
                 </ul>
-                <small class="text-muted">Para adicionar cursos, vá para <a href="{{ url_for('cursos') }}">Cursos</a>.</small>
+                <small class="text-muted">Para adicionar cursos, vá para <a href="{{ url_for('instituicao.cursos') }}">Cursos</a>.</small>
             </div>
             <div class="mb-3">
                 <label for="modalidades" class="form-label">Modalidades</label>

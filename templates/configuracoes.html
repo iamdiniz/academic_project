@@ -10,7 +10,7 @@
     class="d-flex justify-content-between align-items-center mb-4 position-relative"
   >
     <a
-      href="{{ url_for('home') }}"
+      href="{{ url_for('auth.home') }}"
       class="back-circle position-absolute start-0"
     >
       <svg
@@ -99,7 +99,7 @@
         <div class="tab-pane fade show active" id="perfil" role="tabpanel">
           <h5 class="text-center">Minha Conta</h5>
           <hr />
-          <section method="POST" action="{{ url_for('configuracoes') }}">
+          <section method="POST" action="{{ url_for('users.configuracoes') }}">
             <div class="mb-3">
               {% if session.get('tipo_usuario') == 'chefe' %}
               <p><strong>Nome:</strong> {{ usuario.nome }}</p>
@@ -137,7 +137,7 @@
             </div>
             {% endif %}
 
-            <a href="{{ url_for('perfil') }}" class="btn btn-primary mt-3 me-2"
+            <a href="{{ url_for('users.perfil') }}" class="btn btn-primary mt-3 me-2"
               >Editar Perfil</a
             >
             {% if session.get('tipo_usuario') == 'chefe' %} {% set user_id =
@@ -147,14 +147,14 @@
             <div class="mt-3">
               <span class="badge bg-success me-2">2FA Ativo</span>
               <a
-                href="{{ url_for('two_factor_disable') }}"
+                href="{{ url_for('two.two_factor_disable') }}"
                 class="btn btn-outline-danger btn-sm"
                 >Desativar 2FA</a
               >
             </div>
             {% else %}
             <a
-              href="{{ url_for('two_factor_setup') }}"
+              href="{{ url_for('two.two_factor_setup') }}"
               class="btn btn-outline-primary mt-3"
               >Ativar 2FA</a
             >

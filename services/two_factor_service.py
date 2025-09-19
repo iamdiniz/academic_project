@@ -56,7 +56,7 @@ def processar_two_factor_setup():
         user_id = usuario.id_instituicao
     else:
         flash("Tipo de usuário inválido.", "danger")
-        return redirect(url_for('home'))
+        return redirect(url_for('auth.home'))
 
     tf = _get_or_create_2fa_record(tipo_usuario, user_id)
     qr_data_uri, otpauth_uri = _generate_qr_data_uri(
@@ -69,7 +69,7 @@ def processar_two_factor_setup():
             tf.enabled = True
             db.session.commit()
             flash('Autenticação de dois fatores ativada com sucesso.', 'success')
-            return redirect(url_for('configuracoes'))
+            return redirect(url_for('users.configuracoes'))
         else:
             flash('Código inválido. Tente novamente.', 'danger')
 
@@ -83,7 +83,7 @@ def processar_two_factor_verify():
     """
     pending = session.get('pending_user')
     if not pending:
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login'))
 
     tipo = pending.get('tipo')
     user_id = pending.get('id')
@@ -92,7 +92,7 @@ def processar_two_factor_verify():
     if not tf:
         # Se não há 2FA ativo, volte ao login
         session.pop('pending_user', None)
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login'))
 
     if request.method == 'POST':
         code = request.form.get('code', '').strip()
@@ -122,7 +122,7 @@ def processar_two_factor_verify():
             resetar_rate_limit(email_usuario)
 
             session.pop('pending_user', None)
-            return redirect(url_for('home'))
+            return redirect(url_for('auth.home'))
         else:
             flash('Código 2FA inválido.', 'danger')
 
@@ -144,13 +144,13 @@ def processar_two_factor_disable():
         user_id = usuario.id_instituicao
     else:
         flash("Tipo de usuário inválido.", "danger")
-        return redirect(url_for('home'))
+        return redirect(url_for('auth.home'))
 
     tf = TwoFactor.query.filter_by(
         user_type=tipo_usuario, user_id=user_id, enabled=True).first()
     if not tf:
         flash("2FA não está ativo para esta conta.", "warning")
-        return redirect(url_for('configuracoes'))
+        return redirect(url_for('users.configuracoes'))
 
     if request.method == 'POST':
         senha_atual = request.form.get('senha_atual', '').strip()
@@ -179,6 +179,6 @@ def processar_two_factor_disable():
                           'reitor', 'instituicao')
 
         flash('2FA desativado com sucesso.', 'success')
-        return redirect(url_for('configuracoes'))
+        return redirect(url_for('users.configuracoes'))
 
     return render_template('2fa_disable.html')

@@ -12,7 +12,7 @@ Seleções - DashTalent{% endblock %} {% block extra_css %}
     class="d-flex justify-content-between align-items-center mb-4 position-relative"
   >
     <a
-      href="{{ url_for('home') }}"
+      href="{{ url_for('auth.home') }}"
       class="back-circle position-absolute start-0"
     >
       <svg
@@ -161,7 +161,7 @@ Seleções - DashTalent{% endblock %} {% block extra_css %}
         </div>
         <div class="card-footer text-end">
           <a
-            href="{{ url_for('detalhes_aluno', id_aluno=aluno.id_aluno, previous=request.full_path) }}"
+            href="{{ url_for('chefe.detalhes_aluno', id_aluno=aluno.id_aluno, previous=request.full_path) }}"
             class="btn btn-primary btn-sm"
             >Ver Detalhes</a
           >
@@ -180,19 +180,19 @@ Seleções - DashTalent{% endblock %} {% block extra_css %}
 <nav aria-label="Paginação de alunos">
   <ul class="pagination justify-content-center mt-4">
     <li class="page-item {% if page == 1 %}disabled{% endif %}">
-      <a class="page-link" href="{{ url_for('minhas_selecoes', page=page-1) }}"
+      <a class="page-link" href="{{ url_for('chefe.minhas_selecoes', page=page-1) }}"
         >Anterior</a
       >
     </li>
     {% for p in range(1, total_pages+1) %}
     <li class="page-item {% if p == page %}active{% endif %}">
-      <a class="page-link" href="{{ url_for('minhas_selecoes', page=p) }}"
+      <a class="page-link" href="{{ url_for('chefe.minhas_selecoes', page=p) }}"
         >{{ p }}</a
       >
     </li>
     {% endfor %}
     <li class="page-item {% if page == total_pages %}disabled{% endif %}">
-      <a class="page-link" href="{{ url_for('minhas_selecoes', page=page+1) }}"
+      <a class="page-link" href="{{ url_for('chefe.minhas_selecoes', page=page+1) }}"
         >Próxima</a
       >
     </li>

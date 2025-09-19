@@ -75,14 +75,14 @@ Senha - DashTalent{% endblock %} {% block extra_css %}
   </section>
 
   <section class="right-side" aria-label="Formulário de nova senha">
-    <a href="{{url_for('carousel')}}">
+    <a href="{{url_for('users.carousel')}}">
       <h2 class="text-center">DashTalent</h2>
     </a>
     <br />
     <div class="welcome-text" tabindex="0">Nova Senha</div>
     <p class="subtitle">Defina uma nova senha para sua conta</p>
 
-    <form method="POST" action="{{ url_for('nova_senha') }}" class="form-box">
+    <form method="POST" action="{{ url_for('esquece.nova_senha') }}" class="form-box">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
 
       <div class="mb-3">
@@ -115,7 +115,7 @@ Senha - DashTalent{% endblock %} {% block extra_css %}
       <button type="submit" class="btn btn-primary w-100">Alterar Senha</button>
 
       <div class="mt-3 text-center">
-        <a href="{{ url_for('login') }}" class="login-link">Voltar ao Login</a>
+        <a href="{{ url_for('auth.login') }}" class="login-link">Voltar ao Login</a>
       </div>
     </form>
   </section>

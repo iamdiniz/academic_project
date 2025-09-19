@@ -7,7 +7,7 @@
   </p>
   <form
     method="POST"
-    action="{{ url_for('two_factor_verify') }}"
+    action="{{ url_for('two.two_factor_verify') }}"
     class="form-box"
   >
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
@@ -26,7 +26,7 @@
     <button type="submit" class="btn btn-primary w-100">Verificar</button>
   </form>
   <div class="text-center mt-3">
-    <a href="{{ url_for('login') }}" class="login-link">Cancelar</a>
+    <a href="{{ url_for('auth.login') }}" class="login-link">Cancelar</a>
   </div>
 </div>
 

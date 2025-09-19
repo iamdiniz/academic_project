@@ -79,7 +79,7 @@
   </section>
 
   <section class="right-side" aria-label="Formulário de verificação de código">
-    <a href="{{url_for('carousel')}}">
+    <a href="{{url_for('users.carousel')}}">
       <h2 class="text-center">DashTalent</h2>
     </a>
     <br />
@@ -90,7 +90,7 @@
 
     <form
       method="POST"
-      action="{{ url_for('verificar_codigo_post') }}"
+      action="{{ url_for('esquece.verificar_codigo_post') }}"
       class="form-box"
     >
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
@@ -116,10 +116,10 @@
       </button>
 
       <div class="mt-3 text-center">
-        <a href="{{ url_for('esqueceu_senha') }}" class="login-link"
+        <a href="{{ url_for('esquece.esqueceu_senha') }}" class="login-link"
           >Solicitar novo código</a
         ><br /><br />
-        <a href="{{ url_for('login') }}" class="login-link">Voltar ao Login</a>
+        <a href="{{ url_for('auth.login') }}" class="login-link">Voltar ao Login</a>
       </div>
     </form>
   </section>

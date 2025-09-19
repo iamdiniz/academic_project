@@ -19,8 +19,8 @@
     >
 
     <div class="d-flex order-2">
-      <a href="/login" class="btn btn-outline-light me-2">Login</a>
-      <a href="/cadastro" class="btn btn-primary">Cadastro</a>
+      <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light me-2">Login</a>
+      <a href="{{ url_for('auth.cadastro') }}" class="btn btn-primary">Cadastro</a>
     </div>
   </div>
 </nav>
@@ -324,10 +324,10 @@
         conta agora mesmo!
       </p>
       <div class="d-flex justify-content-center">
-        <a href="/login" class="btn btn-primary btn-lg me-3"
+        <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg me-3"
           >Realize seu Login</a
         >
-        <a href="/cadastro" class="btn btn-outline-primary btn-lg"
+        <a href="{{ url_for('auth.cadastro') }}" class="btn btn-outline-primary btn-lg"
           >Faça seu Cadastro</a
         >
       </div>
