@@ -115,23 +115,30 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                showToast({{ message|tojson }},
-                    {% if category == 'success' %}'success'
-                    {% elif category == 'warning' %}'warning'
-                    {% elif category == 'danger' %}'danger'
-                    {% else %}'info'{% endif %},
-                    4000,
-                    {% if category == 'success' %}'<i class="bi bi-check-circle-fill me-2"></i>'
-                    {% elif category == 'warning' %}'<i class="bi bi-exclamation-triangle-fill me-2"></i>'
-                    {% elif category == 'danger' %}'<i class="bi bi-x-circle-fill me-2"></i>'
-                    {% else %}''{% endif %}
-                );
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+    // Aguarda um pouco para garantir que o DOM está pronto
+    setTimeout(function() {
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                console.log("Mensagens flash recebidas na atualização de aluno:", {{ messages|tojson }});
+                {% for category, message in messages %}
+                    console.log("Exibindo toast de atualização:", {{ message|tojson }}, "categoria:", '{{ category }}');
+                    showToast({{ message|tojson }},
+                        {% if category == 'success' %}'success'
+                        {% elif category == 'warning' %}'warning'
+                        {% elif category == 'danger' %}'danger'
+                        {% else %}'info'{% endif %},
+                        4000,
+                        {% if category == 'success' %}'<i class="bi bi-check-circle-fill me-2"></i>'
+                        {% elif category == 'warning' %}'<i class="bi bi-exclamation-triangle-fill me-2"></i>'
+                        {% elif category == 'danger' %}'<i class="bi bi-x-circle-fill me-2"></i>'
+                        {% else %}''{% endif %}
+                    );
+                {% endfor %}
+            {% else %}
+                console.log("Nenhuma mensagem flash para exibir na atualização de aluno.");
+            {% endif %}
+        {% endwith %}
+    }, 100);
 });
 
 const hardSkillsPorCurso = {{ HARD_SKILLS_POR_CURSO | tojson }};
