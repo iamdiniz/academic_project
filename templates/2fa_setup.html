@@ -73,4 +73,18 @@
 </div>
 
 <script src="{{ url_for('static', filename='js/2fa.js') }}"></script>
+
+<script>
+  // Exibe toasts para mensagens flash do Flask
+  {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+          {% for category, message in messages %}
+              let corToast = 'success';
+              if ('{{category}}' === 'error' || '{{category}}' === 'danger') corToast = 'danger';
+              else if ('{{category}}' === 'warning') corToast = 'warning';
+              showToast({{ message|tojson }}, corToast);
+          {% endfor %}
+      {% endif %}
+  {% endwith %}
+</script>
 {% endblock %}

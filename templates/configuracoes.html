@@ -137,7 +137,9 @@
             </div>
             {% endif %}
 
-            <a href="{{ url_for('users.perfil') }}" class="btn btn-primary mt-3 me-2"
+            <a
+              href="{{ url_for('users.perfil') }}"
+              class="btn btn-primary mt-3 me-2"
               >Editar Perfil</a
             >
             {% if session.get('tipo_usuario') == 'chefe' %} {% set user_id =
@@ -299,17 +301,26 @@
 
 <!-- Script para exibir toasts após carregar base.js -->
 <script>
-  // Exibe toasts para mensagens flash do Flask
-  {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-          {% for category, message in messages %}
-              let corToast = 'success';
-              if ('{{category}}' === 'error' || '{{category}}' === 'danger') corToast = 'danger';
-              else if ('{{category}}' === 'warning') corToast = 'warning';
+  document.addEventListener('DOMContentLoaded', function() {
+    // Exibe toasts para mensagens flash do Flask
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            console.log("Mensagens flash recebidas:", {{ messages|tojson }});
+            {% for category, message in messages %}
+                let corToast = 'success';
+                if ('{{category}}' === 'error' || '{{category}}' === 'danger') corToast = 'danger';
+                else if ('{{category}}' === 'warning') corToast = 'warning';
 
-              showToast({{ message|tojson }}, corToast, 4000);
-          {% endfor %}
-      {% endif %}
-  {% endwith %}
+                console.log("Exibindo toast:", {{ message|tojson }}, "cor:", corToast);
+                // Aguarda um pouco para garantir que o DOM está pronto
+                setTimeout(function() {
+                    showToast({{ message|tojson }}, corToast, 4000);
+                }, 100);
+            {% endfor %}
+        {% else %}
+            console.log("Nenhuma mensagem flash para exibir.");
+        {% endif %}
+    {% endwith %}
+  });
 </script>
 {% endblock %}
