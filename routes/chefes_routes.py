@@ -16,13 +16,17 @@ from services import (
     processar_alunos_acompanhados_por_chefe,
     obter_cursos_instituicao,
     obter_cursos_por_instituicao,
-    indicar_aluno as indicar_aluno_service,
-    acompanhar_aluno as acompanhar_aluno_service,
     obter_historico_aluno,
     criar_snapshot_skills_inicial,
     obter_detalhes_aluno,
     obter_alunos_por_curso,
     paginar_alunos_por_curso
+)
+from services.indication_service import (
+    indicar_aluno as indicar_aluno_service,
+    acompanhar_aluno as acompanhar_aluno_service, 
+    remover_acompanhamento as remover_acompanhamento_services,
+    remover_indicacao as remover_indicacao_services
 )
 from domain import (
     InstituicaodeEnsino,
@@ -100,13 +104,13 @@ def minhas_selecoes():
 @chefe_bp.route('/remover_indicacao/<int:id_aluno>', methods=['POST'])
 @bloquear_instituicao
 @login_required
-def remover_indicacao(id_aluno):
+def remover_indicacao_routes(id_aluno):
     """Remove indicação de aluno."""
     if session.get('tipo_usuario') != 'chefe':
         return jsonify({'error': 'Acesso não permitido.'}), 403
 
     chefe_id = current_user.id_chefe
-    sucesso, mensagem, status_code = remover_indicacao(
+    sucesso, mensagem, status_code = remover_indicacao_services(
         id_aluno, chefe_id)
 
     return jsonify({'message' if sucesso else 'error': mensagem}), status_code
@@ -115,13 +119,13 @@ def remover_indicacao(id_aluno):
 @chefe_bp.route('/indicar_aluno/<int:id_aluno>', methods=['POST'])
 @bloquear_instituicao
 @login_required
-def indicar_aluno(id_aluno):
+def indicar_aluno_routes(id_aluno):
     """Indica um aluno para acompanhamento."""
     if session.get('tipo_usuario') != 'chefe':
         return jsonify({'error': 'Acesso não permitido.'}), 403
 
     chefe_id = current_user.id_chefe
-    sucesso, mensagem, status_code = indicar_aluno(id_aluno, chefe_id)
+    sucesso, mensagem, status_code = indicar_aluno_service(id_aluno, chefe_id)
 
     return jsonify({'message' if sucesso else 'error': mensagem}), status_code
 
@@ -129,10 +133,10 @@ def indicar_aluno(id_aluno):
 @chefe_bp.route('/acompanhar_aluno/<int:id_aluno>', methods=['POST'])
 @login_required
 @bloquear_instituicao
-def acompanhar_aluno(id_aluno):
+def acompanhar_aluno_routes(id_aluno):
     """Inicia acompanhamento de aluno."""
     chefe_id = current_user.id_chefe
-    sucesso, mensagem, status_code = acompanhar_aluno(
+    sucesso, mensagem, status_code = acompanhar_aluno_service(
         id_aluno, chefe_id)
 
     if sucesso:
@@ -166,10 +170,10 @@ def acompanhar():
 @chefe_bp.route('/remover_acompanhamento/<int:id_aluno>', methods=['POST'])
 @login_required
 @bloquear_instituicao
-def remover_acompanhamento(id_aluno):
+def remover_acompanhamento_routes(id_aluno):
     """Remove acompanhamento de aluno."""
     chefe_id = current_user.id_chefe
-    sucesso, mensagem = remover_acompanhamento(id_aluno, chefe_id)
+    sucesso, mensagem = remover_acompanhamento_services(id_aluno, chefe_id)
 
     if sucesso:
         flash(mensagem, "success")

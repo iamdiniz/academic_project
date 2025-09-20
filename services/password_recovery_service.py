@@ -120,7 +120,7 @@ def processar_solicitacao_recuperacao(email):
     # Enviar email
     ok, msg = enviar_email_recuperacao(email, nome_usuario, codigo)
     if ok:
-        return True, "Código de verificação enviado para seu email.", "verificar_codigo"
+        return True, "Código de verificação enviado para seu email.", "esquece.verificar_codigo"
     else:
         return False, msg, None
 
@@ -162,16 +162,16 @@ def verificar_codigo_digitado(email, codigo_digitado):
         db.session.commit()
 
         if reset_request.tentativas >= 3:
-            return False, "Muitas tentativas. Solicite um novo código.", None, "esqueceu_senha"
+            return False, "Muitas tentativas. Solicite um novo código.", None, "esquece.esqueceu_senha"
         else:
             return False, "Código incorreto.", None, None
 
     # Código correto encontrado - verificar tentativas
     if reset_request.tentativas >= 3:
-        return False, "Muitas tentativas. Solicite um novo código.", None, "esqueceu_senha"
+        return False, "Muitas tentativas. Solicite um novo código.", None, "esquece.esqueceu_senha"
 
     # Código correto e tentativas < 3 - sucesso
-    return True, "Código verificado com sucesso!", reset_request, "nova_senha"
+    return True, "Código verificado com sucesso!", reset_request, "esquece.nova_senha"
 
 
 def validar_token_reset(reset_token):
@@ -244,7 +244,7 @@ def processar_nova_senha(reset_token, nova_senha, confirmar_senha):
     # Validar token
     valido, reset_request, mensagem = validar_token_reset(reset_token)
     if not valido:
-        return False, mensagem, "esqueceu_senha"
+        return False, mensagem, "esquece.esqueceu_senha"
 
     # Validar senha
     valida, mensagem = validar_nova_senha(nova_senha, confirmar_senha)
@@ -254,7 +254,7 @@ def processar_nova_senha(reset_token, nova_senha, confirmar_senha):
     # Atualizar senha
     sucesso, mensagem = atualizar_senha_usuario(reset_request, nova_senha)
     if sucesso:
-        return True, "Senha alterada com sucesso! Faça login com sua nova senha.", "login"
+        return True, "Senha alterada com sucesso! Faça login com sua nova senha.", "auth.login"
     else:
         return False, mensagem, None
 
@@ -279,8 +279,8 @@ def processar_esqueceu_senha():
             flash(mensagem, "success")
             return redirect(url_for(redirect_url, email=email))
         else:
-            flash(mensagem, "danger" if "não cadastrado" in mensagem else "warning")
-            return render_template('esqueceu_senha.html')
+            flash(mensagem, "danger")
+            return redirect(url_for("esquece.esqueceu_senha"))
 
     return render_template('esqueceu_senha.html')
 
@@ -306,7 +306,7 @@ def processar_verificar_codigo_post():
 
     if not email or not codigo:
         flash("Email e código são obrigatórios.", "danger")
-        return render_template('verificar_codigo.html', email=email)
+        return redirect(url_for('esquece.verificar_codigo', email=email))
 
     # Verificar código usando o serviço
     sucesso, mensagem, reset_request, redirect_url = verificar_codigo_digitado(
@@ -315,13 +315,13 @@ def processar_verificar_codigo_post():
     if sucesso:
         session['reset_token'] = reset_request.id
         flash(mensagem, "success")
-        return redirect(url_for(redirect_url))
+        return redirect(url_for(redirect_url, email=email)) 
     else:
         if redirect_url:
-            return redirect(url_for(redirect_url))
+            return redirect(url_for(redirect_url, email=email)) 
         else:
             flash(mensagem, "danger")
-            return render_template('verificar_codigo.html', email=email)
+            return redirect(url_for('esquece.verificar_codigo', email=email))
 
 
 def processar_nova_senha_page():

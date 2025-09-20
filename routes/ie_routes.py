@@ -13,6 +13,7 @@ from services import (
     paginar_alunos_indicados,
     atualizar_aluno,
 )
+from services.student_service import cadastrar_aluno as cadastrar_aluno_service
 from domain import (
     InstituicaodeEnsino,
     Aluno,
@@ -62,7 +63,7 @@ def cursos():
 def cadastrar_aluno():
     """Cadastra novo aluno."""
     dados_formulario = request.form.to_dict()
-    sucesso, mensagem = cadastrar_aluno(
+    sucesso, mensagem = cadastrar_aluno_service(
         dados_formulario, current_user.id_instituicao)
 
     if sucesso:
