@@ -3,17 +3,15 @@ from flask_login import login_required, current_user
 from services import (
     obter_cursos_instituicao,
     paginate_items,
-    paginate_items,
     bloquear_chefe,
     processar_alunos_por_instituicao,
     processar_skills_para_edicao,
     cadastrar_curso,
-    obter_cursos_instituicao,
     obter_alunos_indicados,
     paginar_alunos_indicados,
     atualizar_aluno,
 )
-from services.student_service import cadastrar_aluno as cadastrar_aluno_service
+from services.student_service import cadastrar_aluno as cadastrar_aluno_service, remover_aluno as remover_aluno_service
 from domain import (
     InstituicaodeEnsino,
     Aluno,
@@ -23,6 +21,7 @@ from domain import (
 )
 
 instituicao_bp = Blueprint('instituicao', __name__)
+
 
 @instituicao_bp.route('/detalhes_instituicao/<int:id_instituicao>')
 @login_required
@@ -78,7 +77,7 @@ def cadastrar_aluno():
 @login_required
 def remover_aluno(id_aluno):
     """Remove um aluno do sistema."""
-    sucesso, mensagem = remover_aluno(id_aluno)
+    sucesso, mensagem = remover_aluno_service(id_aluno)
 
     if sucesso:
         flash(mensagem, "success")

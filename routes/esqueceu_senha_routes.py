@@ -8,6 +8,7 @@ from services import (
 
 esquece_bp = Blueprint('esquece', __name__)
 
+
 @esquece_bp.route('/esqueceu-senha', methods=['GET', 'POST'])
 def esqueceu_senha():
     """Página de recuperação de senha."""
@@ -30,4 +31,3 @@ def verificar_codigo_post():
 def nova_senha():
     """Página de nova senha."""
     return processar_nova_senha_page()
-

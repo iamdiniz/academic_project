@@ -7,6 +7,7 @@ from services import (
 
 admin_bp = Blueprint('admin', __name__)
 
+
 @admin_bp.route('/admin/bloquear-usuario', methods=['POST'])
 @login_required
 def admin_bloquear_usuario():

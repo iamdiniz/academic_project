@@ -10,21 +10,13 @@ from services import (
     criar_snapshot_skills_inicial,
     paginate_items,
     bloquear_instituicao,
-    paginate_items,
-    bloquear_instituicao,
-    processar_alunos_indicados_por_chefe,
-    processar_alunos_acompanhados_por_chefe,
-    obter_cursos_instituicao,
-    obter_cursos_por_instituicao,
-    obter_historico_aluno,
-    criar_snapshot_skills_inicial,
     obter_detalhes_aluno,
     obter_alunos_por_curso,
     paginar_alunos_por_curso
 )
 from services.indication_service import (
     indicar_aluno as indicar_aluno_service,
-    acompanhar_aluno as acompanhar_aluno_service, 
+    acompanhar_aluno as acompanhar_aluno_service,
     remover_acompanhamento as remover_acompanhamento_services,
     remover_indicacao as remover_indicacao_services
 )
@@ -49,8 +41,8 @@ def detalhes_instituicao(id_instituicao):
 
 
 @chefe_bp.route('/instituicaoEnsino')
-@bloquear_instituicao
 @login_required
+@bloquear_instituicao
 def instituicao_ensino():
     instituicoes = InstituicaodeEnsino.query.all()
 
@@ -243,7 +235,8 @@ def detalhes_aluno(id_aluno):
         flash('Aluno não encontrado.', 'danger')
         return redirect(url_for('chefe.instituicao_ensino'))
 
-    previous_url = request.args.get('previous', url_for('chefe.instituicao_ensino'))
+    previous_url = request.args.get(
+        'previous', url_for('chefe.instituicao_ensino'))
 
     return render_template(
         'detalhes_aluno.html',
