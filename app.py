@@ -6,7 +6,7 @@ import os
 from flask_wtf.csrf import generate_csrf
 from domain import db
 from services import load_user
-from services.rate_limit_service import usuarios_bloqueados
+# usuarios_bloqueados removido - não usado diretamente no app.py
 
 from routes import register_blueprints
 
@@ -56,11 +56,25 @@ def load_user_wrapper(user_id):
 register_blueprints(app)
 
 
-# Configuração CSRF e cookies (ajustar secure=True em produção)
-app.config.update(
-    SESSION_COOKIE_SAMESITE="Lax",
-    SESSION_COOKIE_SECURE=False  # True em produção
-)
+# Configuração CSRF e cookies baseada no ambiente
+# Verifica se está em produção para aplicar configurações seguras
+is_production = os.getenv('FLASK_ENV') == 'production'
+
+if is_production:
+    # Configurações seguras para produção
+    app.config.update(
+        SESSION_COOKIE_SAMESITE="Strict",
+        SESSION_COOKIE_SECURE=True,
+        SESSION_COOKIE_HTTPONLY=True,
+        WTF_CSRF_TIME_LIMIT=3600
+    )
+else:
+    # Configurações para desenvolvimento
+    app.config.update(
+        SESSION_COOKIE_SAMESITE="Lax",
+        SESSION_COOKIE_SECURE=False,
+        SESSION_COOKIE_HTTPONLY=True
+    )
 
 
 @app.context_processor
@@ -71,21 +85,55 @@ def inject_csrf_token():
 
 @app.after_request
 def set_csrf_cookie(response):
-    """Define cookie CSRF."""
+    """Define cookie CSRF com configurações baseadas no ambiente."""
     try:
         csrf_token_value = generate_csrf()
         response.set_cookie(
             "csrf_token",
             csrf_token_value,
-            secure=False,  # True em produção
-            samesite="Lax",
+            secure=is_production,  # True em produção, False em desenvolvimento
+            httponly=True,  # Previne acesso via JavaScript
+            samesite="Strict" if is_production else "Lax",
             path="/"
         )
-    except Exception:
+    except (ValueError, TypeError):
+        # Falha silenciosa se não conseguir gerar token CSRF
         pass
     return response
 
 
+@app.after_request
+def set_security_headers(response):
+    """Define headers de segurança para proteger contra ataques comuns."""
+    # Previne MIME type sniffing
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+
+    # Previne clickjacking
+    response.headers['X-Frame-Options'] = 'DENY'
+
+    # Ativa proteção XSS do navegador
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+
+    # Força HTTPS em produção
+    if is_production:
+        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+
+        # Content Security Policy básico
+        response.headers['Content-Security-Policy'] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+            "img-src 'self' data:; "
+            "font-src 'self' https://cdn.jsdelivr.net; "
+            "connect-src 'self'"
+        )
+
+    return response
+
+
 if __name__ == "__main__":
+    # Configuração de debug baseada no ambiente
+    debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
+
     # Host para acesso externo
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=debug_mode, host='0.0.0.0')
