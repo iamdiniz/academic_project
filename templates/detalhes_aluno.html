@@ -87,7 +87,7 @@
           .split("; ")
           .find((c) => c.startsWith("csrf_token="))
           ?.split("=")[1];
-        fetch('{{ url_for("chefe.acompanhar_aluno_routes", id_aluno=aluno.id_aluno) }}', {
+        fetch('{{ url_for("chefe.acompanhar_aluno", id_aluno=aluno.id_aluno) }}', {
           method: "POST",
           headers: { "X-CSRFToken": token },
         })
@@ -232,7 +232,7 @@
   // Indicar aluno
   document.getElementById('indicarAlunoBtn').addEventListener('click', function () {
       const token = document.cookie.split('; ').find(c => c.startsWith('csrf_token='))?.split('=')[1];
-      fetch('{{ url_for("chefe.indicar_aluno_routes", id_aluno=aluno.id_aluno) }}', {
+      fetch('{{ url_for("chefe.indicar_aluno", id_aluno=aluno.id_aluno) }}', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'X-CSRFToken': token },
           body: JSON.stringify({ id_aluno: {{ aluno.id_aluno }} })
@@ -256,7 +256,7 @@
   // Acompanhar aluno
   document.getElementById('acompanharAlunoBtn').onclick = function() {
       const token = document.cookie.split('; ').find(c => c.startsWith('csrf_token='))?.split('=')[1];
-      fetch('{{ url_for("chefe.acompanhar_aluno_routes", id_aluno=aluno.id_aluno) }}', {
+      fetch('{{ url_for("chefe.acompanhar_aluno", id_aluno=aluno.id_aluno) }}', {
           method: 'POST',
           headers: { 'X-CSRFToken': token }
       }).then(r => r.json()).then(data => {

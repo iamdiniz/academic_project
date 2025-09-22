@@ -96,7 +96,7 @@ def minhas_selecoes():
 @chefe_bp.route('/remover_indicacao/<int:id_aluno>', methods=['POST'])
 @bloquear_instituicao
 @login_required
-def remover_indicacao_routes(id_aluno):
+def remover_indicacao(id_aluno):
     """Remove indicação de aluno."""
     if session.get('tipo_usuario') != 'chefe':
         return jsonify({'error': 'Acesso não permitido.'}), 403
@@ -111,7 +111,7 @@ def remover_indicacao_routes(id_aluno):
 @chefe_bp.route('/indicar_aluno/<int:id_aluno>', methods=['POST'])
 @bloquear_instituicao
 @login_required
-def indicar_aluno_routes(id_aluno):
+def indicar_aluno(id_aluno):
     """Indica um aluno para acompanhamento."""
     if session.get('tipo_usuario') != 'chefe':
         return jsonify({'error': 'Acesso não permitido.'}), 403
@@ -125,7 +125,7 @@ def indicar_aluno_routes(id_aluno):
 @chefe_bp.route('/acompanhar_aluno/<int:id_aluno>', methods=['POST'])
 @login_required
 @bloquear_instituicao
-def acompanhar_aluno_routes(id_aluno):
+def acompanhar_aluno(id_aluno):
     """Inicia acompanhamento de aluno."""
     chefe_id = current_user.id_chefe
     sucesso, mensagem, status_code = acompanhar_aluno_service(
@@ -162,7 +162,7 @@ def acompanhar():
 @chefe_bp.route('/remover_acompanhamento/<int:id_aluno>', methods=['POST'])
 @login_required
 @bloquear_instituicao
-def remover_acompanhamento_routes(id_aluno):
+def remover_acompanhamento(id_aluno):
     """Remove acompanhamento de aluno."""
     chefe_id = current_user.id_chefe
     sucesso, mensagem = remover_acompanhamento_services(id_aluno, chefe_id)
