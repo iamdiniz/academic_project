@@ -100,7 +100,7 @@ function validarSenha(input) {
   const senha = input.value;
   aplicarErro(
     input,
-    senha.length < 6 ? "A senha deve conter no mínimo 6 caracteres." : "",
+    senha.length < 8 ? "A senha deve conter no mínimo 8 caracteres." : "",
     "erro-senha"
   );
 
@@ -175,8 +175,8 @@ function validarCamposComuns() {
   );
   valido &= validarCampo(
     senha,
-    (val) => val.length >= 6 && val.length <= 20,
-    "Senha deve ter no mínimo 6 caracteres.",
+    (val) => val.length >= 8 && val.length <= 20,
+    "Senha deve ter no mínimo 8 caracteres.",
     "erro-senha"
   );
   valido &= validarCampo(
