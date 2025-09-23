@@ -98,41 +98,56 @@ function validarEmail(input) {
 // Função para validar senha e mostrar força
 function validarSenha(input) {
   const senha = input.value;
-  aplicarErro(
-    input,
-    senha.length < 8 ? "A senha deve conter no mínimo 8 caracteres." : "",
-    "erro-senha"
-  );
+  let mensagemErro = "";
 
-  // Calcula força da senha
+  // Checagens obrigatórias
+  if (senha.length < 8 || senha.length > 20) {
+    mensagemErro += "A senha deve ter entre 8 e 20 caracteres. ";
+  }
+  if (!/[a-zA-Z]/.test(senha)) {  // Pelo menos uma letra (maiúscula ou minúscula)
+    mensagemErro += "Deve conter pelo menos uma letra. ";
+  }
+  if (!/[0-9]/.test(senha)) {  // Pelo menos um número
+    mensagemErro += "Deve conter pelo menos um número. ";
+  }
+  if (!/[\W_]/.test(senha)) {  // Pelo menos um caractere especial (ajuste a regex se quiser símbolos específicos, ex.: /[!@#$%^&*]/)
+    mensagemErro += "Deve conter pelo menos um caractere especial (ex: !@#$%). ";
+  }
+
+  // Aplica erro visual (similar aos outros campos)
+  aplicarErro(input, mensagemErro.trim() || "", "erro-senha");
+
+  // Calcula força da senha (mantido, mas corrigido o switch)
   let forca = 0;
-  if (senha.length >= 8) forca++;
-  if (/[A-Z]/.test(senha)) forca++;
+  if (senha.length >= 8 && senha.length <= 20) forca++;  // Ajustado para incluir max
+  if (/[a-zA-Z]/.test(senha)) forca++;  // Qualquer letra
   if (/[0-9]/.test(senha)) forca++;
   if (/[\W_]/.test(senha)) forca++;
 
-  let texto = "",
+  let texto = "", cor = "";
+  if (senha === "") {
+    texto = "";  // Senha vazia: sem texto
     cor = "";
-  switch (forca) {
-    case 1:
-    case 2:
-      texto = "Senha fraca";
-      cor = "text-danger";
-      break;
-    case 5:
-      texto = "Senha média";
-      cor = "text-warning";
-      break;
-    case 8:
-      texto = "Senha forte";
-      cor = "text-success";
-      break;
-  }
-
-  const forcaEl = document.getElementById("forca-senha");
-  if (forcaEl) {
-    forcaEl.textContent = texto;
-    forcaEl.className = `form-text ${cor}`;
+  } else {
+    switch (forca) {
+      case 0:
+      case 1:
+        texto = "Senha muito fraca";
+        cor = "text-danger";
+        break;
+      case 2:
+        texto = "Senha fraca";
+        cor = "text-warning";
+        break;
+      case 3:
+        texto = "Senha média";
+        cor = "text-info";
+        break;
+      case 4:
+        texto = "Senha forte";
+        cor = "text-success";
+        break;
+    }
   }
 
   validarConfirmacaoSenha();
@@ -175,8 +190,14 @@ function validarCamposComuns() {
   );
   valido &= validarCampo(
     senha,
-    (val) => val.length >= 8 && val.length <= 20,
-    "Senha deve ter no mínimo 8 caracteres.",
+    (val) => {
+      if (val.length < 8 || val.length > 20) return false;
+      if (!/[a-zA-Z]/.test(val)) return false;  
+      if (!/[0-9]/.test(val)) return false;    
+      if (!/[\W_]/.test(val)) return false;    
+      return true;
+    },
+    "A senha deve ter entre 8 e 20 caracteres, com pelo menos uma letra, um número e um caractere especial.",
     "erro-senha"
   );
   valido &= validarCampo(
