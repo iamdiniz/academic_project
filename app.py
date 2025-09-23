@@ -6,7 +6,7 @@ import os
 from flask_wtf.csrf import generate_csrf
 from domain import db
 from services import load_user
-from services.rate_limit_service import usuarios_bloqueados
+# Removido: import não utilizado
 
 from routes import register_blueprints
 
@@ -43,8 +43,8 @@ csrf = CSRFProtect(app)
 
 # Comentado temporariamente para evitar erro de conexão
 with app.app_context():
-   db.create_all()  # Cria tabelas do banco
-   print("Tabelas criadas com sucesso!")
+    db.create_all()  # Cria tabelas do banco
+    print("Tabelas criadas com sucesso!")
 
 
 @login_manager.user_loader
@@ -59,7 +59,10 @@ register_blueprints(app)
 # Configuração CSRF e cookies (ajustar secure=True em produção)
 app.config.update(
     SESSION_COOKIE_SAMESITE="Lax",
-    SESSION_COOKIE_SECURE=False  # True em produção
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SECURE=False,  # Defina True em produção (HTTPS)
+    REMEMBER_COOKIE_HTTPONLY=True,
+    REMEMBER_COOKIE_SECURE=False  # Defina True em produção (HTTPS)
 )
 
 
@@ -77,12 +80,29 @@ def set_csrf_cookie(response):
         response.set_cookie(
             "csrf_token",
             csrf_token_value,
-            secure=False,  # True em produção
+            secure=False,  # Defina True em produção (HTTPS)
             samesite="Lax",
             path="/"
         )
-    except Exception:
+    except Exception:  # noqa: BLE001 - amplo por ser filtro pós-resposta
         pass
+    # Cabeçalhos de segurança básicos
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("Referrer-Policy", "no-referrer")
+    # CSP ajustada para permitir Bootstrap/JSDelivr, mantendo restrições
+    response.headers.setdefault(
+        "Content-Security-Policy",
+        "default-src 'self'; "
+        "img-src 'self' data:; "
+        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+        "font-src 'self' https://cdn.jsdelivr.net data:; "
+        "connect-src 'self'; "
+        "frame-ancestors 'none'"
+    )
+    # Em produção sob HTTPS, ative HSTS (comente durante desenvolvimento local)
+    # response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
     return response
 
 

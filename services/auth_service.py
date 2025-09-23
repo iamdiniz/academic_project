@@ -173,8 +173,18 @@ def processar_login():
         # =============================================================================
         # OBTÉM DADOS DO USUÁRIO
         # =============================================================================
-        email = request.form['email']
-        senha = request.form['senha']
+        # Aceita nomes neutros (session_key/encrypted_session_key) OU os nomes originais
+        email = request.form.get(
+            'session_key') or request.form.get('email', '')
+        senha = request.form.get(
+            'encrypted_session_key') or request.form.get('senha', '')
+        # Tenta decodificar Base64 (ofuscação do cliente). Se falhar, mantém como veio
+        if senha:
+            try:
+                import base64
+                senha = base64.b64decode(senha).decode('utf-8')
+            except Exception:
+                pass
 
         # =============================================================================
         # VERIFICAÇÃO DE BLOQUEIO PERMANENTE
@@ -240,7 +250,7 @@ def processar_login():
                     'chefe' if tipo_usuario == 'chefe' else 'reitor',
                     tipo_usuario
                 )
-                return redirect(url_for('auth.home'))
+                return redirect(url_for('auth.home'), code=303)
 
         # =============================================================================
         # LOGIN FALHADO - EXIBE MENSAGEM

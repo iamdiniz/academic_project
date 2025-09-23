@@ -122,7 +122,7 @@ def processar_two_factor_verify():
             resetar_rate_limit(email_usuario)
 
             session.pop('pending_user', None)
-            return redirect(url_for('auth.home'))
+            return redirect(url_for('auth.home'), code=303)
         else:
             flash('Código 2FA inválido.', 'danger')
 

@@ -1,0 +1,49 @@
+O que foi feito para não exibir email/senha no Payload e aumentar a segurança
+
+1) Redirecionamento pós-login (PRG)
+- Arquivo: services/auth_service.py
+- Mudança: após login bem-sucedido, redireciona com 303 para /home.
+- Efeito: após o POST de login, o navegador faz somente GET (evita reenvio do corpo).
+
+2) Cookies e cabeçalhos de segurança
+- Arquivo: app.py
+- Mudanças:
+  - SESSION_COOKIE_HTTPONLY=True e REMEMBER_COOKIE_HTTPONLY=True
+  - (Produção) Habilitar Secure=True e HSTS quando estiver em HTTPS
+  - Cabeçalhos: X-Frame-Options, X-Content-Type-Options, Referrer-Policy, CSP (ajustada p/ CDN)
+- Efeito: reduz riscos e mantém compatibilidade (sem quebrar estilo).
+
+3) Campos do formulário com nomes neutros
+- Arquivo: templates/login.html
+- Mudança: names dos inputs trocados para session_key (email) e encrypted_session_key (senha).
+- Efeito: no DevTools, não aparece "email" e "senha" como chaves do Payload.
+
+4) Ofuscação da senha no cliente
+- Arquivo: static/js/login.js
+- Mudança: antes de enviar, a senha é convertida em Base64.
+- Efeito: o valor exibido no Payload não é texto puro (privacidade visual). Segurança real depende de HTTPS.
+
+5) Backend compatível e decodificação
+- Arquivo: services/auth_service.py
+- Mudanças:
+  - Aceita session_key/encrypted_session_key ou email/senha (compatibilidade)
+  - Se a senha vier em Base64, o backend decodifica antes de validar
+- Efeito: não quebra fluxos existentes e permite o novo formato.
+
+6) CSP ajustada
+- Arquivo: app.py
+- Mudança: libera 'self' e cdn.jsdelivr.net para scripts/estilos/fontes e permite inline necessário.
+- Efeito: mantém o layout funcionando com proteção adicional.
+
+Como testar
+1. Atualize a tela de login (Ctrl+F5).
+2. Abra DevTools > Network e faça login.
+3. Na requisição POST de login, em Payload, verifique:
+   - session_key (email)
+   - encrypted_session_key (senha ofuscada em Base64)
+4. Após autenticar, confirme redirecionamento 303 e depois somente GET /home.
+
+Observações importantes
+- Ofuscação no cliente melhora privacidade visual, mas não substitui HTTPS.
+- Em produção: usar HTTPS + cookies Secure + HSTS.
+- Nunca registrar credenciais em logs, nem usar query string ou storage do navegador para credenciais.
