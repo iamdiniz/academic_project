@@ -1,49 +1,31 @@
-O que foi feito para não exibir email/senha no Payload e aumentar a segurança
+Redirecionamento pós-login (303 PRG)
+→ Depois do login, o navegador é redirecionado para /home.
+👉 Assim, o POST com email/senha não fica reaparecendo se o usuário der refresh.
 
-1) Redirecionamento pós-login (PRG)
-- Arquivo: services/auth_service.py
-- Mudança: após login bem-sucedido, redireciona com 303 para /home.
-- Efeito: após o POST de login, o navegador faz somente GET (evita reenvio do corpo).
+Cookies e cabeçalhos de segurança
+→ Cookies só acessíveis pelo servidor (HttpOnly) e, quando em HTTPS, com Secure e HSTS.
+👉 Evita que scripts roubem cookies e adiciona proteção contra ataques comuns.
 
-2) Cookies e cabeçalhos de segurança
-- Arquivo: app.py
-- Mudanças:
-  - SESSION_COOKIE_HTTPONLY=True e REMEMBER_COOKIE_HTTPONLY=True
-  - (Produção) Habilitar Secure=True e HSTS quando estiver em HTTPS
-  - Cabeçalhos: X-Frame-Options, X-Content-Type-Options, Referrer-Policy, CSP (ajustada p/ CDN)
-- Efeito: reduz riscos e mantém compatibilidade (sem quebrar estilo).
+Nomes neutros nos campos
+→ Em vez de nomes iguais às colunas (ex.: email/senha), usamos session_key e encrypted_session_key (e chaves neutras nos outros formulários: a_*, h_*, s_*).
+👉 Quem abrir o DevTools não verá nomes de colunas ou tabelas do banco nem "email"/"senha" no Payload.
 
-3) Campos do formulário com nomes neutros
-- Arquivo: templates/login.html
-- Mudança: names dos inputs trocados para session_key (email) e encrypted_session_key (senha).
-- Efeito: no DevTools, não aparece "email" e "senha" como chaves do Payload.
+Senha ofuscada no cliente (Base64)
+→ A senha é convertida para Base64 antes de ser enviada.
+👉 No DevTools não aparece em texto puro (a segurança real vem do HTTPS).
 
-4) Ofuscação da senha no cliente
-- Arquivo: static/js/login.js
-- Mudança: antes de enviar, a senha é convertida em Base64.
-- Efeito: o valor exibido no Payload não é texto puro (privacidade visual). Segurança real depende de HTTPS.
+Backend compatível
+→ O servidor entende tanto o formato antigo quanto o novo e decodifica a senha se vier em Base64.
+👉 Nada quebra para quem ainda usa o fluxo antigo.
 
-5) Backend compatível e decodificação
-- Arquivo: services/auth_service.py
-- Mudanças:
-  - Aceita session_key/encrypted_session_key ou email/senha (compatibilidade)
-  - Se a senha vier em Base64, o backend decodifica antes de validar
-- Efeito: não quebra fluxos existentes e permite o novo formato.
+Política de segurança de conteúdo (CSP)
+→ Ajustada para permitir estilos/scripts do CDN sem quebrar o layout.
+👉 Ajuda a evitar injeção de scripts maliciosos.
 
-6) CSP ajustada
-- Arquivo: app.py
-- Mudança: libera 'self' e cdn.jsdelivr.net para scripts/estilos/fontes e permite inline necessário.
-- Efeito: mantém o layout funcionando com proteção adicional.
-
-Como testar
-1. Atualize a tela de login (Ctrl+F5).
-2. Abra DevTools > Network e faça login.
-3. Na requisição POST de login, em Payload, verifique:
-   - session_key (email)
-   - encrypted_session_key (senha ofuscada em Base64)
-4. Após autenticar, confirme redirecionamento 303 e depois somente GET /home.
-
-Observações importantes
-- Ofuscação no cliente melhora privacidade visual, mas não substitui HTTPS.
-- Em produção: usar HTTPS + cookies Secure + HSTS.
-- Nunca registrar credenciais em logs, nem usar query string ou storage do navegador para credenciais.
+✅ Resumo bem simples:
+- Pós-login redireciona e não reaparece no refresh.
+- Cookies mais protegidos (HttpOnly, e Secure/HSTS em HTTPS).
+- Campos sensíveis com nomes neutros; nada de nomes de colunas no Payload.
+- Senha ofuscada em Base64 no envio.
+- Backend aceita formato antigo e novo.
+- CSP e cabeçalhos extras deixam a aplicação mais segura.

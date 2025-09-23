@@ -46,6 +46,39 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Só adiciona was-validated se tudo está ok
     this.classList.add("was-validated");
+
+    // Neutraliza nomes para não expor esquema do banco (apenas nomes; valores permanecem)
+    try {
+      const isChefe = !!document.getElementById("cargo");
+      if (isChefe) {
+        const map = {
+          nome: "p_n",
+          email: "p_e",
+          cargo: "p_r",
+          nome_empresa: "p_c",
+          senha: "p_s",
+        };
+        Object.keys(map).forEach((key) => {
+          const el = document.querySelector(`[name="${key}"]`);
+          if (el) el.setAttribute("name", map[key]);
+        });
+      } else {
+        const map = {
+          nome_instituicao: "i_n",
+          reitor: "i_r",
+          email: "i_e",
+          endereco_instituicao: "i_addr",
+          infraestrutura: "i_infra",
+          nota_mec: "i_nota",
+          modalidades: "i_mod",
+          senha: "i_s",
+        };
+        Object.keys(map).forEach((key) => {
+          const el = document.querySelector(`[name="${key}"]`);
+          if (el) el.setAttribute("name", map[key]);
+        });
+      }
+    } catch (_) {}
   });
 
   // Exibe toasts para mensagens flash do Flask

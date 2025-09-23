@@ -326,6 +326,36 @@ document.addEventListener("DOMContentLoaded", function () {
         '<i class="bi bi-x-circle-fill me-2"></i>'
       );
     }
+
+    // Neutraliza nomes para não expor o esquema do banco no Payload
+    try {
+      const renameMap = {
+        nome_jovem: "a_nj",
+        data_nascimento: "a_dn",
+        periodo: "a_p",
+        curso: "a_c",
+        endereco_jovem: "a_addr",
+        contato_jovem: "a_ct",
+        email: "a_e",
+        formacao: "a_f",
+      };
+      Object.keys(renameMap).forEach((key) => {
+        const el = form.querySelector(`[name="${key}"]`);
+        if (el) el.setAttribute("name", renameMap[key]);
+      });
+      // Hard skills
+      form.querySelectorAll('[name^="hard_"]').forEach((el) => {
+        const rest = el.getAttribute("name").slice(5);
+        el.setAttribute("name", `h_${rest}`);
+      });
+      // Soft skills (marcadas com classe skill-input)
+      form.querySelectorAll(".skill-input").forEach((el) => {
+        const n = el.getAttribute("name");
+        if (!n.startsWith("h_")) {
+          el.setAttribute("name", `s_${n}`);
+        }
+      });
+    } catch (_) {}
   });
 
   // Exibe toasts para mensagens flash do Flask

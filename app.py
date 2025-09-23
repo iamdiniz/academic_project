@@ -57,12 +57,15 @@ register_blueprints(app)
 
 
 # Configuração CSRF e cookies (ajustar secure=True em produção)
+# HTTPS/HSTS: habilita via variável de ambiente ENABLE_HTTPS=true
+ENABLE_HTTPS = os.getenv("ENABLE_HTTPS", "false").lower() == "true"
+
 app.config.update(
     SESSION_COOKIE_SAMESITE="Lax",
     SESSION_COOKIE_HTTPONLY=True,
-    SESSION_COOKIE_SECURE=False,  # Defina True em produção (HTTPS)
+    SESSION_COOKIE_SECURE=ENABLE_HTTPS,
     REMEMBER_COOKIE_HTTPONLY=True,
-    REMEMBER_COOKIE_SECURE=False  # Defina True em produção (HTTPS)
+    REMEMBER_COOKIE_SECURE=ENABLE_HTTPS
 )
 
 
@@ -80,7 +83,7 @@ def set_csrf_cookie(response):
         response.set_cookie(
             "csrf_token",
             csrf_token_value,
-            secure=False,  # Defina True em produção (HTTPS)
+            secure=ENABLE_HTTPS,
             samesite="Lax",
             path="/"
         )
@@ -101,8 +104,12 @@ def set_csrf_cookie(response):
         "connect-src 'self'; "
         "frame-ancestors 'none'"
     )
-    # Em produção sob HTTPS, ative HSTS (comente durante desenvolvimento local)
-    # response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
+    # HSTS somente se HTTPS estiver habilitado
+    if ENABLE_HTTPS:
+        response.headers.setdefault(
+            "Strict-Transport-Security",
+            "max-age=31536000; includeSubDomains; preload"
+        )
     return response
 
 

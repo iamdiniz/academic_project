@@ -41,14 +41,23 @@ def cadastrar_aluno(dados_formulario, id_instituicao):
     Returns:
         tuple: (sucesso, mensagem)
     """
-    nome_jovem = dados_formulario.get('nome_jovem', '').strip()
-    data_nascimento = dados_formulario.get('data_nascimento', '').strip()
-    contato_jovem = dados_formulario.get('contato_jovem', '').strip()
-    email = dados_formulario.get('email', '').strip()
-    endereco_jovem = dados_formulario.get('endereco_jovem', '').strip()
-    curso = dados_formulario.get('curso', '').strip()
-    formacao = dados_formulario.get('formacao', '').strip()
-    periodo = dados_formulario.get('periodo', '').strip()
+    # Aceita nomes neutros vindos do front
+    nome_jovem = (dados_formulario.get('a_nj')
+                  or dados_formulario.get('nome_jovem') or '').strip()
+    data_nascimento = (dados_formulario.get(
+        'a_dn') or dados_formulario.get('data_nascimento') or '').strip()
+    contato_jovem = (dados_formulario.get('a_ct')
+                     or dados_formulario.get('contato_jovem') or '').strip()
+    email = (dados_formulario.get('a_e')
+             or dados_formulario.get('email') or '').strip()
+    endereco_jovem = (dados_formulario.get('a_addr')
+                      or dados_formulario.get('endereco_jovem') or '').strip()
+    curso = (dados_formulario.get('a_c')
+             or dados_formulario.get('curso') or '').strip()
+    formacao = (dados_formulario.get('a_f')
+                or dados_formulario.get('formacao') or '').strip()
+    periodo = (dados_formulario.get('a_p')
+               or dados_formulario.get('periodo') or '').strip()
 
     # Validação do e-mail duplicado
     if Aluno.query.filter_by(email=email).first():
@@ -74,7 +83,8 @@ def cadastrar_aluno(dados_formulario, id_instituicao):
     hard_skills_dict = {}
     for label in HARD_SKILLS_POR_CURSO.get(curso, []):
         field_name = f"hard_{label.lower().replace(' ', '_')}"
-        valor = dados_formulario.get(field_name)
+        valor = dados_formulario.get(
+            f"h_{label.lower().replace(' ', '_')}") or dados_formulario.get(field_name)
         if validar_skill_valor(valor):
             return False, f"Preencha corretamente a hard skill '{label}' (0 a 10)."
         hard_skills_dict[label] = int(valor)
@@ -83,7 +93,8 @@ def cadastrar_aluno(dados_formulario, id_instituicao):
     soft_skills_dict = {}
     for label in SOFT_SKILLS:
         field_name = label.lower().replace(' ', '_')
-        valor = dados_formulario.get(field_name)
+        valor = dados_formulario.get(
+            f"s_{field_name}") or dados_formulario.get(field_name)
         if valor is None or not valor.isdigit() or int(valor) < 0 or int(valor) > 10:
             return False, f"Preencha corretamente a soft skill '{label}' (0 a 10)."
         soft_skills_dict[label] = int(valor)

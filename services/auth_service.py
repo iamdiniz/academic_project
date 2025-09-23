@@ -72,10 +72,11 @@ def processar_cadastro():
     """
     if request.method == 'POST':
         tipo_usuario = request.form.get('tipo_usuario')
-        nome = request.form.get('nome')
-        email = request.form.get('email')
-        senha = request.form.get('senha')
-        confirmar_senha = request.form.get('confirmar_senha')
+        # Aceita nomes neutros (cadastro)
+        nome = request.form.get('i_n') or request.form.get('c_n') or request.form.get('nome')
+        email = request.form.get('i_e') or request.form.get('c_e') or request.form.get('email')
+        senha = request.form.get('i_s') or request.form.get('c_s') or request.form.get('senha')
+        confirmar_senha = request.form.get('i_cs') or request.form.get('c_cs') or request.form.get('confirmar_senha')
 
         # Validação: senha mínima de 8 caracteres
         if validar_senha_minima(senha):
@@ -87,11 +88,11 @@ def processar_cadastro():
             return redirect(url_for('auth.cadastro'))
 
         if tipo_usuario == 'instituicao':
-            instituicao_nome = request.form.get('instituicao_nome')
-            endereco = request.form.get('endereco_instituicao')
-            infraestrutura = request.form.get('infraestrutura')
-            nota_mec = request.form.get('nota_mec')
-            modalidades = request.form.get('modalidades')
+            instituicao_nome = request.form.get('i_in') or request.form.get('instituicao_nome')
+            endereco = request.form.get('i_addr') or request.form.get('endereco_instituicao')
+            infraestrutura = request.form.get('i_infra') or request.form.get('infraestrutura')
+            nota_mec = request.form.get('i_nota') or request.form.get('nota_mec')
+            modalidades = request.form.get('i_mod') or request.form.get('modalidades')
             cursos_selecionados = request.form.getlist('cursos_selecionados')
 
             if validar_campos_obrigatorios_instituicao(nome, email, senha, instituicao_nome, endereco, cursos_selecionados):
@@ -127,8 +128,8 @@ def processar_cadastro():
                 return redirect(url_for('auth.cadastro'))
 
         elif tipo_usuario == 'chefe':
-            empresa_nome = request.form.get('empresa_nome')
-            cargo = request.form.get('cargo')
+            empresa_nome = request.form.get('c_en') or request.form.get('empresa_nome')
+            cargo = request.form.get('c_r') or request.form.get('cargo')
 
             if validar_campos_obrigatorios_chefe(nome, email, senha, empresa_nome, cargo):
                 flash('Todos os campos obrigatórios para Chefe devem ser preenchidos!')
@@ -283,12 +284,12 @@ def processar_perfil():
                 flash("A senha deve ter no mínimo 8 caracteres.", "danger")
                 return redirect(url_for('users.perfil'))
 
-            # Preparar dados do formulário
+            # Preparar dados do formulário (aceita nomes neutros)
             dados_formulario = {
-                'nome': request.form['nome'],
-                'email': request.form['email'],
-                'cargo': request.form['cargo'],
-                'nome_empresa': request.form.get('nome_empresa', ''),
+                'nome': request.form.get('p_n') or request.form.get('nome'),
+                'email': request.form.get('p_e') or request.form.get('email'),
+                'cargo': request.form.get('p_r') or request.form.get('cargo'),
+                'nome_empresa': request.form.get('p_c') or request.form.get('nome_empresa', ''),
                 'senha': senha_nova
             }
 
@@ -313,15 +314,15 @@ def processar_perfil():
                 flash("A senha deve ter no mínimo 8 caracteres.", "danger")
                 return redirect(url_for('users.perfil'))
 
-            # Preparar dados do formulário
+            # Preparar dados do formulário (aceita nomes neutros)
             dados_formulario = {
-                'nome_instituicao': request.form['nome_instituicao'],
-                'reitor': request.form['reitor'],
-                'email': request.form['email'],
-                'endereco_instituicao': request.form['endereco_instituicao'],
-                'infraestrutura': request.form['infraestrutura'],
-                'nota_mec': request.form['nota_mec'],
-                'modalidades': request.form['modalidades'],
+                'nome_instituicao': request.form.get('i_n') or request.form.get('nome_instituicao'),
+                'reitor': request.form.get('i_r') or request.form.get('reitor'),
+                'email': request.form.get('i_e') or request.form.get('email'),
+                'endereco_instituicao': request.form.get('i_addr') or request.form.get('endereco_instituicao'),
+                'infraestrutura': request.form.get('i_infra') or request.form.get('infraestrutura'),
+                'nota_mec': request.form.get('i_nota') or request.form.get('nota_mec'),
+                'modalidades': request.form.get('i_mod') or request.form.get('modalidades'),
                 'senha': senha_nova
             }
 

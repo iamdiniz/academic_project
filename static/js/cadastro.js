@@ -367,6 +367,45 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+  // Neutraliza nomes para não expor esquema do banco no Payload
+  const form = document.querySelector(".form-box");
+  if (form) {
+    form.addEventListener("submit", function () {
+      const tipo = document.getElementById("tipoUsuario").value;
+      if (tipo === "chefe") {
+        const map = {
+          nome: "c_n",
+          email: "c_e",
+          senha: "c_s",
+          confirmar_senha: "c_cs",
+          empresa_nome: "c_en",
+          cargo: "c_r",
+        };
+        Object.keys(map).forEach((key) => {
+          const el = document.querySelector(`[name="${key}"]`);
+          if (el) el.setAttribute("name", map[key]);
+        });
+      } else if (tipo === "instituicao") {
+        const map = {
+          nome: "i_n",
+          email: "i_e",
+          senha: "i_s",
+          confirmar_senha: "i_cs",
+          instituicao_nome: "i_in",
+          endereco_instituicao: "i_addr",
+          infraestrutura: "i_infra",
+          nota_mec: "i_nota",
+          modalidades: "i_mod",
+        };
+        Object.keys(map).forEach((key) => {
+          const el = document.querySelector(`[name="${key}"]`);
+          if (el) el.setAttribute("name", map[key]);
+        });
+        // Cursos selecionados: mantém o nome original, pois é uma lista
+      }
+    });
+  }
+
   // Exibe toasts para mensagens flash do Flask
   // As mensagens flash são processadas no template HTML
 
