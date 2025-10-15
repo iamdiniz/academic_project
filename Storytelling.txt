@@ -1,0 +1,108 @@
+DashTalent: Conectando Sonhos com Oportunidades
+
+A História por Trás da Plataforma
+
+Imagine um jovem recém-formado em Ciência da Computação, cheio de sonhos e habilidades em Python, mas perdido em um mar de currículos genéricos. 
+Do outro lado, uma startup precisa exatamente desse perfil, mas não consegue encontrá-lo entre milhares de candidatos.
+
+Este é o problema que o DashTalent resolve.
+
+Nascido da necessidade de conectar talentos reais com oportunidades reais, o DashTalent não é apenas mais uma plataforma de recrutamento. 
+É um ecossistema que entende que cada talento tem seu lugar, cada oportunidade tem seu talento.
+
+A Nossa Visão
+
+Três pilares fundamentais sustentam nossa plataforma:
+
+Gestores e Chefes - O Lado da Demanda
+Líderes empresariais que buscam talentos específicos, fazem indicações direcionadas e acompanham o desenvolvimento profissional. 
+Eles não procuram mais vagas genéricas - eles encontram pessoas reais com habilidades reais.
+
+Instituições de Ensino - O Lado da Oferta  
+Universidades e faculdades que formam talentos excepcionais, mas muitas vezes não conseguem apresentar adequadamente o potencial de seus alunos. 
+Com o DashTalent, cada instituição vira uma vitrine de talentos.
+
+Alunos e Talentos - O Coração do Sistema
+Jovens em formação que desenvolvem habilidades específicas, buscam oportunidades reais e crescem profissionalmente através de um sistema que valoriza suas competências únicas.
+
+A Tecnologia que Transforma
+
+Construído com segurança em primeiro lugar, o DashTalent oferece:
+
+- Autenticação de dois fatores para proteção total
+- Rate limiting contra ataques
+- Logs de auditoria para transparência
+- Criptografia robusta de dados sensíveis
+- Conformidade com LGPD
+
+A Jornada Completa
+
+Fase 1: Cadastro e Onboarding
+Instituições se cadastram com informações completas. Gestores se registram com necessidades específicas. 
+Alunos são cadastrados com perfis detalhados de habilidades.
+
+Fase 2: Descoberta e Matching
+O sistema mapeia automaticamente habilidades por curso. Gestores exploram talentos usando filtros inteligentes. 
+Algoritmos sugerem matches baseados em compatibilidade real.
+
+Fase 3: Indicação e Acompanhamento
+Gestores fazem indicações direcionadas. O sistema notifica todas as partes. 
+Acompanhamento contínuo do desenvolvimento profissional.
+
+Fase 4: Análise e Melhoria
+Relatórios detalhados de performance. Métricas de sucesso para todas as partes. 
+Feedback loop para melhorias contínuas.
+
+As Personas Reais
+
+Maria, Gestora de RH
+"Preciso encontrar um desenvolvedor Python sênior para nossa startup. 
+Com o DashTalent, posso ver exatamente quais alunos têm as habilidades que preciso, 
+acompanhar seu desenvolvimento e fazer indicações direcionadas."
+
+Prof. Carlos, Reitor
+"Nossos alunos são excepcionais, mas muitas vezes não conseguem mostrar seu potencial. O DashTalent nos permite apresentar nossos talentos de forma organizada e acompanhar suas conquistas profissionais."
+
+Ana, Estudante
+"Sempre quis trabalhar com inteligência artificial, mas não sabia como me conectar com empresas que precisam desse perfil. Agora posso mostrar minhas habilidades específicas e ser encontrada por quem realmente precisa."
+
+O Impacto Real
+
+Potencial de Impacto:
+- Sistema inteligente de matching baseado em habilidades específicas
+- Redução significativa no tempo de busca por talentos
+- Interface intuitiva para facilitar conexões
+- Acompanhamento contínuo do desenvolvimento profissional
+
+Benefícios Esperados:
+"Com o DashTalent, gestores poderão encontrar talentos específicos de forma mais eficiente, baseado em habilidades reais dos alunos." - Visão do Sistema
+
+"Instituições de ensino terão uma ferramenta para apresentar melhor o potencial de seus alunos e acompanhar suas conquistas profissionais." - Objetivo Educacional
+
+A Inovação que Nos Diferencia
+
+Inteligência Contextual
+Mapeamento automático de habilidades por curso. Sugestões inteligentes baseadas em compatibilidade. Aprendizado contínuo com feedback dos usuários.
+
+Ecossistema Integrado
+Não é apenas um job board - é uma plataforma de desenvolvimento. Acompanhamento contínuo com relacionamento duradouro. Feedback loop para melhoria constante baseada em dados.
+
+Experiência Personalizada
+Interface adaptativa para cada tipo de usuário. Notificações inteligentes baseadas em comportamento. Dashboards personalizados com métricas relevantes.
+
+O Legado que Construímos
+
+O DashTalent não é apenas uma plataforma - é uma revolução silenciosa na forma como conectamos educação e mercado de trabalho. Cada indicação bem-sucedida, cada talento descoberto, cada carreira transformada é um passo em direção a um futuro onde:
+
+- Ninguém fica para trás por falta de oportunidades
+- Cada habilidade tem seu valor reconhecido  
+- A educação e o trabalho caminham de mãos dadas
+- O potencial humano é maximizado através da tecnologia
+
+A Jornada Continua
+
+O DashTalent é mais que código, mais que funcionalidades, mais que tecnologia. É a materialização de um sonho: o sonho de que cada jovem talentoso encontre seu lugar no mundo, cada empresa encontre o talento que precisa, e cada instituição de ensino seja reconhecida pelo valor que gera.
+
+Porque talento sem oportunidade é desperdício. Oportunidade sem talento é frustração. Mas talento + oportunidade + tecnologia inteligente? Isso é transformação.
+
+Desenvolvido com amor para conectar o futuro do trabalho com o presente da educação.
