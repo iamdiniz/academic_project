@@ -5,6 +5,66 @@
 
 // Regex para validação de email
 const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PASSWORD_POLICY_MESSAGE =
+  "A senha deve ter pelo menos 10 caracteres e incluir letras maiúsculas, letras minúsculas, números e caracteres especiais.";
+
+function avaliarRequisitosSenha(senha) {
+  const valor = senha || "";
+  return {
+    comprimento: valor.length >= 10,
+    maiuscula: /[A-Z]/.test(valor),
+    minuscula: /[a-z]/.test(valor),
+    digito: /\d/.test(valor),
+    especial: /[^A-Za-z0-9]/.test(valor),
+  };
+}
+
+function senhaAtendePolitica(senha) {
+  const requisitos = avaliarRequisitosSenha(senha);
+  return Object.values(requisitos).every(Boolean);
+}
+
+function atualizarChecklistSenha(requisitos, checklistId) {
+  const checklist = document.getElementById(checklistId);
+  const policyContainer = checklist?.closest(".password-policy");
+  if (!checklist || !policyContainer) return;
+
+  const todosAtendidos = Object.values(requisitos).every(Boolean);
+  const senhaVazia = !document.getElementById("senha")?.value;
+
+  // Se senha vazia, oculta tudo
+  if (senhaVazia) {
+    policyContainer.classList.add("hidden");
+    return;
+  }
+
+  policyContainer.classList.remove("hidden");
+
+  // Atualiza cada item do checklist
+  checklist.querySelectorAll("[data-req]").forEach((item) => {
+    const chave = item.dataset.req;
+    const cumprido = requisitos[chave];
+    item.classList.toggle("met", Boolean(cumprido));
+  });
+
+  // Se todos atendidos, mostra mensagem de sucesso e oculta checklist
+  if (todosAtendidos) {
+    let successMsg = policyContainer.querySelector(".password-policy__success");
+    if (!successMsg) {
+      successMsg = document.createElement("div");
+      successMsg.className = "password-policy__success";
+      successMsg.textContent = "Senha atende todos os requisitos";
+      policyContainer.insertBefore(successMsg, checklist);
+    }
+    successMsg.style.display = "flex";
+    checklist.classList.add("hidden");
+  } else {
+    // Se não todos atendidos, mostra checklist e oculta mensagem de sucesso
+    const successMsg = policyContainer.querySelector(".password-policy__success");
+    if (successMsg) successMsg.style.display = "none";
+    checklist.classList.remove("hidden");
+  }
+}
 
 // Função para exibir/ocultar campos baseado no tipo de usuário
 function exibirCampos() {
@@ -95,60 +155,14 @@ function validarEmail(input) {
   );
 }
 
-// Função para validar senha e mostrar força
+// Função para validar senha e atualizar checklist
 function validarSenha(input) {
   const senha = input.value;
-  let mensagemErro = "";
+  const requisitos = avaliarRequisitosSenha(senha);
+  atualizarChecklistSenha(requisitos, "passwordChecklistCadastro");
 
-  // Checagens obrigatórias
-  if (senha.length < 8 || senha.length > 20) {
-    mensagemErro += "A senha deve ter entre 8 e 20 caracteres. ";
-  }
-  if (!/[a-zA-Z]/.test(senha)) {  // Pelo menos uma letra (maiúscula ou minúscula)
-    mensagemErro += "Deve conter pelo menos uma letra. ";
-  }
-  if (!/[0-9]/.test(senha)) {  // Pelo menos um número
-    mensagemErro += "Deve conter pelo menos um número. ";
-  }
-  if (!/[\W_]/.test(senha)) {  // Pelo menos um caractere especial (ajuste a regex se quiser símbolos específicos, ex.: /[!@#$%^&*]/)
-    mensagemErro += "Deve conter pelo menos um caractere especial (ex: !@#$%). ";
-  }
-
-  // Aplica erro visual (similar aos outros campos)
-  aplicarErro(input, mensagemErro.trim() || "", "erro-senha");
-
-  // Calcula força da senha (mantido, mas corrigido o switch)
-  let forca = 0;
-  if (senha.length >= 8 && senha.length <= 20) forca++;  // Ajustado para incluir max
-  if (/[a-zA-Z]/.test(senha)) forca++;  // Qualquer letra
-  if (/[0-9]/.test(senha)) forca++;
-  if (/[\W_]/.test(senha)) forca++;
-
-  let texto = "", cor = "";
-  if (senha === "") {
-    texto = "";  // Senha vazia: sem texto
-    cor = "";
-  } else {
-    switch (forca) {
-      case 0:
-      case 1:
-        texto = "Senha muito fraca";
-        cor = "text-danger";
-        break;
-      case 2:
-        texto = "Senha fraca";
-        cor = "text-warning";
-        break;
-      case 3:
-        texto = "Senha média";
-        cor = "text-info";
-        break;
-      case 4:
-        texto = "Senha forte";
-        cor = "text-success";
-        break;
-    }
-  }
+  const mensagemErro = senhaAtendePolitica(senha) ? "" : PASSWORD_POLICY_MESSAGE;
+  aplicarErro(input, mensagemErro, "erro-senha");
 
   validarConfirmacaoSenha();
 }
@@ -190,14 +204,8 @@ function validarCamposComuns() {
   );
   valido &= validarCampo(
     senha,
-    (val) => {
-      if (val.length < 8 || val.length > 20) return false;
-      if (!/[a-zA-Z]/.test(val)) return false;  
-      if (!/[0-9]/.test(val)) return false;    
-      if (!/[\W_]/.test(val)) return false;    
-      return true;
-    },
-    "A senha deve ter entre 8 e 20 caracteres, com pelo menos uma letra, um número e um caractere especial.",
+    (val) => senhaAtendePolitica(val),
+    PASSWORD_POLICY_MESSAGE,
     "erro-senha"
   );
   valido &= validarCampo(

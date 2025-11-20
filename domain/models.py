@@ -15,6 +15,7 @@ from models import (
     Indicacao,
     TwoFactor,
     ResetarSenha,
+    PasswordHistory,
     LogAcesso,
 )
 

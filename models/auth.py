@@ -33,3 +33,17 @@ class ResetarSenha(db.Model):
     
     def __repr__(self):
         return f'<ResetarSenha {self.email}>'
+
+class PasswordHistory(db.Model):
+    """Modelo para armazenar histórico de senhas e bloquear reutilização."""
+    __tablename__ = 'password_history'
+    
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    # 'chefe' ou 'instituicao'
+    user_type = db.Column(db.String(20), nullable=False)
+    user_id = db.Column(db.Integer, nullable=False)
+    senha_hash = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    
+    def __repr__(self):
+        return f'<PasswordHistory {self.user_type}:{self.user_id} at {self.created_at}>'

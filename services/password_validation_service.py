@@ -1,15 +1,41 @@
 """
-Serviço de Validação de Senha - Funções de validação de senha movidas do app.py.
-Código movido para organizar responsabilidades, mantendo a lógica original.
+Serviço de Validação de Senha.
+Define e aplica a política de senhas da aplicação.
 """
+
+import re
+
+PASSWORD_POLICY_MESSAGE = (
+    "A senha deve ter pelo menos 10 caracteres e incluir letras maiúsculas, "
+    "letras minúsculas, números e caracteres especiais."
+)
+
+
+def _senha_para_validacao(senha: str) -> str:
+    return senha or ""
+
+
+def avaliar_requisitos_senha(senha: str):
+    """
+    Retorna um dicionário com o status de cada requisito da política.
+    """
+    senha_normalizada = _senha_para_validacao(senha)
+    return {
+        'comprimento': len(senha_normalizada) >= 10,
+        'maiuscula': bool(re.search(r'[A-Z]', senha_normalizada)),
+        'minuscula': bool(re.search(r'[a-z]', senha_normalizada)),
+        'digito': bool(re.search(r'\d', senha_normalizada)),
+        'especial': bool(re.search(r'[^A-Za-z0-9]', senha_normalizada)),
+    }
 
 
 def validar_senha_minima(senha):
     """
-    Valida senha mínima - código movido do app.py.
-    Mantém a lógica original: if not senha or len(senha) < 8
+    Retorna True quando a senha NÃO atende à política de segurança.
+    Mantém compatibilidade com chamadas existentes.
     """
-    return not senha or len(senha) < 8
+    requisitos = avaliar_requisitos_senha(senha)
+    return not senha or not all(requisitos.values())
 
 
 def validar_confirmacao_senha(senha, confirmar_senha):

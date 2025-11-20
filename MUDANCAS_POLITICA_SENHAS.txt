@@ -1,0 +1,376 @@
+================================================================================
+DOCUMENTAÇÃO: ATUALIZAÇÃO DA POLÍTICA DE SENHAS E BLOQUEIO DE REUTILIZAÇÃO
+================================================================================
+Data: 20/11/2025
+Descrição: Implementação de política de senhas reforçada e bloqueio de 
+           reutilização das 3 últimas senhas
+
+================================================================================
+1. POLÍTICA DE SENHAS - ANTES E DEPOIS
+================================================================================
+
+ANTES:
+- Senha mínima: 8 caracteres
+- Requisitos: Pelo menos uma letra, um número e um caractere especial
+- Validação: Básica, sem feedback visual detalhado para o usuário
+- Mensagem: "A senha deve ter entre 8 e 20 caracteres. Deve conter pelo menos 
+            uma letra. Deve conter pelo menos um número. Deve conter pelo menos 
+            um caractere especial (ex: !@#$%)."
+
+DEPOIS:
+- Senha mínima: 10 caracteres (aumentado de 8 para 10)
+- Requisitos OBRIGATÓRIOS:
+  * Pelo menos 10 caracteres
+  * Pelo menos uma letra MAIÚSCULA (A-Z)
+  * Pelo menos uma letra minúscula (a-z)
+  * Pelo menos um dígito (0-9)
+  * Pelo menos um caractere especial (ex: !@#$%)
+- Validação: Completa com checklist visual em tempo real
+- Mensagem: "A senha deve ter pelo menos 10 caracteres e incluir letras 
+            maiúsculas, letras minúsculas, números e caracteres especiais."
+
+================================================================================
+2. BLOQUEIO DE REUTILIZAÇÃO DE SENHAS - NOVO RECURSO
+================================================================================
+
+ANTES:
+- Não havia bloqueio de reutilização de senhas
+- Usuários podiam reutilizar senhas antigas indefinidamente
+
+DEPOIS:
+- Bloqueio das 3 últimas senhas utilizadas
+- Aplicado em:
+  * Cadastro de novos usuários
+  * Atualização de senha no perfil
+  * Redefinição de senha via recuperação de senha
+- Mensagem de erro: "Você não pode reutilizar nenhuma das 3 últimas senhas."
+
+================================================================================
+3. ARQUIVOS MODIFICADOS
+================================================================================
+
+3.1. MODELOS DE DADOS
+---------------------
+ARQUIVO: models/auth.py
+AÇÃO: CRIADO novo modelo PasswordHistory
+
+ANTES:
+- Apenas modelos TwoFactor e ResetarSenha
+
+DEPOIS:
+- Adicionado modelo PasswordHistory com campos:
+  * id (chave primária)
+  * user_type ('chefe' ou 'instituicao')
+  * user_id (ID do usuário)
+  * senha_hash (hash da senha)
+  * created_at (data de criação)
+
+ARQUIVO: models/__init__.py
+AÇÃO: Exportação do novo modelo PasswordHistory
+
+ARQUIVO: domain/models.py
+AÇÃO: Re-exportação do PasswordHistory para compatibilidade
+
+ARQUIVO: domain/__init__.py
+AÇÃO: Adicionado PasswordHistory ao __all__
+
+
+3.2. SERVIÇOS DE VALIDAÇÃO
+---------------------------
+ARQUIVO: services/password_validation_service.py
+AÇÃO: ATUALIZADO para nova política de senhas
+
+ANTES:
+- Função validar_senha_minima() verificava apenas se senha tinha 8+ caracteres
+- Sem verificação de maiúsculas/minúsculas separadamente
+
+DEPOIS:
+- Nova função avaliar_requisitos_senha() que retorna dicionário com status de 
+  cada requisito:
+  * comprimento: >= 10 caracteres
+  * maiuscula: pelo menos uma letra maiúscula
+  * minuscula: pelo menos uma letra minúscula
+  * digito: pelo menos um número
+  * especial: pelo menos um caractere especial
+- Função validar_senha_minima() atualizada para usar avaliar_requisitos_senha()
+- Constante PASSWORD_POLICY_MESSAGE adicionada com mensagem padronizada
+
+ARQUIVO: services/password_history_service.py
+AÇÃO: CRIADO novo serviço para gerenciar histórico de senhas
+
+FUNÇÕES CRIADAS:
+- senha_ja_utilizada_recentemente(): Verifica se senha está nas últimas 3
+- registrar_senha_no_historico(): Salva nova senha e remove antigas (mantém 3)
+- Constante PASSWORD_REUSE_MESSAGE com mensagem de erro
+
+ARQUIVO: services/__init__.py
+AÇÃO: Exportação das novas funções do password_history_service
+
+
+3.3. SERVIÇOS DE AUTENTICAÇÃO E USUÁRIOS
+----------------------------------------
+ARQUIVO: services/auth_service.py
+AÇÃO: ATUALIZADO processar_cadastro() e processar_perfil()
+
+ANTES:
+- Validação básica de senha (8 caracteres)
+- Sem verificação de reutilização
+
+DEPOIS:
+- Validação usando avaliar_requisitos_senha() (10+ caracteres, maiúsculas, etc)
+- Verificação de reutilização de senhas antes de criar/atualizar
+- Mensagens de erro mais específicas
+
+ARQUIVO: services/user_service.py
+AÇÃO: ATUALIZADO criar_instituicao_ensino(), criar_chefe(), 
+      atualizar_perfil_chefe(), atualizar_perfil_instituicao()
+
+ANTES:
+- Apenas hash da senha e salvamento no banco
+
+DEPOIS:
+- Verificação de reutilização antes de criar/atualizar
+- Registro da senha no histórico após criação/atualização bem-sucedida
+- Mensagens de erro específicas para senha reutilizada
+
+ARQUIVO: services/password_recovery_service.py
+AÇÃO: ATUALIZADO validar_nova_senha() e atualizar_senha_usuario()
+
+ANTES:
+- Validação básica (6 caracteres mínimos)
+- Sem verificação de reutilização
+
+DEPOIS:
+- Validação usando avaliar_requisitos_senha() (10+ caracteres, maiúsculas, etc)
+- Verificação de reutilização antes de atualizar
+- Registro da senha no histórico após atualização
+
+
+3.4. INTERFACE DO USUÁRIO - FRONTEND
+------------------------------------
+ARQUIVO: templates/cadastro.html
+AÇÃO: ADICIONADO checklist visual de requisitos de senha
+
+ANTES:
+- Campo de senha simples
+- Mensagem de erro genérica abaixo do campo
+- Placeholder: "Senha com no mínimo 6 caracteres"
+- Atributos: minlength="6", maxlength="20"
+
+DEPOIS:
+- Checklist visual com 5 itens:
+  * Pelo menos 10 caracteres
+  * Letra maiúscula (A-Z)
+  * Letra minúscula (a-z)
+  * Número (0-9)
+  * Caractere especial (ex.: !@#$%)
+- Cada item mostra ✓ (verde) quando atendido, ✗ (vermelho) quando não
+- Placeholder atualizado: "Digite sua senha"
+- Atributos: minlength="10", maxlength="128"
+- Acessibilidade: aria-live="polite" para leitores de tela
+
+ARQUIVO: static/js/cadastro.js
+AÇÃO: ATUALIZADO função validarSenha() e adicionada função atualizarChecklist()
+
+ANTES:
+- Validação verificava: 8-20 caracteres, letra, número, especial
+- Sem feedback visual detalhado
+- Mensagem de erro concatenada em string
+
+DEPOIS:
+- Função atualizarChecklist() que atualiza visualmente cada requisito
+- Validação usando regex específicas para cada requisito:
+  * /.{10,}/ para comprimento
+  * /[A-Z]/ para maiúsculas
+  * /[a-z]/ para minúsculas
+  * /\d/ para dígitos
+  * /[^A-Za-z0-9]/ para especiais
+- Feedback visual em tempo real conforme usuário digita
+- Função validarSenha() atualizada para usar novos requisitos
+
+ARQUIVO: static/css/cadastro.css
+AÇÃO: ADICIONADO estilos para checklist de senha
+
+NOVOS ESTILOS:
+- .password-policy: Container do checklist
+- .password-policy__title: Título do checklist
+- .password-checklist: Lista de requisitos
+- .password-checklist li: Item individual do checklist
+- .status-icon: Ícone de status (✓ ou ✗)
+- .password-checklist li.valid: Item atendido (verde)
+- .password-checklist li.invalid: Item não atendido (vermelho/cinza)
+
+ARQUIVO: templates/nova_senha.html
+AÇÃO: ATUALIZADO para nova política de senhas
+
+ANTES:
+- Campo simples com minlength="6"
+- Mensagem: "Mínimo de 6 caracteres"
+
+DEPOIS:
+- Checklist visual idêntico ao cadastro
+- minlength="10"
+- Mensagem atualizada para nova política
+
+ARQUIVO: static/js/nova_senha.js
+AÇÃO: ATUALIZADO com validação completa e checklist
+
+ANTES:
+- Apenas validação de confirmação de senha
+
+DEPOIS:
+- Função validarSenha() com todos os requisitos
+- Função atualizarChecklist() para feedback visual
+- Validação em tempo real
+
+ARQUIVO: static/css/esqueceu_senha.css
+AÇÃO: ADICIONADO mesmos estilos de checklist (reutilização de código)
+
+
+3.5. VALIDAÇÃO GERAL
+--------------------
+ARQUIVO: services/validation_service.py
+AÇÃO: ATUALIZADO validar_senha_formato()
+
+ANTES:
+- Verificava apenas se len(senha) < 8
+
+DEPOIS:
+- Usa avaliar_requisitos_senha() para validação completa
+- Verifica todos os requisitos (10+ caracteres, maiúsculas, minúsculas, etc)
+
+
+================================================================================
+4. FLUXOS AFETADOS
+================================================================================
+
+4.1. CADASTRO DE NOVOS USUÁRIOS
+--------------------------------
+ANTES:
+1. Usuário preenche formulário
+2. Validação: senha >= 8 caracteres, letra, número, especial
+3. Senha é hasheada e salva
+
+DEPOIS:
+1. Usuário preenche formulário
+2. Checklist visual mostra progresso em tempo real
+3. Validação: senha >= 10 caracteres, maiúscula, minúscula, número, especial
+4. Verificação: senha não está nas últimas 3 utilizadas (para novos usuários, 
+   sempre passa)
+5. Senha é hasheada e salva
+6. Senha é registrada no histórico
+
+
+4.2. ATUALIZAÇÃO DE SENHA NO PERFIL
+------------------------------------
+ANTES:
+1. Usuário altera senha no perfil
+2. Validação: senha >= 8 caracteres
+3. Senha é hasheada e atualizada
+
+DEPOIS:
+1. Usuário altera senha no perfil
+2. Validação: senha >= 10 caracteres, maiúscula, minúscula, número, especial
+3. Verificação: senha não está nas últimas 3 utilizadas
+4. Se reutilizada: erro "Você não pode reutilizar nenhuma das 3 últimas senhas"
+5. Senha é hasheada e atualizada
+6. Senha é registrada no histórico
+
+
+4.3. REDEFINIÇÃO DE SENHA (ESQUECEU SENHA)
+-------------------------------------------
+ANTES:
+1. Usuário solicita recuperação
+2. Recebe código por email
+3. Informa nova senha
+4. Validação: senha >= 6 caracteres
+5. Senha é hasheada e atualizada
+
+DEPOIS:
+1. Usuário solicita recuperação
+2. Recebe código por email
+3. Informa nova senha
+4. Checklist visual mostra progresso
+5. Validação: senha >= 10 caracteres, maiúscula, minúscula, número, especial
+6. Verificação: senha não está nas últimas 3 utilizadas
+7. Se reutilizada: erro "Você não pode reutilizar nenhuma das 3 últimas senhas"
+8. Senha é hasheada e atualizada
+9. Senha é registrada no histórico
+
+
+================================================================================
+5. BANCO DE DADOS
+================================================================================
+
+NOVA TABELA: password_history
+-----------------------------
+Campos:
+- id: INTEGER (PK, autoincrement)
+- user_type: VARCHAR(20) NOT NULL ('chefe' ou 'instituicao')
+- user_id: INTEGER NOT NULL
+- senha_hash: VARCHAR(255) NOT NULL
+- created_at: DATETIME (default: now())
+
+Índices:
+- Índice composto (user_type, user_id) para consultas rápidas
+
+Comportamento:
+- Mantém apenas as 3 senhas mais recentes por usuário
+- Senhas antigas são automaticamente removidas quando uma nova é adicionada
+- Tabela é criada automaticamente pelo db.create_all() do Flask
+
+
+================================================================================
+6. MENSAGENS DE ERRO
+================================================================================
+
+ANTES:
+- "A senha deve ter no mínimo 8 caracteres."
+- "A senha deve ter entre 8 e 20 caracteres, com pelo menos uma letra, um 
+   número e um caractere especial."
+
+DEPOIS:
+- "A senha deve ter pelo menos 10 caracteres e incluir letras maiúsculas, 
+   letras minúsculas, números e caracteres especiais."
+- "Você não pode reutilizar nenhuma das 3 últimas senhas."
+
+
+================================================================================
+7. TESTES REALIZADOS
+================================================================================
+
+✓ Build do Docker: Sucesso
+✓ Inicialização do backend: Sucesso
+✓ Criação de tabelas: Sucesso (password_history criada)
+✓ Importação de módulos: Sucesso (PasswordHistory disponível)
+✓ Validação de senha: Funcionando (frontend e backend)
+✓ Checklist visual: Funcionando em tempo real
+✓ Bloqueio de reutilização: Implementado e integrado
+
+
+================================================================================
+8. COMPATIBILIDADE
+================================================================================
+
+- Senhas antigas (criadas antes desta atualização) continuam funcionando
+- Usuários existentes não são afetados até tentarem alterar a senha
+- Nova política se aplica apenas a:
+  * Novos cadastros
+  * Atualizações de senha
+  * Redefinições de senha
+
+
+================================================================================
+9. PRÓXIMOS PASSOS (OPCIONAL)
+================================================================================
+
+- Considerar migração de senhas antigas para o histórico (se necessário)
+- Adicionar testes unitários para password_history_service
+- Considerar política de expiração de senhas (ex: 90 dias)
+- Adicionar métricas de força de senha (opcional)
+
+
+================================================================================
+FIM DA DOCUMENTAÇÃO
+================================================================================
+

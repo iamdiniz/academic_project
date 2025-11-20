@@ -12,7 +12,8 @@ from .rate_limit_service import verificar_rate_limit, resetar_rate_limit
 from .audit_log_service import registrar_log
 from .password_validation_service import (
     validar_senha_minima, validar_confirmacao_senha,
-    validar_campos_obrigatorios_instituicao, validar_campos_obrigatorios_chefe
+    validar_campos_obrigatorios_instituicao, validar_campos_obrigatorios_chefe,
+    PASSWORD_POLICY_MESSAGE
 )
 from .user_service import (
     verificar_email_duplicado_instituicao, criar_instituicao_ensino, criar_chefe,
@@ -77,9 +78,9 @@ def processar_cadastro():
         senha = request.form.get('senha')
         confirmar_senha = request.form.get('confirmar_senha')
 
-        # Validação: senha mínima de 8 caracteres
+        # Validação: política de senha
         if validar_senha_minima(senha):
-            flash('A senha deve ter no mínimo 8 caracteres.', 'danger')
+            flash(PASSWORD_POLICY_MESSAGE, 'danger')
             return redirect(url_for('auth.cadastro'))
 
         if validar_confirmacao_senha(senha, confirmar_senha):
@@ -270,7 +271,7 @@ def processar_perfil():
             # Validação da senha se fornecida
             senha_nova = request.form.get('senha', '')
             if senha_nova and validar_senha_minima(senha_nova):
-                flash("A senha deve ter no mínimo 8 caracteres.", "danger")
+                flash(PASSWORD_POLICY_MESSAGE, "danger")
                 return redirect(url_for('users.perfil'))
 
             # Preparar dados do formulário
@@ -300,7 +301,7 @@ def processar_perfil():
             # Validação da senha se fornecida
             senha_nova = request.form.get('senha', '')
             if senha_nova and validar_senha_minima(senha_nova):
-                flash("A senha deve ter no mínimo 8 caracteres.", "danger")
+                flash(PASSWORD_POLICY_MESSAGE, "danger")
                 return redirect(url_for('users.perfil'))
 
             # Preparar dados do formulário

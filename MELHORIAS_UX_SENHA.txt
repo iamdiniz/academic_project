@@ -1,0 +1,183 @@
+================================================================================
+MELHORIAS DE UX - CHECKLIST DE SENHA (VERSÃO MINIMALISTA)
+================================================================================
+Data: 20/11/2025
+Descrição: Redesign do checklist de senha para melhor experiência do usuário
+
+================================================================================
+PROBLEMA IDENTIFICADO
+================================================================================
+
+O checklist anterior era muito "poluído" visualmente:
+- Mostrava todos os 5 requisitos o tempo todo
+- Box grande com borda vermelha chamativa
+- Título explicativo desnecessário
+- Muitos ícones e elementos visuais competindo por atenção
+- Ocupava muito espaço na tela
+
+================================================================================
+SOLUÇÃO IMPLEMENTADA
+================================================================================
+
+Versão Minimalista e Inteligente:
+
+1. OCULTA quando senha está vazia
+   - Não mostra nada até o usuário começar a digitar
+   - Interface mais limpa inicialmente
+
+2. MOSTRA APENAS requisitos PENDENTES
+   - Quando o usuário atende um requisito, ele desaparece
+   - Lista fica menor conforme o usuário progride
+   - Foco apenas no que falta fazer
+
+3. MENSAGEM DE SUCESSO quando todos atendidos
+   - Quando todos os requisitos são atendidos, mostra apenas:
+     "✓ Senha atende todos os requisitos"
+   - Oculto e discreto
+   - Cor verde suave
+
+4. DESIGN MAIS LIMPO
+   - Sem box com borda chamativa
+   - Sem título explicativo
+   - Sem ícones grandes
+   - Apenas bullet points simples (•) em vermelho para pendentes
+   - Fonte menor e mais discreta
+
+================================================================================
+COMPORTAMENTO VISUAL
+================================================================================
+
+ESTADO 1: Senha vazia
+---------------------
+- Nada é exibido
+- Interface limpa
+
+ESTADO 2: Usuário começa a digitar (ex: "abc")
+-----------------------------------------------
+Mostra apenas os requisitos NÃO atendidos:
+• Pelo menos 10 caracteres
+• Letra maiúscula (A-Z)
+• Letra minúscula (a-z)  ← desaparece quando atendido
+• Número (0-9)
+• Caractere especial (ex.: !@#$%)
+
+ESTADO 3: Usuário progride (ex: "Abc123!")
+------------------------------------------------
+Mostra apenas o que ainda falta:
+• Pelo menos 10 caracteres  ← ainda falta 3 caracteres
+• Caractere especial (ex.: !@#$%)  ← já atendido, desaparece
+
+ESTADO 4: Todos os requisitos atendidos (ex: "MinhaSenha123!")
+----------------------------------------------------------------
+Mostra apenas:
+✓ Senha atende todos os requisitos
+
+================================================================================
+ARQUIVOS MODIFICADOS
+================================================================================
+
+1. static/css/cadastro.css
+   - Removido: Box com borda, título, ícones grandes
+   - Adicionado: Estilos minimalistas
+   - Novo: .password-policy__success para mensagem de sucesso
+   - Novo: .password-checklist.hidden para ocultar quando completo
+
+2. static/css/esqueceu_senha.css
+   - Mesmas mudanças do cadastro.css para consistência
+
+3. static/js/cadastro.js
+   - Função atualizarChecklistSenha() reescrita:
+     * Oculta quando senha vazia
+     * Mostra apenas pendentes
+     * Exibe mensagem de sucesso quando completo
+     * Oculta checklist quando todos atendidos
+
+4. static/js/nova_senha.js
+   - Função atualizarChecklistSenhaNova() reescrita:
+     * Mesma lógica do cadastro.js
+
+5. templates/cadastro.html
+   - Removido: Título explicativo
+   - Removido: Ícones de status
+   - Simplificado: Apenas lista simples com data-req
+
+6. templates/nova_senha.html
+   - Mesmas mudanças do cadastro.html
+
+================================================================================
+BENEFÍCIOS DA NOVA VERSÃO
+================================================================================
+
+✓ MENOS POLUIÇÃO VISUAL
+  - Interface mais limpa e profissional
+  - Menos elementos competindo por atenção
+
+✓ FOCO NO QUE IMPORTA
+  - Usuário vê apenas o que precisa fazer
+  - Não precisa ler requisitos já atendidos
+
+✓ FEEDBACK PROGRESSIVO
+  - Lista diminui conforme usuário progride
+  - Sensação de progresso e conquista
+
+✓ MENOS ESPAÇO OCUPADO
+  - Ocupa menos espaço na tela
+  - Mais espaço para outros elementos do formulário
+
+✓ MENSAGEM DE SUCESSO CLARA
+  - Quando completo, feedback positivo claro
+  - Usuário sabe que pode prosseguir
+
+✓ MELHOR EXPERIÊNCIA MOBILE
+  - Menos scroll necessário
+  - Interface mais compacta
+
+================================================================================
+COMPARAÇÃO: ANTES vs DEPOIS
+================================================================================
+
+ANTES:
+┌─────────────────────────────────────┐
+│ A senha precisa atender a todos os │
+│ requisitos abaixo:                  │
+├─────────────────────────────────────┤
+│ ✓ Pelo menos 10 caracteres         │
+│ ✓ Letra maiúscula (A-Z)            │
+│ ✓ Letra minúscula (a-z)            │
+│ ✓ Número (0-9)                     │
+│ ✓ Caractere especial               │
+└─────────────────────────────────────┘
+(Box grande, sempre visível, todos os itens)
+
+DEPOIS (quando faltam requisitos):
+• Pelo menos 10 caracteres
+• Letra maiúscula (A-Z)
+(Lista simples, apenas pendentes)
+
+DEPOIS (quando completo):
+✓ Senha atende todos os requisitos
+(Mensagem única e discreta)
+
+================================================================================
+ACESSIBILIDADE
+================================================================================
+
+- Mantido: aria-live="polite" para leitores de tela
+- Mantido: role="list" para estrutura semântica
+- Melhorado: Menos elementos para navegar com teclado
+- Melhorado: Foco mais claro no que precisa ser feito
+
+================================================================================
+TESTES RECOMENDADOS
+================================================================================
+
+1. Testar digitação progressiva da senha
+2. Verificar que requisitos desaparecem quando atendidos
+3. Verificar mensagem de sucesso quando completo
+4. Testar em diferentes tamanhos de tela (mobile, tablet, desktop)
+5. Testar com leitores de tela
+
+================================================================================
+FIM DA DOCUMENTAÇÃO
+================================================================================
+

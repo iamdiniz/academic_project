@@ -4,6 +4,7 @@ Código movido para organizar responsabilidades, mantendo a lógica original.
 """
 
 import re
+from .password_validation_service import validar_senha_minima
 
 
 def validar_email_formato(email):
@@ -56,10 +57,10 @@ def validar_cargo_formato(cargo):
 
 def validar_senha_formato(senha):
     """
-    Valida formato de senha - código movido do app.py.
-    Mantém a lógica original: if len(senha_nova) < 8
+    Valida formato de senha conforme a política atual.
+    Retorna True quando inválida para manter compatibilidade.
     """
-    return len(senha) < 8
+    return validar_senha_minima(senha)
 
 
 def validar_nota_mec_formato(nota_mec):

@@ -180,6 +180,69 @@ button:hover {
   color: #666 !important;
 }
 
+/* ===== Checklist de senha - Versão Minimalista ===== */
+.password-policy {
+  margin-top: 0.5rem;
+  padding: 0;
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+.password-policy.hidden {
+  display: none;
+}
+
+.password-policy__success {
+  color: #198754;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.password-policy__success::before {
+  content: "✓";
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.password-checklist {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0 0;
+}
+
+.password-checklist.hidden {
+  display: none;
+}
+
+.password-checklist li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin-bottom: 0.3rem;
+  padding-left: 1.2rem;
+  position: relative;
+}
+
+.password-checklist li:last-child {
+  margin-bottom: 0;
+}
+
+.password-checklist li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #dc3545;
+  font-weight: bold;
+}
+
+.password-checklist li.met {
+  display: none; /* Oculta requisitos já atendidos */
+}
+
 .mb-3 {
   margin-bottom: 1rem;
 }

@@ -168,15 +168,23 @@
             name="senha"
             id="senha"
             class="form-control"
-            placeholder="Senha com no mínimo 6 caracteres"
+            placeholder="Senha com no mínimo 10 caracteres"
             required
-            minlength="6"
-            maxlength="20"
+            minlength="10"
+            maxlength="64"
             oninput="validarSenha(this)"
-            title="Senha entre 6 e 20 caracteres"
+            title="Use 10+ caracteres com letras maiúsculas, minúsculas, números e símbolos"
           />
           <div id="erro-senha" class="invalid-feedback"></div>
-          <small id="forca-senha" class="form-text"></small>
+          <div class="password-policy hidden" aria-live="polite">
+            <ul class="password-checklist" id="passwordChecklistCadastro" role="list">
+              <li data-req="comprimento">Pelo menos 10 caracteres</li>
+              <li data-req="maiuscula">Letra maiúscula (A-Z)</li>
+              <li data-req="minuscula">Letra minúscula (a-z)</li>
+              <li data-req="digito">Número (0-9)</li>
+              <li data-req="especial">Caractere especial (ex.: !@#$%)</li>
+            </ul>
+          </div>
         </div>
         <div class="col-12 col-md-6 mb-3">
           <label for="confirmarSenha" class="form-label"
@@ -189,8 +197,8 @@
             class="form-control"
             placeholder="Repita a senha"
             required
-            minlength="6"
-            maxlength="20"
+            minlength="10"
+            maxlength="64"
             oninput="validarConfirmacaoSenha()"
             title="Confirme a senha com o mesmo número de caracteres"
           />

@@ -21,7 +21,7 @@ Senha - DashTalent{% endblock %} {% block extra_css %}
       </svg>
       <div class="feature-text">
         <h3>Senha Segura</h3>
-        <p>Use pelo menos 6 caracteres para maior segurança.</p>
+        <p>Use pelo menos 10 caracteres misturando letras, números e símbolos.</p>
       </div>
     </div>
 
@@ -93,10 +93,19 @@ Senha - DashTalent{% endblock %} {% block extra_css %}
           name="nova_senha"
           class="form-control"
           placeholder="Digite sua nova senha"
-          minlength="6"
+          minlength="10"
+          maxlength="64"
           required
         />
-        <small class="form-text text-muted">Mínimo de 6 caracteres</small>
+        <div class="password-policy hidden" aria-live="polite">
+          <ul class="password-checklist" id="passwordChecklistNova" role="list">
+            <li data-req="comprimento">Pelo menos 10 caracteres</li>
+            <li data-req="maiuscula">Letra maiúscula (A-Z)</li>
+            <li data-req="minuscula">Letra minúscula (a-z)</li>
+            <li data-req="digito">Número (0-9)</li>
+            <li data-req="especial">Caractere especial (ex.: !@#$%)</li>
+          </ul>
+        </div>
       </div>
 
       <div class="mb-4">
@@ -107,7 +116,8 @@ Senha - DashTalent{% endblock %} {% block extra_css %}
           name="confirmar_senha"
           class="form-control"
           placeholder="Confirme sua nova senha"
-          minlength="6"
+          minlength="10"
+          maxlength="64"
           required
         />
       </div>

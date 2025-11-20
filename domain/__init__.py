@@ -9,7 +9,7 @@ __all__ = [
     # Models
     'LogAcesso', 'InstituicaodeEnsino', 'Curso', 'Aluno', 'Chefe',
     'SkillsDoAluno', 'SkillsHistorico', 'Acompanhamento', 'Indicacao',
-    'TwoFactor', 'ResetarSenha',
+    'TwoFactor', 'ResetarSenha', 'PasswordHistory',
     # Constants
     'CURSOS_PADRAO', 'HARD_SKILLS_POR_CURSO', 'SOFT_SKILLS',
     # Database

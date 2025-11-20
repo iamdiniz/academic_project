@@ -7,6 +7,11 @@ import re
 from werkzeug.security import generate_password_hash
 from sqlalchemy.exc import IntegrityError
 from domain import db, Chefe, InstituicaodeEnsino, Curso
+from .password_history_service import (
+    registrar_senha_no_historico,
+    senha_ja_utilizada_recentemente,
+    PASSWORD_REUSE_MESSAGE
+)
 
 
 def criar_instituicao_ensino(dados_formulario):
@@ -34,7 +39,7 @@ def criar_instituicao_ensino(dados_formulario):
             endereco_instituicao=dados_formulario['endereco']
         )
         db.session.add(nova_instituicao)
-        db.session.commit()
+        db.session.flush()
 
         # Salva os cursos selecionados na tabela cursos
         for nome_curso in dados_formulario['cursos_selecionados']:
@@ -43,6 +48,8 @@ def criar_instituicao_ensino(dados_formulario):
                 id_instituicao=nova_instituicao.id_instituicao
             )
             db.session.add(curso)
+
+        registrar_senha_no_historico('instituicao', nova_instituicao.id_instituicao, nova_instituicao.senha)
         db.session.commit()
 
         return True, 'Cadastro de Instituição realizado com sucesso! Faça login agora.', nova_instituicao
@@ -71,6 +78,8 @@ def criar_chefe(dados_formulario):
             cargo=dados_formulario['cargo']
         )
         db.session.add(novo_chefe)
+        db.session.flush()
+        registrar_senha_no_historico('chefe', novo_chefe.id_chefe, novo_chefe.senha)
         db.session.commit()
 
         return True, 'Cadastro de Chefe realizado com sucesso! Faça login agora.', novo_chefe
@@ -118,7 +127,10 @@ def atualizar_perfil_chefe(chefe, dados_formulario):
         # Atualizar senha se fornecida
         senha_nova = dados_formulario.get('senha', '')
         if senha_nova:
+            if senha_ja_utilizada_recentemente('chefe', chefe.id_chefe, senha_nova):
+                return False, PASSWORD_REUSE_MESSAGE
             chefe.senha = generate_password_hash(senha_nova)
+            registrar_senha_no_historico('chefe', chefe.id_chefe, chefe.senha)
 
         db.session.commit()
         return True, "Perfil atualizado com sucesso!"
@@ -180,7 +192,10 @@ def atualizar_perfil_instituicao(instituicao, dados_formulario):
         # Atualizar senha se fornecida
         senha_nova = dados_formulario.get('senha', '')
         if senha_nova:
+            if senha_ja_utilizada_recentemente('instituicao', instituicao.id_instituicao, senha_nova):
+                return False, PASSWORD_REUSE_MESSAGE
             instituicao.senha = generate_password_hash(senha_nova)
+            registrar_senha_no_historico('instituicao', instituicao.id_instituicao, instituicao.senha)
 
         db.session.commit()
         return True, "Perfil atualizado com sucesso!"

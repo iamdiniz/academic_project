@@ -28,7 +28,12 @@ from .validation_service import (
 from .password_validation_service import (
     validar_senha_minima, validar_confirmacao_senha,
     validar_campos_obrigatorios_instituicao, validar_campos_obrigatorios_chefe,
-    validar_campos_obrigatorios_aluno, validar_campos_obrigatorios_aluno_edicao
+    validar_campos_obrigatorios_aluno, validar_campos_obrigatorios_aluno_edicao,
+    PASSWORD_POLICY_MESSAGE
+)
+from .password_history_service import (
+    senha_ja_utilizada_recentemente, registrar_senha_no_historico,
+    PASSWORD_REUSE_MESSAGE
 )
 from .skills_service import (
     validar_skills_por_curso
@@ -93,6 +98,10 @@ __all__ = [
     'validar_senha_minima', 'validar_confirmacao_senha',
     'validar_campos_obrigatorios_instituicao', 'validar_campos_obrigatorios_chefe',
     'validar_campos_obrigatorios_aluno', 'validar_campos_obrigatorios_aluno_edicao',
+    'PASSWORD_POLICY_MESSAGE',
+    # Password History Service
+    'senha_ja_utilizada_recentemente', 'registrar_senha_no_historico',
+    'PASSWORD_REUSE_MESSAGE',
     # Skills Service
     'validar_skills_por_curso',
     # Auth Service

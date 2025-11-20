@@ -12,6 +12,16 @@ from flask import session, flash, redirect, url_for, request, render_template
 from domain import db, Chefe, InstituicaodeEnsino, ResetarSenha
 from .email_service import enviar_email
 from .rate_limit_service import desbloquear_usuario
+from .password_validation_service import (
+    validar_senha_minima,
+    validar_confirmacao_senha,
+    PASSWORD_POLICY_MESSAGE
+)
+from .password_history_service import (
+    senha_ja_utilizada_recentemente,
+    registrar_senha_no_historico,
+    PASSWORD_REUSE_MESSAGE
+)
 
 
 def verificar_email_existe(email):
@@ -197,10 +207,10 @@ def validar_nova_senha(nova_senha, confirmar_senha):
     if not nova_senha or not confirmar_senha:
         return False, "Todos os campos são obrigatórios."
 
-    if len(nova_senha) < 6:
-        return False, "A senha deve ter pelo menos 6 caracteres."
+    if validar_senha_minima(nova_senha):
+        return False, PASSWORD_POLICY_MESSAGE
 
-    if nova_senha != confirmar_senha:
+    if validar_confirmacao_senha(nova_senha, confirmar_senha):
         return False, "As senhas não coincidem."
 
     return True, None
@@ -220,6 +230,8 @@ def atualizar_senha_usuario(reset_request, nova_senha):
         else:
             user = InstituicaodeEnsino.query.get(reset_request.user_id)
             user.senha = senha_hash
+
+        registrar_senha_no_historico(reset_request.user_type, reset_request.user_id, senha_hash)
 
         # Marcar código como usado
         reset_request.used = True
@@ -250,6 +262,9 @@ def processar_nova_senha(reset_token, nova_senha, confirmar_senha):
     valida, mensagem = validar_nova_senha(nova_senha, confirmar_senha)
     if not valida:
         return False, mensagem, None
+
+    if senha_ja_utilizada_recentemente(reset_request.user_type, reset_request.user_id, nova_senha):
+        return False, PASSWORD_REUSE_MESSAGE, None
 
     # Atualizar senha
     sucesso, mensagem = atualizar_senha_usuario(reset_request, nova_senha)
