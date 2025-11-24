@@ -1,0 +1,33 @@
+[mysqld]
+# ============================================================================
+# CONFIGURAÇÕES DE SEGURANÇA TLS/SSL
+# ============================================================================
+# Força uso de TLS 1.2 APENAS (desabilita TLS 1.0 e 1.1)
+# MySQL 5.7: tls_version é uma variável de sistema que precisa ser
+# configurada via SQL após inicialização (ver init-tls.sql)
+
+# Habilita SSL
+ssl = ON
+
+# Requer conexões seguras (SSL obrigatório)
+# Descomente a linha abaixo para forçar SSL em todas as conexões
+# require_secure_transport = ON
+
+# Caminhos dos certificados SSL
+ssl-ca = /etc/mysql/ssl/ca.pem
+ssl-cert = /etc/mysql/ssl/server-cert.pem
+ssl-key = /etc/mysql/ssl/server-key.pem
+
+# ============================================================================
+# PROTEÇÃO CONTRA RENEGOCIAÇÃO SSL/TLS
+# ============================================================================
+# Nota: MySQL não tem opção direta para desabilitar renegociação,
+# mas TLS 1.2 já tem proteções contra renegociação maliciosa.
+# A restrição de TLS 1.2 apenas já mitiga o risco de DoS por renegociação.
+
+# ============================================================================
+# CONFIGURAÇÕES EXISTENTES
+# ============================================================================
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+

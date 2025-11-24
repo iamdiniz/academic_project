@@ -8,7 +8,7 @@ from flask import session, flash, redirect, url_for, request, render_template
 from flask_login import login_user, current_user
 from werkzeug.security import check_password_hash
 from domain import Chefe, InstituicaodeEnsino, TwoFactor, CURSOS_PADRAO
-from .rate_limit_service import verificar_rate_limit, resetar_rate_limit
+from .rate_limit_service import verificar_rate_limit, resetar_rate_limit, registrar_falha_login, obter_numero_tentativa_atual
 from .audit_log_service import registrar_log
 from .password_validation_service import (
     validar_senha_minima, validar_confirmacao_senha,
@@ -192,6 +192,10 @@ def processar_login():
         permitido, mensagem_rate_limit, _ = verificar_rate_limit(email)
 
         if not permitido:
+            # Registra a falha se foi bloqueado por exceder tentativas
+            tentativa_atual = obter_numero_tentativa_atual(email)
+            if tentativa_atual > 0:
+                registrar_falha_login(email, tentativa_atual)
             flash(mensagem_rate_limit, "danger")
             return render_template('login.html')
 
@@ -244,8 +248,15 @@ def processar_login():
                 return redirect(url_for('auth.home'))
 
         # =============================================================================
-        # LOGIN FALHADO - EXIBE MENSAGEM
+        # LOGIN FALHADO - EXIBE MENSAGEM E REGISTRA FALHA
         # =============================================================================
+        # Obtém o número da tentativa atual para registrar no log
+        tentativa_atual = obter_numero_tentativa_atual(email)
+        
+        # Registra a falha de login em arquivo de log (incluindo a 5ª tentativa)
+        if tentativa_atual > 0:
+            registrar_falha_login(email, tentativa_atual)
+        
         # Rate limiting já foi verificado antes das credenciais
         if mensagem_rate_limit:
             flash(

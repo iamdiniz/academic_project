@@ -7,6 +7,7 @@ services:
       - ./app.py:/app/app.py
       - ./static:/app/static
       - ./templates:/app/templates
+      - ./logs:/app/logs
     restart: always
     networks:
       - dockercompose
@@ -32,11 +33,47 @@ services:
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_CHARSET: utf8mb4
       MYSQL_COLLATION: utf8mb4_unicode_ci
-    ports:
-      - "3307:3306" # Mapeia a porta 3306 do contêiner para a porta 3307 no host
-    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    # 🔒 SEGURANÇA: Porta MySQL removida da exposição pública
+    # MySQL agora acessível apenas dentro da rede Docker
+    # ports:
+    #   - "3307:3306" # REMOVIDO por segurança
+    volumes:
+      # Configuração MySQL com TLS 1.2+
+      - ./mysql/conf.d:/etc/mysql/conf.d:ro
+      # Script wrapper para aplicar TLS 1.2
+      - ./mysql/entrypoint-wrapper.sh:/entrypoint-wrapper.sh:ro
+      # Script SQL para configurar TLS 1.2 apenas (desabilita 1.0 e 1.1) - backup
+      - ./mysql/init-tls.sql:/docker-entrypoint-initdb.d/init-tls.sql:ro
+      # Certificados SSL (gerados automaticamente na primeira execução)
+      - mysql_ssl:/etc/mysql/ssl
+    entrypoint: >
+      bash -c "
+      # Gera certificados SSL se não existirem
+      if [ ! -f /etc/mysql/ssl/server-cert.pem ]; then
+        echo '[SSL] Gerando certificados SSL...' &&
+        mkdir -p /etc/mysql/ssl &&
+        openssl genrsa -out /etc/mysql/ssl/ca-key.pem 2048 &&
+        openssl req -new -x509 -nodes -days 3650 -key /etc/mysql/ssl/ca-key.pem -out /etc/mysql/ssl/ca.pem -subj '/C=BR/ST=Estado/L=Cidade/O=Organizacao/CN=MySQL-CA' &&
+        openssl genrsa -out /etc/mysql/ssl/server-key.pem 2048 &&
+        openssl req -new -key /etc/mysql/ssl/server-key.pem -out /etc/mysql/ssl/server-req.pem -subj '/C=BR/ST=Estado/L=Cidade/O=Organizacao/CN=mysql-server' &&
+        openssl x509 -req -in /etc/mysql/ssl/server-req.pem -days 3650 -CA /etc/mysql/ssl/ca.pem -CAkey /etc/mysql/ssl/ca-key.pem -CAcreateserial -out /etc/mysql/ssl/server-cert.pem &&
+        chmod 600 /etc/mysql/ssl/*.pem &&
+        chmod 644 /etc/mysql/ssl/ca.pem &&
+        chmod 644 /etc/mysql/ssl/server-cert.pem &&
+        echo '[SSL] Certificados SSL gerados com sucesso!'
+      else
+        echo '[SSL] Certificados SSL já existem.'
+      fi &&
+      # Executa wrapper que aplica TLS 1.2 (desabilita TLS 1.0/1.1)
+      chmod +x /entrypoint-wrapper.sh &&
+      exec /entrypoint-wrapper.sh --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+      "
     networks:
       - dockercompose
+
+volumes:
+  mysql_ssl:
+    # Volume para persistir certificados SSL do MySQL
 
 networks:
   dockercompose:

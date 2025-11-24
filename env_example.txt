@@ -13,7 +13,8 @@ DB_PORT=3306
 DB_NAME=educ_invest
 
 # URL completa do banco de dados
-DATABASE_URL=mysql+pymysql://root:jonas1385@db:3306/educ_invest?charset=utf8mb4
+# SSL habilitado para conexões seguras (TLS 1.2+)
+DATABASE_URL=mysql+pymysql://root:jonas1385@db:3306/educ_invest?charset=utf8mb4&ssl_disabled=false
 
 # Chave secreta do Flask (GERE UMA CHAVE ÚNICA E SEGURA!)
 FLASK_SECRET_KEY=sua-chave-secreta-super-segura-aqui-123456789
