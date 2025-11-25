@@ -9,3 +9,4 @@ SET GLOBAL tls_version = 'TLSv1.2';
 -- Verifica se a configuração foi aplicada
 -- SELECT @@GLOBAL.tls_version; -- Deve retornar 'TLSv1.2'
 
+

@@ -35,3 +35,4 @@ EOF
 
 echo "[TLS] ✓ Configuração TLS 1.2 aplicada com sucesso!"
 
+
