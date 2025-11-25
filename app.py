@@ -59,7 +59,8 @@ register_blueprints(app)
 # Configuração CSRF e cookies (ajustar secure=True em produção)
 app.config.update(
     SESSION_COOKIE_SAMESITE="Lax",
-    SESSION_COOKIE_SECURE=False  # True em produção
+    SESSION_COOKIE_SECURE=False,  # True em produção
+    SESSION_COOKIE_HTTPONLY=True,
 )
 
 
@@ -79,7 +80,8 @@ def set_csrf_cookie(response):
             csrf_token_value,
             secure=False,  # True em produção
             samesite="Lax",
-            path="/"
+            path="/",
+            httponly=True,
         )
     except Exception:
         pass
