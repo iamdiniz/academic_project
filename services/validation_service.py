@@ -44,7 +44,7 @@ def validar_nome_formato(nome):
     Valida formato de nome - código movido do app.py.
     Mantém a lógica original: if not re.match(r'^[A-Za-zÀ-ÖØ-öø-ÿ\s]{2,30}$', nome)
     """
-    return not re.match(r'^[A-Za-zÀ-ÖØ-öø-ÿ\s]{2,30}$', nome)
+    return not re.match('^[A-Za-zÀ-ÖØ-öø-ÿ\\s]{2,30}$', nome)
 
 
 def validar_cargo_formato(cargo):

@@ -1,0 +1,11 @@
+# Garantir que scripts shell sempre usem LF (Unix)
+*.sh text eol=lf
+*.bash text eol=lf
+
+# Outros arquivos
+*.py text eol=lf
+*.txt text eol=lf
+*.md text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+

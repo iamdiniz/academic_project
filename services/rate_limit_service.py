@@ -4,6 +4,8 @@ Código movido do app.py para organizar responsabilidades.
 """
 
 import time
+import os
+from datetime import datetime
 
 # Dicionário para armazenar tentativas de login por email
 # Estrutura: {email: {'count': número_tentativas, 'last_attempt': timestamp, 'blocked_until': timestamp, 'fase': 1 ou 2}}
@@ -17,6 +19,9 @@ MAX_LOGIN_ATTEMPTS = 3  # Máximo de tentativas permitidas por fase
 # Duração do bloqueio temporário em segundos (5 minutos)
 BLOCK_DURATION = 300
 WARNING_THRESHOLD = 3   # Aviso na 3ª tentativa (última antes do bloqueio)
+
+# Arquivo de log para falhas de login
+LOG_FILE = 'logs/login_failures.log'
 
 
 def verificar_rate_limit(email):
@@ -119,3 +124,35 @@ def desbloquear_usuario(email):
             'blocked_until': 0,
             'fase': 1
         }
+
+
+def obter_numero_tentativa_atual(email):
+    """
+    Obtém o número da tentativa atual para um email específico.
+    Retorna 0 se não houver tentativas registradas.
+    """
+    if email not in rate_limit_attempts:
+        return 0
+    return rate_limit_attempts[email]['count']
+
+
+def registrar_falha_login(email, tentativa_numero):
+    """
+    Registra uma falha de login no arquivo de log.
+    Cria o diretório logs/ se não existir.
+    
+    Args:
+        email: Email do usuário que tentou fazer login
+        tentativa_numero: Número da tentativa (1-5)
+    """
+    # Cria o diretório logs/ se não existir
+    log_dir = os.path.dirname(LOG_FILE)
+    if log_dir and not os.path.exists(log_dir):
+        os.makedirs(log_dir, exist_ok=True)
+    
+    # Formata a data e hora atual
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    
+    # Escreve no arquivo de log
+    with open(LOG_FILE, 'a', encoding='utf-8') as f:
+        f.write(f"[{timestamp}] FALHA DE LOGIN - Email: {email} - Tentativa: {tentativa_numero}/{MAX_LOGIN_ATTEMPTS}\n")

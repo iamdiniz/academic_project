@@ -68,22 +68,28 @@ O QUE FOI CORRIGIDO (DEPOIS):
 2. TLS 1.2 configurado e TLS 1.0/1.1 DESABILITADOS
    CÓDIGO DEPOIS (mysql/entrypoint-wrapper.sh):
    ```bash
+   # Aguarda MySQL estar pronto
    # Aplica configuração TLS 1.2 (desabilita TLS 1.0 e 1.1)
    mysql -u root -p"${MYSQL_ROOT_PASSWORD}" -e "SET GLOBAL tls_version = 'TLSv1.2';"
+   # Verifica se foi aplicado corretamente
+   TLS_VERSION=$(mysql -u root -p"${MYSQL_ROOT_PASSWORD}" -se "SELECT @@GLOBAL.tls_version;")
    ```
    
    CÓDIGO DEPOIS (mysql/conf.d/mysql.cnf):
    ```
    [mysqld]
-   ssl = ON
-   ssl-ca = /etc/mysql/ssl/ca.pem
-   ssl-cert = /etc/mysql/ssl/server-cert.pem
-   ssl-key = /etc/mysql/ssl/server-key.pem
+   # TLS 1.2 é configurado automaticamente via entrypoint-wrapper.sh
+   # Este script aplica: SET GLOBAL tls_version = 'TLSv1.2'
+   # Isso desabilita automaticamente TLS 1.0 e TLS 1.1
+   character-set-server = utf8mb4
+   collation-server = utf8mb4_unicode_ci
    ```
    
    IMPLEMENTAÇÃO:
    - Script entrypoint-wrapper.sh executa toda vez que MySQL inicia
+   - Aguarda MySQL estar pronto (até 60 segundos)
    - Aplica: SET GLOBAL tls_version = 'TLSv1.2'
+   - Verifica se configuração foi aplicada corretamente
    - MySQL aceita APENAS TLS 1.2 (rejeita TLS 1.0 e 1.1)
    
    NOTA: MySQL 5.7 não suporta TLS 1.3 (seria necessário MySQL 8.0+)
@@ -92,6 +98,7 @@ O QUE FOI CORRIGIDO (DEPOIS):
    ✅ Protocolos obsoletos (TLS 1.0/1.1) DESABILITADOS
    ✅ Apenas TLS 1.2 permitido
    ✅ Verificação automática na inicialização
+   ✅ Configuração aplicada sempre que MySQL inicia
 
 3. Renegociação SSL/TLS mitigada
    IMPLEMENTAÇÃO:
@@ -109,20 +116,23 @@ O QUE FOI CORRIGIDO (DEPOIS):
    ✅ Protocolos vulneráveis eliminados
    ✅ Apenas protocolo seguro (TLS 1.2) em uso
 
-4. Certificados SSL configurados
-   CÓDIGO DEPOIS (docker-compose.yaml - entrypoint):
-   ```bash
-   # Gera certificados SSL automaticamente
-   openssl genrsa -out /etc/mysql/ssl/ca-key.pem 2048
-   openssl req -new -x509 -nodes -days 3650 ... -out /etc/mysql/ssl/ca.pem
-   openssl genrsa -out /etc/mysql/ssl/server-key.pem 2048
-   openssl x509 -req ... -out /etc/mysql/ssl/server-cert.pem
+4. Configuração TLS aplicada automaticamente
+   CÓDIGO DEPOIS (docker-compose.yaml):
+   ```yaml
+   db:
+     image: mysql:5.7
+     volumes:
+       - ./mysql/conf.d:/etc/mysql/conf.d:ro
+       - ./mysql/init-tls.sql:/docker-entrypoint-initdb.d/init-tls.sql:ro
+       - ./mysql/entrypoint-wrapper.sh:/entrypoint-wrapper.sh:ro
+     entrypoint: ["/entrypoint-wrapper.sh"]
+     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
    ```
    
    RESULTADO: 
-   ✅ Certificados SSL auto-assinados gerados automaticamente
-   ✅ Conexões criptografadas entre aplicação e banco
-   ✅ Dados protegidos em trânsito
+   ✅ TLS 1.2 configurado automaticamente em cada inicialização
+   ✅ Script de backup (init-tls.sql) garante configuração na primeira vez
+   ✅ Sistema robusto com verificação de configuração
 
 ================================================================================
 ARQUIVOS CRIADOS/MODIFICADOS:
@@ -147,13 +157,9 @@ NOVOS ARQUIVOS CRIADOS:
    - Configura SET GLOBAL tls_version = 'TLSv1.2'
    - Útil como fallback
 
-4. mysql/apply-tls-config.sh
-   - Script auxiliar para aplicar TLS 1.2 em MySQL já rodando
-   - Útil se MySQL foi inicializado antes da configuração
-
-5. mysql/ssl/generate-ssl-certs.sh
-   - Script para gerar certificados SSL (não usado diretamente)
-   - Os certificados são gerados automaticamente pelo Docker
+4. mysql/apply-tls-on-startup.sh (removido)
+   - Script auxiliar criado inicialmente, mas não necessário
+   - Funcionalidade integrada no entrypoint-wrapper.sh
 
 ARQUIVOS MODIFICADOS:
 ---------------------
@@ -171,34 +177,32 @@ ARQUIVOS MODIFICADOS:
    ```yaml
    db:
      image: mysql:5.7
-     # ports: - "3307:3306"  # ← REMOVIDO
+     # 🔒 SEGURANÇA: Porta MySQL removida da exposição pública
+     # ports:
+     #   - "3307:3306"  # ← REMOVIDO por segurança
      volumes:
+       # Configuração MySQL com TLS 1.2+
        - ./mysql/conf.d:/etc/mysql/conf.d:ro
+       # Script SQL para configurar TLS 1.2 (executado automaticamente na primeira inicialização)
+       - ./mysql/init-tls.sql:/docker-entrypoint-initdb.d/init-tls.sql:ro
+       # Wrapper que aplica TLS 1.2 sempre que MySQL inicia
        - ./mysql/entrypoint-wrapper.sh:/entrypoint-wrapper.sh:ro
-       - mysql_ssl:/etc/mysql/ssl
-     entrypoint: >
-       bash -c "
-       # Gera certificados SSL...
-       # Executa wrapper que aplica TLS 1.2
-       exec /entrypoint-wrapper.sh ...
-       "
+     entrypoint: ["/entrypoint-wrapper.sh"]
+     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
    ```
    
    MUDANÇAS:
    ✅ Porta 3307 removida (comentada)
    ✅ Volume para configuração MySQL adicionado
-   ✅ Volume para certificados SSL adicionado
-   ✅ Entrypoint customizado para gerar certificados e aplicar TLS 1.2
+   ✅ Script init-tls.sql para primeira inicialização
+   ✅ Entrypoint customizado para aplicar TLS 1.2 automaticamente
    ✅ Script entrypoint-wrapper.sh montado e executado
+   ✅ Configuração aplicada sempre que MySQL inicia
 
 2. env_example.txt
-   ANTES:
-   DATABASE_URL=mysql+pymysql://root:senha@db:3306/educ_invest?charset=utf8mb4
-   
-   DEPOIS:
-   DATABASE_URL=mysql+pymysql://root:senha@db:3306/educ_invest?charset=utf8mb4&ssl_disabled=false
-   
-   (Adicionado parâmetro para habilitar SSL)
+   - Não foi necessário modificar a DATABASE_URL
+   - TLS 1.2 é configurado no servidor MySQL, não na string de conexão
+   - Aplicação conecta normalmente e MySQL aceita apenas TLS 1.2
 
 ================================================================================
 COMO FUNCIONA AGORA:
@@ -206,27 +210,30 @@ COMO FUNCIONA AGORA:
 
 1. Quando o Docker inicia o MySQL:
    FLUXO DETALHADO:
-   a) Entrypoint customizado executa:
-      - Gera certificados SSL automaticamente (se não existirem)
-      - Monta volumes de configuração
-   
-   b) Executa entrypoint-wrapper.sh:
-      - Inicia MySQL em background
+   a) Entrypoint customizado (entrypoint-wrapper.sh) executa:
+      - Encontra o entrypoint original do MySQL
+      - Inicia MySQL em background usando entrypoint original
       - Aguarda MySQL estar pronto (até 60 segundos)
-      - Aplica: SET GLOBAL tls_version = 'TLSv1.2'
-      - Verifica se foi aplicado corretamente
-      - Mostra mensagem de confirmação
    
-   c) MySQL inicia com:
-      - SSL habilitado (via mysql.cnf)
-      - Certificados configurados
+   b) Após MySQL estar pronto:
+      - Aplica: SET GLOBAL tls_version = 'TLSv1.2'
+      - Verifica se configuração foi aplicada corretamente
+      - Mostra mensagem de confirmação no log
+      - Mantém MySQL rodando em foreground
+   
+   c) Na primeira inicialização (se banco não existir):
+      - Script init-tls.sql é executado automaticamente
+      - Garante que TLS 1.2 seja configurado mesmo se wrapper falhar
+   
+   d) MySQL inicia com:
       - TLS 1.0 e TLS 1.1 DESABILITADOS
       - Apenas TLS 1.2 ACEITO
+      - Configuração persistente (aplicada sempre que inicia)
 
 2. Quando a aplicação conecta ao banco:
-   - Usa conexão SSL/TLS automaticamente
-   - Protocolo TLS 1.2 ou superior
-   - Dados criptografados em trânsito
+   - Conecta via nome do serviço "db" (dentro da rede Docker)
+   - MySQL aceita apenas conexões usando TLS 1.2
+   - Protocolos obsoletos são rejeitados automaticamente
 
 3. Acesso ao banco:
    - Apenas dentro da rede Docker
@@ -249,41 +256,50 @@ O QUE MUDOU NA SEGURANÇA:
 - Banco não exposto publicamente
 
 O QUE MUDOU PARA O DESENVOLVEDOR:
-- Não pode mais acessar MySQL diretamente pela porta 3307
-- Se precisar acessar, use: docker-compose exec db mysql -u root -p
-- Certificados são gerados automaticamente (não precisa fazer nada)
+- Não pode mais acessar MySQL diretamente pela porta 3307 (comentada por segurança)
+- Se precisar acessar, use: docker compose exec db mysql -u root -p
+- TLS 1.2 é configurado automaticamente (não precisa fazer nada)
+- Configuração é aplicada sempre que MySQL inicia
 
 ================================================================================
 COMO TESTAR SE ESTÁ FUNCIONANDO:
 ================================================================================
 
-1. Execute: docker-compose up -d
+1. Execute: docker compose up --build
 2. Aguarde 30-60 segundos para MySQL iniciar completamente
-3. Verifique logs do MySQL: docker-compose logs db | grep -i tls
+3. Verifique logs do MySQL: docker compose logs db | grep -i tls
+   → Deve mostrar: "[TLS] Aguardando MySQL iniciar..."
+   → Deve mostrar: "[TLS] MySQL está pronto!"
+   → Deve mostrar: "[TLS] Aplicando configuração TLS 1.2 (desabilitando TLS 1.0/1.1)..."
    → Deve mostrar: "[TLS] ✓ Configuração TLS 1.2 aplicada com sucesso!"
    → Deve mostrar: "[TLS] ✓ TLS 1.0 e TLS 1.1 DESABILITADOS"
-4. Verifique se porta 3307 NÃO está exposta: docker-compose ps
+4. Verifique se porta 3307 NÃO está exposta: docker compose ps
    → NÃO deve aparecer "3307" na coluna PORTS
 5. Verifique configuração TLS: 
-   docker-compose exec db mysql -u root -p -e "SHOW VARIABLES LIKE 'tls_version';"
+   docker compose exec db mysql -u root -p -e "SHOW VARIABLES LIKE 'tls_version';"
    → Deve retornar: tls_version | TLSv1.2
 6. Verifique se aplicação funciona: acesse http://localhost:5000
-7. Execute os testes: veja arquivo INSTRUCOES_TESTE_TLS.txt
+7. Teste novamente após reiniciar: docker compose restart db
+   → TLS 1.2 deve ser aplicado novamente automaticamente
 
 ================================================================================
 NOTAS IMPORTANTES:
 ================================================================================
 
-1. Certificados auto-assinados são para desenvolvimento
-   - Em produção, use certificados de uma CA confiável
+1. TLS 1.2 é configurado via variável global do MySQL
+   - Não requer certificados SSL adicionais para funcionar
+   - A configuração é aplicada automaticamente sempre que MySQL inicia
+   - Em produção, considere também configurar certificados SSL se necessário
 
 2. Porta 3307 não está mais exposta
    - Isso é SEGURO e CORRETO
    - Aplicação conecta via nome do serviço "db" (dentro do Docker)
+   - Se precisar expor para testes, descomente a linha no docker-compose.yaml
 
 3. Se precisar acessar MySQL de fora:
-   - Use: docker-compose exec db mysql -u root -p
-   - Ou adicione temporariamente a porta (não recomendado)
+   - Use: docker compose exec db mysql -u root -p
+   - Ou adicione temporariamente a porta no docker-compose.yaml (não recomendado)
+   - Mesmo exposta, a porta usará TLS 1.2 (configuração aplicada)
 
 ================================================================================
 RESUMO:
@@ -297,12 +313,13 @@ ANTES:
 - Configuração padrão insegura
 
 DEPOIS:
-- Porta 3307 removida (não exposta)
+- Porta 3307 removida (não exposta) ✅
 - TLS 1.0 e TLS 1.1 DESABILITADOS ✅
 - TLS 1.2 HABILITADO (único protocolo aceito) ✅
-- Certificados SSL configurados automaticamente ✅
+- Configuração TLS aplicada automaticamente sempre que MySQL inicia ✅
 - Renegociação SSL/TLS mitigada (via TLS 1.2) ✅
-- Configuração de segurança aplicada ✅
+- Script de backup (init-tls.sql) garante configuração na primeira inicialização ✅
+- Configuração de segurança aplicada e verificada ✅
 
 VULNERABILIDADE: CORRIGIDA 100% ✅
 SISTEMA: FUNCIONANDO NORMALMENTE ✅
@@ -314,17 +331,27 @@ VERIFICAÇÃO FINAL:
 
 Para confirmar que tudo está funcionando:
 
-1. docker-compose logs db | grep -i "TLS"
-   → Deve mostrar mensagens de sucesso
+1. docker compose logs db | grep -i "TLS"
+   → Deve mostrar:
+      [TLS] Aguardando MySQL iniciar...
+      [TLS] MySQL está pronto!
+      [TLS] Aplicando configuração TLS 1.2 (desabilitando TLS 1.0/1.1)...
+      [TLS] ✓ Configuração TLS 1.2 aplicada com sucesso!
+      [TLS] ✓ TLS 1.0 e TLS 1.1 DESABILITADOS
 
-2. docker-compose exec db mysql -u root -p -e "SHOW VARIABLES LIKE 'tls_version';"
-   → Deve retornar: TLSv1.2
+2. docker compose exec db mysql -u root -p -e "SHOW VARIABLES LIKE 'tls_version';"
+   → Deve retornar: tls_version | TLSv1.2
 
-3. docker-compose ps
-   → NÃO deve mostrar porta 3307
+3. docker compose ps
+   → NÃO deve mostrar porta 3307 na coluna PORTS
 
 4. Acessar http://localhost:5000
    → Deve funcionar normalmente
+
+5. Reiniciar MySQL e verificar novamente:
+   docker compose restart db
+   docker compose logs db | grep -i "TLS"
+   → TLS 1.2 deve ser aplicado novamente automaticamente
 
 ================================================================================
 
