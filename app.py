@@ -93,7 +93,7 @@ def set_csrf_cookie(response):
         response.set_cookie(
             "csrf_token",
             csrf_token_value,
-            secure=False,  # True em produção
+            secure=True,  # True em produção
             samesite="Lax",
             path="/",
             httponly=True   # <<< CORREÇÃO AQUI
