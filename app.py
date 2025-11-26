@@ -1,14 +1,13 @@
-from flask import Flask
+from flask import Flask, request, redirect
 from flask_login import LoginManager
 from dotenv import load_dotenv
 from flask_wtf import CSRFProtect
-import os
 from flask_wtf.csrf import generate_csrf
 from domain import db
 from services import load_user
 from services.rate_limit_service import usuarios_bloqueados
-
 from routes import register_blueprints
+import os
 
 load_dotenv()
 
@@ -29,6 +28,10 @@ if database_url.startswith("mysql://"):
     database_url = database_url.replace("mysql://", "mysql+pymysql://", 1)
 
 
+app.config['WTF_CSRF_CHECK_DEFAULT'] = True
+app.config['WTF_CSRF_COOKIE_SECURE'] = True
+
+
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 db.init_app(app)
 
@@ -39,6 +42,7 @@ login_manager.login_view = 'auth.login'  # Atualizado para usar blueprint
 
 
 csrf = CSRFProtect(app)
+
 
 
 # Comentado temporariamente para evitar erro de conexão
@@ -58,10 +62,21 @@ register_blueprints(app)
 
 # Configuração CSRF e cookies (ajustar secure=True em produção)
 app.config.update(
-    SESSION_COOKIE_SAMESITE="Lax",
-    SESSION_COOKIE_SECURE=False,  # True em produção
+    SESSION_COOKIE_SECURE=True,     # Cookie de sessão só via HTTPS
     SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+
+    # CSRF
+    WTF_CSRF_TIME_LIMIT=None,
+    WTF_CSRF_SSL_STRICT=True,
 )
+
+
+@app.before_request
+def force_https():
+    if request.headers.get("X-Forwarded-Proto", "https") == "http":
+        url = request.url.replace("http://", "https://", 1)
+        return redirect(url, code=301)
 
 
 @app.context_processor
@@ -81,13 +96,17 @@ def set_csrf_cookie(response):
             secure=False,  # True em produção
             samesite="Lax",
             path="/",
-            httponly=True,
+            httponly=True   # <<< CORREÇÃO AQUI
         )
     except Exception:
         pass
     return response
 
 
+
 if __name__ == "__main__":
-    # Host para acesso externo
-    app.run(debug=True, host='0.0.0.0')
+    app.run(
+        debug=True,
+        host='0.0.0.0',
+        ssl_context=('cert.pem', 'key.pem')
+    )
