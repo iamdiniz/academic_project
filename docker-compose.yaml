@@ -22,6 +22,10 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - FLASK_SECRET_KEY=${FLASK_SECRET_KEY}
 
+    # 🔥 Aqui é a correção REAL para o TCP Timestamp dentro do container
+    sysctls:
+      net.ipv4.tcp_timestamps: "0"
+
   db:
     image: mysql:5.7
     # 🔧 MODIFICAÇÃO 3: Banco também usa variáveis do .env
